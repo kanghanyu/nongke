@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.khy.mapper.OrderInfoMapper">
+ 
+  <sql id="Base_Column_List">
+    id, order_id, order_type, pay_type, uid, total_money, discount, discount_detail, 
+    discount_money,total_pay,rmb,corn_money, produc_detail,status, create_time, 
+    pay_time,postage,user_name,address,post_code,phone,description
+  </sql>
+  
+  <insert id="insert" parameterType="com.khy.entity.OrderInfo">
+    insert into t_order_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="orderId != null">
+        order_id,
+      </if>
+      <if test="orderType != null">
+        order_type,
+      </if>
+      <if test="payType != null">
+        pay_type,
+      </if>
+      <if test="uid != null">
+        uid,
+      </if>
+      <if test="totalMoney != null">
+        total_money,
+      </if>
+      <if test="discount != null">
+        discount,
+      </if>
+      <if test="discountDetail != null">
+        discount_detail,
+      </if>
+      <if test="discountMoney != null">
+        discount_money,
+      </if>
+      <if test="totalPay != null">
+        total_pay,
+      </if>
+      <if test="rmb != null">
+        rmb,
+      </if>
+      <if test="cornMoney != null">
+        corn_money,
+      </if>
+      <if test="producDetail != null">
+        produc_detail,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="payTime != null">
+        pay_time,
+      </if>
+      <if test="postage != null">
+        postage,
+      </if>
+      <if test="userName != null">
+        user_name,
+      </if>
+      <if test="address != null">
+        address,
+      </if>
+      <if test="postCode != null">
+        post_code,
+      </if>
+      <if test="phone != null">
+        phone,
+      </if>
+      <if test="description != null">
+        description,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="orderId != null">
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderType != null">
+        #{orderType,jdbcType=INTEGER},
+      </if>
+      <if test="payType != null">
+        #{payType,jdbcType=INTEGER},
+      </if>
+      <if test="uid != null">
+        #{uid,jdbcType=VARCHAR},
+      </if>
+      <if test="totalMoney != null">
+        #{totalMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="discount != null">
+        #{discount,jdbcType=REAL},
+      </if>
+      <if test="discountDetail != null">
+        #{discountDetail,jdbcType=VARCHAR},
+      </if>
+      <if test="discountMoney != null">
+        #{discountMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="totalPay != null">
+        #{totalPay,jdbcType=DECIMAL},
+      </if>
+      <if test="rmb != null">
+        #{rmb,jdbcType=DECIMAL},
+      </if>
+      <if test="cornMoney != null">
+        #{cornMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="producDetail != null">
+        #{producDetail,jdbcType=LONGVARCHAR},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="payTime != null">
+        #{payTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="postage != null">
+        #{postage,jdbcType=DECIMAL},
+      </if>
+      
+      <if test="userName != null">
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null">
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="postCode != null">
+        #{postCode,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        #{description,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  
+  <select id="getPayOrder" parameterType="com.khy.entity.OrderInfo" resultType="com.khy.entity.OrderInfo">
+  	select
+  		<include refid="Base_Column_List"/>
+  	from
+  		t_order_info
+  		
+  	<where>
+  		<if test="null != uid and uid != '' ">
+	  		uid =#{uid}
+  		</if>
+  		<if test="null != orderId and orderId != '' ">
+	  		and order_id =#{orderId}
+  		</if>
+  		<if test="null != status">
+	  		and status =#{status}
+  		</if>
+  		<if test="null != orderType">
+	  		and order_type =#{orderType}
+  		</if>
+  	</where>
+  	where
+  		
+  	and
+  		order_type=#{orderType}
+  	and status = 1
+  </select>
+  
+  
+  <update id="update" parameterType="com.khy.entity.OrderInfo">
+    update t_order_info
+    <set>
+      <if test="orderId != null">
+        order_id = #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderType != null">
+        order_type = #{orderType,jdbcType=INTEGER},
+      </if>
+      <if test="payType != null">
+        pay_type = #{payType,jdbcType=INTEGER},
+      </if>
+      <if test="totalMoney != null">
+        total_money = #{totalMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="discount != null">
+        discount = #{discount,jdbcType=REAL},
+      </if>
+      <if test="discountDetail != null">
+        discount_detail = #{discountDetail,jdbcType=VARCHAR},
+      </if>
+      <if test="discountMoney != null">
+        discount_money = #{discountMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="totalPay != null">
+        total_pay = #{totalPay,jdbcType=DECIMAL},
+      </if>
+      <if test="rmb != null">
+        rmb = #{rmb,jdbcType=DECIMAL},
+      </if>
+      <if test="cornMoney != null">
+        corn_money = #{cornMoney,jdbcType=DECIMAL},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="payTime != null">
+        pay_time = #{payTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="postage != null">
+        postage = #{postage,jdbcType=DECIMAL},
+      </if>
+      <if test="userName != null">
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null">
+        address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="postCode != null">
+        post_code = #{postCode,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null">
+        description = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="producDetail != null">
+        produc_detail = #{producDetail,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where 
+    	id = #{id,jdbcType=BIGINT}
+    and 
+    	uid = #{uid}
+  </update>
+  
+</mapper>

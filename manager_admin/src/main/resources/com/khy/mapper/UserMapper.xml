@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.khy.mapper.UserMapper">
+	
+	
+ <sql id="Base_Column_List">
+    id, uid, phone, password, create_time, money,card_money,commission,img, img_url, inviter_uid, inviter_phone,is_manager,is_vip,status
+  </sql>
+  
+	<select id="getUserByPhone" parameterType="java.lang.String" resultType="com.khy.entity.User">
+		SELECT 
+			<include refid="Base_Column_List"/>
+		FROM
+			t_user
+		WHERE
+			phone=#{phone}
+		LIMIT 1
+	</select>
+	<select id="getUserByUid" parameterType="java.lang.String" resultType="com.khy.entity.User">
+		SELECT 
+			<include refid="Base_Column_List"/>
+		FROM
+			t_user
+		WHERE
+			uid=#{uid}
+		LIMIT 1
+	</select>
+	
+	<select id="list" parameterType="com.khy.entity.User" resultType="com.khy.entity.User">
+		SELECT 
+			<include refid="Base_Column_List"/>
+		FROM
+			t_user
+		<where>
+			<if test="null != phone and phone != '' ">
+				phone = #{phone}
+			</if>
+			<if test="null != uid and uid != '' ">
+				and uid = #{uid}
+			</if>
+			<if test="null != inviterPhone and inviterPhone != '' ">
+				and inviter_phone = #{inviterPhone}
+			</if>
+			<if test="null != inviterUid and inviterUid != '' ">
+				and inviter_uid = #{inviterUid}
+			</if>
+			<if test="null != isManager">
+				and is_manager = #{isManager}
+			</if>
+			<if test="null != isVip">
+				and is_vip = #{isVip}
+			</if>
+		</where>
+	</select>
+	
+	
+	<insert id="insert" parameterType="com.khy.entity.User">
+	    insert into t_user
+	    <trim prefix="(" suffix=")" suffixOverrides=",">
+	      <if test="uid != null">
+	        uid,
+	      </if>
+	      <if test="phone != null">
+	        phone,
+	      </if>
+	      <if test="password != null">
+	        password,
+	      </if>
+	      <if test="createTime != null">
+	        create_time,
+	      </if>
+	      <if test="money != null">
+	        money,
+	      </if>
+	      <if test="cardMoney != null">
+	        card_money,
+	      </if>
+	      <if test="commission != null">
+	        commission,
+	      </if>
+	      <if test="img != null">
+	        img,
+	      </if>
+	      <if test="imgUrl != null">
+	        img_url,
+	      </if>
+	      <if test="inviterUid != null">
+	        inviter_uid,
+	      </if>
+	      <if test="inviterPhone != null">
+	        inviter_phone,
+	      </if>
+	      <if test="isManager != null">
+	        is_manager,
+	      </if>
+	      <if test="isVip != null">
+	        is_vip,
+	      </if>
+	      <if test="status != null">
+	        status,
+	      </if>
+	    </trim>
+	    <trim prefix="values (" suffix=")" suffixOverrides=",">
+	      <if test="uid != null">
+	        #{uid,jdbcType=VARCHAR},
+	      </if>
+	      <if test="phone != null">
+	        #{phone,jdbcType=VARCHAR},
+	      </if>
+	      <if test="password != null">
+	        #{password,jdbcType=VARCHAR},
+	      </if>
+	      <if test="createTime != null">
+	        #{createTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="money != null">
+	        #{money,jdbcType=DECIMAL},
+	      </if>
+	      <if test="cardMoney != null">
+	        #{cardMoney,jdbcType=DECIMAL},
+	      </if>
+	      <if test="commission != null">
+	        #{commission,jdbcType=DECIMAL},
+	      </if>
+	      <if test="img != null">
+	        #{img,jdbcType=VARCHAR},
+	      </if>
+	      <if test="imgUrl != null">
+	        #{imgUrl,jdbcType=VARCHAR},
+	      </if>
+	      <if test="inviterUid != null">
+	        #{inviterUid,jdbcType=VARCHAR},
+	      </if>
+	      <if test="inviterPhone != null">
+	        #{inviterPhone,jdbcType=VARCHAR},
+	      </if>
+	      <if test="isManager != null">
+	        #{isManager,jdbcType=INTEGER},
+	      </if>
+	      <if test="isVip != null">
+	        #{isVip,jdbcType=INTEGER},
+	      </if>
+	      <if test="status != null">
+	        #{status,jdbcType=INTEGER},
+	      </if>
+	    </trim>
+  </insert>
+  
+  <update id="updateUser" parameterType="com.khy.entity.User">
+  	UPDATE 
+  		t_user
+  	<set>
+  		<if test="null != password and password != '' ">
+  			password = #{password},
+  		</if>
+  		<if test="null != status">
+  			status = #{status},
+  		</if>
+  		<if test="null != isManager">
+  			is_manager = #{isManager},
+  		</if>
+  		<if test="null != isVip">
+  			is_vip = #{isVip},
+  		</if>
+  	</set> 
+	  	WHERE
+	  		id=#{id}
+  </update>
+  
+ </mapper>

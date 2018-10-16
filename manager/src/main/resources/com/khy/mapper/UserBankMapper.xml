@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.khy.mapper.UserBankMapper">
+	<resultMap id="BaseResultMap" type="com.khy.entity.UserBank">
+		<id column="id" jdbcType="BIGINT" property="id" />
+		<result column="uid" jdbcType="VARCHAR" property="uid" />
+		<result column="bank_name" jdbcType="VARCHAR" property="bankName" />
+		<result column="bank_num" jdbcType="VARCHAR" property="bankNum" />
+		<result column="user_name" jdbcType="VARCHAR" property="userName" />
+		<result column="bank_adress" jdbcType="VARCHAR" property="bankAdress" />
+		<result column="phone" jdbcType="VARCHAR" property="phone" />
+		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		id, uid, bank_name, bank_num, user_name, bank_adress, phone, create_time,update_time
+	</sql>
+
+
+	<select id="getByUid" parameterType="java.lang.String"
+		resultMap="BaseResultMap">
+		select
+			<include refid="Base_Column_List" />
+		from
+			t_user_bank
+		where
+			uid = #{uid}
+		limit 1
+	</select>
+
+
+	<insert id="insert" parameterType="com.khy.entity.UserBank">
+		insert into t_user_bank
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="uid != null">
+				uid,
+			</if>
+			<if test="bankName != null">
+				bank_name,
+			</if>
+			<if test="bankNum != null">
+				bank_num,
+			</if>
+			<if test="userName != null">
+				user_name,
+			</if>
+			<if test="bankAdress != null">
+				bank_adress,
+			</if>
+			<if test="phone != null">
+				phone,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="uid != null">
+				#{uid,jdbcType=VARCHAR},
+			</if>
+			<if test="bankName != null">
+				#{bankName,jdbcType=VARCHAR},
+			</if>
+			<if test="bankNum != null">
+				#{bankNum,jdbcType=VARCHAR},
+			</if>
+			<if test="userName != null">
+				#{userName,jdbcType=VARCHAR},
+			</if>
+			<if test="bankAdress != null">
+				#{bankAdress,jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null">
+				#{phone,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+
+	<update id="update" parameterType="com.khy.entity.UserBank">
+		update t_user_bank
+		<set>
+			<if test="bankName != null">
+				bank_name = #{bankName,jdbcType=VARCHAR},
+			</if>
+			<if test="bankNum != null">
+				bank_num = #{bankNum,jdbcType=VARCHAR},
+			</if>
+			<if test="userName != null">
+				user_name = #{userName,jdbcType=VARCHAR},
+			</if>
+			<if test="bankAdress != null">
+				bank_adress = #{bankAdress,jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null">
+				phone = #{phone,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+
+</mapper>

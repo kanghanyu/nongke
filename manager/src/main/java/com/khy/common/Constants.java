@@ -1,0 +1,74 @@
+package com.khy.common;
+
+public class Constants {
+	public static final String PREFIX = "manager.";
+
+
+	/**oss服务器上配置的 endpoint*/
+    public static String endpoint = "http://oss-cn-beijing.aliyuncs.com";
+    public static String accessKeyId = "LTAIBHCNeY6xhOlS";
+    public static String accessKeySecret = "00cd2etgTUe6rD4bQXGQv3uZzUJzAA";
+    public static String bucketName = "nongke";
+    public static final String BASE_URL = "http://nongke.oss-cn-beijing.aliyuncs.com/";
+    public static final String INVITE_USER_REGISTER="http://39.105.127.94:8081/register.html?uid=";
+
+ // 初始化ascClient需要的几个参数
+    public static final String product = "Dysmsapi";// 短信API产品名称（短信产品名固定，无需修改）
+    public static final String domain = "dysmsapi.aliyuncs.com";// 短信API产品域名（接口地址固定，无需修改）
+
+    
+    //缓存的key值
+    public static final String USER_SMS_REGISTER = PREFIX.concat("user:sms:register");
+    public static final String USER_SMS_FIND_PASSWORD = PREFIX.concat("user:sms:find:password");
+    public static final String USER_LOGIN = Constants.PREFIX.concat("user.login");
+    public static final String USER_CREATE_PRE_ORDER_LOCK = PREFIX.concat("user:create:pre:order:lock");
+    public static final String USER_ONLINE_PAY_LOCK = PREFIX.concat("user:online:pay:lock");
+    public static final String ONLINE_PARARME = "online_parame";
+    
+    public static final String LOCK = "lock";
+    public static final int FIVE_MINUTE = 60*5;
+    public static final int ONE_DAY = 60*60*24;
+    
+    
+    ///常用的变量值
+    /**vip用户内容*/
+    public static final int VIP_USER = 1;
+    public static final int GENERAL_UER = 0;
+    
+    /**点卡购物的折扣内容*/
+    public static final String CARD_DISCOUNT = "card_discount";
+    /**vip的价格内容*/
+    public static final String VIP_PRICE = "vip_price";
+    /**vip购买商品的折扣内容*/
+    public static final String VIP_DISCOUNT = "vip_discount";
+	/**邮费*/
+    public static final String POSTAGE = "postage";
+    /**话费充值1级邀请人佣金提成 */
+    public static final String PAY_PHONE_BILL_EXTRACT_1 = "pay_phone_bill_extract_1";
+    /**话费充值2级邀请人佣金提成 */
+    public static final String PAY_PHONE_BILL_EXTRACT_2 = "pay_phone_bill_extract_2";
+    /**话费充值3级邀请人佣金提成 */
+    public static final String PAY_PHONE_BILL_EXTRACT_3 = "pay_phone_bill_extract_3";
+    /**商品购买所有级别的佣金提成*/
+    public static final String PAY_PRODUCT_BILL_EXTRACT = "pay_product_bill_extract";
+    /**充值vip 1级邀请人佣金提成 单位元*/
+    public static final String PAY_VIP_BILL_EXTRACT_1 = "pay_vip_bill_extract_1";
+    /**充值vip 2级邀请人佣金提成5元*/
+    public static final String PAY_VIP_BILL_EXTRACT_2 = "pay_vip_bill_extract_2";
+    /**充值vip 3级邀请人佣金提成15元*/
+    public static final String PAY_VIP_BILL_EXTRACT_3 = "pay_vip_bill_extract_3";
+	
+    public static final int PAY_VIP = 1;
+    public static final int PAY_CARD = 2;
+    public static final int PAY_Phone = 3;
+    public static final int PAY_PRODUCT = 4;
+    
+    //payType
+    public static final int CARD_PAY = 1;
+    public static final int ALIPAY = 2;
+    public static final int WEIXIN_PAY = 3;
+    
+    
+    
+    
+}

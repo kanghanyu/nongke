@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.khy.mapper.UserCashMapper">
+  <resultMap id="BaseResultMap" type="com.khy.entity.UserCash">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="uid" jdbcType="VARCHAR" property="uid" />
+    <result column="amount" jdbcType="DECIMAL" property="amount" />
+    <result column="fee_amount" jdbcType="DECIMAL" property="feeAmount" />
+    <result column="real_amount" jdbcType="DECIMAL" property="realAmount" />
+    <result column="bank_name" jdbcType="VARCHAR" property="bankName" />
+    <result column="bank_num" jdbcType="VARCHAR" property="bankNum" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="bank_adress" jdbcType="VARCHAR" property="bankAdress" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="apply_time" jdbcType="TIMESTAMP" property="applyTime" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, uid, amount, fee_amount, real_amount, bank_name, bank_num, user_name, bank_adress, 
+    phone, apply_time, status, update_time
+  </sql>
+  
+  <insert id="insert" parameterType="com.khy.entity.UserCash">
+    insert into t_user_cash
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="uid != null">
+        uid,
+      </if>
+      <if test="amount != null">
+        amount,
+      </if>
+      <if test="feeAmount != null">
+        fee_amount,
+      </if>
+      <if test="realAmount != null">
+        real_amount,
+      </if>
+      <if test="bankName != null">
+        bank_name,
+      </if>
+      <if test="bankNum != null">
+        bank_num,
+      </if>
+      <if test="userName != null">
+        user_name,
+      </if>
+      <if test="bankAdress != null">
+        bank_adress,
+      </if>
+      <if test="phone != null">
+        phone,
+      </if>
+      <if test="applyTime != null">
+        apply_time,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="uid != null">
+        #{uid,jdbcType=VARCHAR},
+      </if>
+      <if test="amount != null">
+        #{amount,jdbcType=DECIMAL},
+      </if>
+      <if test="feeAmount != null">
+        #{feeAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="realAmount != null">
+        #{realAmount,jdbcType=DECIMAL},
+      </if>
+      <if test="bankName != null">
+        #{bankName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankNum != null">
+        #{bankNum,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null">
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="bankAdress != null">
+        #{bankAdress,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="applyTime != null">
+        #{applyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  
+  <select id="listUserCash" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_user_cash
+    where uid = #{uid,jdbcType=BIGINT}
+  </select>
+  
+</mapper>

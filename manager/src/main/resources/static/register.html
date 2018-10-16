@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拓荒农科邀请注册页面</title>
+    <!-- index-->
+    <link href="css/index.css" rel="stylesheet">
+    <!-- font-awesome-->
+    <link href="css/font-awesome.css" rel="stylesheet">
+    <!-- animate-->
+    <link href="css/animate.css" rel="stylesheet">
+    <!--login-->
+    <link href="css/login.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/bootstrapValidator.css"/>
+    <link rel="stylesheet" href="css/jquery-ui.css"/>
+    <!-- 引入js-->
+    <script src="js/jquery.js"></script>
+    <script src="js/myPublic-var.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrapValidator.js"></script>
+    <script src="js/bootbox.js"></script>
+</head>
+<body class="gray-bg" style="background:url(images/background.jpg)no-repeat;">
+    <div class="middle-box text-center loginscreen animated fadeInDown">
+    <div>
+        <h3 style="color:#f0f0f0">欢迎来到拓荒农科</h3>
+        <p style="color:#f0f0f0;height:18px;">快速注册</p>
+            <div class="form-group">
+                <input type="text" class="form-control" id="phone" placeholder="手机号" maxlength="11"/>
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" id="password" placeholder="密码" maxlength="15">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" id="confirmPassword" placeholder="确认密码" maxlength="15">
+            </div>
+            <div class="form-group">
+               <input type="text" id="code" id="code" class="form-control flat" placeholder="手机验证码" style="width:180px;display:inline;"> 
+			   <input type="button" value="获取短信验证码" id="msgButton" style="color: red" > 
+            </div>
+            <button type="button" id="register" class="btn btn-primary block full-width m-b">登&nbsp;&nbsp;&nbsp;&nbsp;陆</button>
+            
+        <p class="mt40"> <small>拓荒农科公司</small> </p>
+        <p > <small>拓荒农科公司一些简介内容</small> </p>
+    </div>
+</div>
+	<script type="text/javascript">
+		$(function(){
+			function getUrlParam(name) {	    
+				var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");	    
+				var url=decodeURI(decodeURI(window.location.search))	    
+				var r = url.substr(1).match(reg);	    
+				if (r != null){
+					return unescape(r[2]);
+				} else{
+					return null;
+				}
+			}
+			
+			$("#msgButton").click(function(){
+				var phone = $("#phone").val()+"";
+				var myreg = /^(((13[0-9]{1})|(14[0-9]{1})|(17[0]{1})|(15[0-3]{1})|(15[5-9]{1})|(18[0-9]{1}))+\d{8})$/;             
+				if(phone == null || phone==''){
+					alert("手机号不能为空")
+					return false;
+				}else if(!myreg.test(phone)){
+					alert("手机号不合法")
+					return false;
+				}
+				var data = {
+						"phone":phone,"type":1
+				}
+				$.ajax({
+					type : "post",
+					data : JSON.stringify(data),
+					url : "/user/getMessageCode",
+					dataType : "json",
+					contentType : 'application/json',
+					success : function(data) {
+						if(null != data && data.retCode == 1000){
+							var code = $('#msgButton');
+							code.attr("disabled", true);
+							code.attr("style","");
+							var time = 60;
+							var set=setInterval(function(){	    
+							  code.val("("+--time+")秒后重新获取");	    
+							}, 1000);
+						  setTimeout(function(){	    
+							  code.attr("disabled",false).val("重新获取验证码");	
+							  code.css("color","red")
+							  clearInterval(set);	    
+							  }, 60000);
+							
+						}else{
+							alert("发送验证码失败稍后再试");
+						}
+					}
+				});
+			})
+			
+			$("#register").click(function(){
+				var phone = $("#phone").val()+"";
+				var password = $("#password").val()+"";
+				var confirmPassword = $("#confirmPassword").val();
+				var code = $("#code").val();
+				if(phone == null || phone==''){
+					alert("手机号不能为空")
+					return false;
+				}
+				if (password == null || password == '') {
+					alert("密码不能为空")
+					return false;
+				}
+				if (confirmPassword == null || confirmPassword == '') {
+					alert("确认密码不能为空")
+					return false;
+				}
+				if (confirmPassword != password) {
+					alert("两次密码不一致")
+					return false;
+				}
+				if (code == null || code == '') {
+					alert("验证码不能为空")
+					return false;
+				}
+				var uid = getUrlParam('uid');
+				var data = {
+						"phone":phone,"password":password,"confirmPassword":confirmPassword,"code":code,"inviterUid":uid
+				}
+				$.ajax({
+					type : "post",
+					data : JSON.stringify(data),
+					url : "/user/register",
+					dataType : "json",
+					contentType : 'application/json',
+					success : function(data) {
+						if(null != data && data.code == 1000){
+							alert("注册成功去官网下载app体验");
+						}else{
+							alert(data.retDesc);
+						}
+					}
+				});
+			})
+		})
+	</script>
+</body>
+</html>

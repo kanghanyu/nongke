@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.khy.mapper.ProductMapper">
+  <sql id="Base_Column_List">
+    product_id, product_name, product_price,init_amount, stock_amount, sales_amount, cover_img, detail, detail_imgs,img,status, create_time
+  </sql>
+  
+  	
+  	<select id="list" parameterType="com.khy.mapper.dto.ProductDTO" resultType="com.khy.entity.Product">
+  		SELECT
+  			<include refid="Base_Column_List"/>
+  		FROM
+  			t_product
+  		<where>
+  			<if test="null != productName and productName != '' ">
+  				product_name like concat('%',#{productName},'%')
+  			</if>
+  		</where>
+  		<if test="null != orderBy and orderBy != '' and null != orderType and orderType != '' ">
+  			ORDER BY ${orderBy} ${orderType}
+  		</if>
+  	</select>
+  	
+  	<select id="findByProductId" parameterType="java.lang.Long" resultType="com.khy.entity.Product">
+  		SELECT
+  			<include refid="Base_Column_List"/>
+  		FROM
+  			t_product
+  		WHERE
+  			product_id = #{productId}
+  		ORDER BY create_time DESC
+  		LIMIT 1;
+  	</select>
+  	
+  	<select id="findProduct" parameterType="java.lang.Long" resultType="com.khy.entity.Product">
+  		SELECT
+  			<include refid="Base_Column_List"/>
+  		FROM
+  			t_product
+  		WHERE
+  			product_id = #{productId}
+  		and 
+  			status = 1
+  		and 
+  			stock_amount > 0
+  		LIMIT 1;
+  	</select>
+  
+  
+  <update id="updateProduct" parameterType="com.khy.entity.Product">
+  	update
+  		t_product
+  	<set>
+  		<if test="null != productName and productName != '' ">
+  			product_name =#{productName},
+  		</if>
+  		<if test="null != coverImg and coverImg != '' ">
+  			cover_img =#{coverImg},
+  		</if>
+  		<if test="null != detailImgs and detailImgs != '' ">
+  			detail_imgs =#{detailImgs},
+  		</if>
+  		<if test="null != productPrice">
+  			product_price=#{productPrice},
+  		</if>
+  		<if test="null != stockAmount">
+  			stock_amount=#{stockAmount},
+  		</if>
+  		<if test="null != status">
+  			status=#{status},
+  		</if>
+  	</set>
+  	where
+  		product_id = #{productId}
+  </update>
+  
+</mapper>
