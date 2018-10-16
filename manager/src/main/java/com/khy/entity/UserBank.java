@@ -29,6 +29,8 @@ public class UserBank implements Serializable {
 	@ApiModelProperty(value="创建时间")
     private Date createTime;
 
+	@ApiModelProperty(value="修改个人信息的时的短信验证码")
+	private String code;
     private Date updateTime;
 
     private static final long serialVersionUID = 1L;
@@ -36,8 +38,15 @@ public class UserBank implements Serializable {
     public Long getId() {
         return id;
     }
+    public String getCode() {
+		return code;
+	}
 
-    public void setId(Long id) {
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
 

@@ -1,7 +1,6 @@
 package com.khy.controller;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,10 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartRequest;
 
-import com.alibaba.fastjson.JSONObject;
 import com.khy.common.JsonResponse;
 import com.khy.entity.Msg;
 import com.khy.entity.User;
@@ -26,10 +23,8 @@ import com.khy.entity.UserBank;
 import com.khy.entity.UserCash;
 import com.khy.mapper.dto.UserAddressListDTO;
 import com.khy.service.UesrService;
-import com.khy.utils.FileUtils;
 import com.khy.utils.SessionHolder;
 import com.khy.utils.SmsUtils;
-import com.khy.utils.Utils;
 import com.khy.utils.ValidateCode;
 
 import io.swagger.annotations.Api;
@@ -52,6 +47,22 @@ public class UserController {
 		JsonResponse<Boolean> jsonResponse = SmsUtils.sendMessage(msg);
 		return jsonResponse;
 	}
+	
+	@RequestMapping(value = "getMessageCodeForUpdate", method = RequestMethod.POST)
+	@ApiOperation(value = "获取手机短信验证码的接口-->修改用户信息的")
+	public JsonResponse<Boolean> getMessageCodeForUpdate(){
+		JsonResponse<Boolean> jsonResponse = new JsonResponse<>();
+		User user = SessionHolder.currentUser();
+		if(null == user){
+			jsonResponse.setRetDesc("请重新登录接口内容");
+			return jsonResponse;
+		}
+		Msg msg = new Msg();
+		msg.setPhone(user.getPhone());
+		msg.setType(3);
+		jsonResponse = SmsUtils.sendMessage(msg);
+		return jsonResponse;
+	}
 
 	@RequestMapping(value = "/login",method = RequestMethod.POST)
 	@ApiOperation(notes = "登录的接口",value = "用户登录的接口内容")
@@ -68,7 +79,7 @@ public class UserController {
 		return jsonResponse;
 	}
 	
-	@RequestMapping("/uploadImg")
+	@RequestMapping(value = "/uploadImg" ,method = RequestMethod.POST )
 	@ApiOperation(value = "上传用户头像的接口")
 	@ResponseBody
 	public JsonResponse<Boolean> uploadImg(MultipartRequest request) {

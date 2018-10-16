@@ -423,6 +423,16 @@ public class UesrServiceImpl implements UesrService {
 			flag = userBankMapper.insert(bank);
 		}else{
 			//更新
+			String key = Constants.USER_SMS_UPDATE_BANKINFO+user.getPhone();
+			String redisCode = cacheService.getString(key);
+			if(StringUtils.isBlank(redisCode)){
+				jsonResponse.setRetDesc("验证码已失效");
+				return jsonResponse;
+			}
+			if(!userBank.getCode().equals(redisCode)){
+				jsonResponse.setRetDesc("验证码错误");
+				return jsonResponse;
+			}
 			BeanUtils.copyProperties(userBank, bank);
 			bank.setUpdateTime(date);
 			flag = userBankMapper.update(bank);

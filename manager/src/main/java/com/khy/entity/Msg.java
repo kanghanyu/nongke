@@ -12,7 +12,7 @@ public class Msg implements Serializable{
 	private String phone;
 	
 	/**1注册 2找回手机密码*/
-	@ApiModelProperty(value="1注册 2找回手机密码")
+	@ApiModelProperty(value="1注册 2找回手机密码3:修改个人信息")
 	private Integer type;
 
 	public String getPhone() {
