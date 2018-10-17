@@ -9,12 +9,11 @@
 		<result column="user_name" jdbcType="VARCHAR" property="userName" />
 		<result column="bank_adress" jdbcType="VARCHAR" property="bankAdress" />
 		<result column="phone" jdbcType="VARCHAR" property="phone" />
-		<result column="alipay" jdbcType="VARCHAR" property="alipay" />
 		<result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
 		<result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
 	</resultMap>
 	<sql id="Base_Column_List">
-		id, uid, bank_name, bank_num, user_name, bank_adress, phone,alipay, create_time,update_time
+		id, uid, bank_name, bank_num, user_name, bank_adress, phone, create_time,update_time
 	</sql>
 
 

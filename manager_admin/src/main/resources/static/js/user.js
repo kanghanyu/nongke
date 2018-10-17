@@ -51,13 +51,13 @@ function addHtml(pageNum){
 					htmlStr += '<td width="5%">'+moneyStr+'</td>';
 					htmlStr += '<td width="5%">'+cardMoney+'</td>';
 					htmlStr += '<td width="5%">'+commission+'</td>';
-					htmlStr += '<td width="10%"><img src='+img+' height="50px" width="50px"></td>';
+					htmlStr += '<td width="10%"><img src="'+img+'" height="50px" width="50px"></td>';
 					htmlStr += '<td width="8%">'+inviterUid+'</td>';
 					htmlStr += '<td width="9%">'+inviterPhone+'</td>';
 					htmlStr += '<td width="7%">'+isManager+'</td>';
 					htmlStr += '<td width="7%">'+isVip+'</td>';
 					htmlStr += '<td width="30%">';
-					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailUserInfo('+item.id+')">'
+					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailUserInfo('+item.uid+')">'
 					htmlStr += '<i class="glyphicon glyphicon-edit">详情</i>'
 					htmlStr += '</button>'
 					htmlStr += '<button class="btn btn-danger btn-sm" onclick="setUserStatus('+item.id+',1)" type="button">'
@@ -114,13 +114,13 @@ function search(){
 					htmlStr += '<td width="5%">'+moneyStr+'</td>';
 					htmlStr += '<td width="5%">'+cardMoney+'</td>';
 					htmlStr += '<td width="5%">'+commission+'</td>';
-					htmlStr += '<td width="10%"><img src='+img+' height="50px" width="50px"></td>';
+					htmlStr += '<td width="10%"><img src="'+img+'" height="50px" width="50px"></td>';
 					htmlStr += '<td width="8%">'+inviterUid+'</td>';
 					htmlStr += '<td width="9%">'+inviterPhone+'</td>';
 					htmlStr += '<td width="7%">'+isManager+'</td>';
 					htmlStr += '<td width="7%">'+isVip+'</td>';
 					htmlStr += '<td width="30%">';
-					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailUserInfo('+item.id+')">'
+					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailUserInfo('+item.uid+')">'
 					htmlStr += '<i class="glyphicon glyphicon-edit">详情</i>'
 					htmlStr += '</button>'
 					htmlStr += '<button class="btn btn-danger btn-sm" onclick="setUserStatus('+item.id+',1)" type="button">'
