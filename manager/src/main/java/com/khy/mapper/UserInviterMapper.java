@@ -9,5 +9,5 @@ public interface UserInviterMapper {
 	
 	int insert(UserInviter userInviter);
 	
-	List<UserInviterDTO>listUserInviterByType(UserInviter userInviter);
+	List<UserInviterDTO> listUserInviterByUid(String uid);
 }

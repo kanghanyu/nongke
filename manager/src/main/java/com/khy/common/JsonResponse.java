@@ -17,6 +17,7 @@ public class JsonResponse<T> implements Serializable {
 	static final String PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String SUCCESS = "10000";
 	public static final String FAIL = "20000";
+	public static final String EXCEPTION = "40000";
 	@ApiModelProperty(value="响应code,10000 标识成功 20000表示失败 40000 标识异常" )
 	private String retCode;
 	@ApiModelProperty(value="响应的描述内容")
@@ -44,7 +45,7 @@ public class JsonResponse<T> implements Serializable {
 	}
 	
 	public static JsonResponse fail(String retDesc ,Object obj){
-		return new JsonResponse(FAIL, retDesc, obj);
+		return new JsonResponse(EXCEPTION, retDesc, obj);
 	}
 	public void success(T rspBody){
 		this.setRetCode(SUCCESS);

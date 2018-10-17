@@ -96,6 +96,8 @@ public class SmsUtils {
 				jsonResponse.setRetDesc("当前账户不存在");
 				return jsonResponse;
 			}
+		}else if(msg.getType() == 3){//修改用户信息的
+			key  = Constants.USER_SMS_UPDATE_BANKINFO+phone;
 		}
 		String code = getSix();
 		String ret = sendSms(msg.getPhone(), code);

@@ -17,6 +17,9 @@
   </sql>
   
   <insert id="insert" parameterType="com.khy.entity.UserAddress">
+   <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
     insert into t_user_address
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="uid != null">

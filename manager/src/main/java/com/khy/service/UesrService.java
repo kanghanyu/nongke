@@ -1,15 +1,21 @@
 package com.khy.service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.web.multipart.MultipartRequest;
 
 import com.khy.common.JsonResponse;
+import com.khy.entity.OnlineParame;
 import com.khy.entity.User;
 import com.khy.entity.UserAddress;
 import com.khy.entity.UserBank;
 import com.khy.entity.UserCash;
+import com.khy.entity.UserInviter;
+import com.khy.mapper.dto.CartMoneyDTO;
 import com.khy.mapper.dto.UserAddressListDTO;
+import com.khy.mapper.dto.UserInviterDTO;
 
 public interface UesrService {
 
@@ -41,7 +47,12 @@ public interface UesrService {
 
 	JsonResponse<List<UserCash>> listUserCash();
 
+	JsonResponse<Map<String, OnlineParame>> getOnlineParame();
 
+	JsonResponse<List<UserInviterDTO>> lisUserInviter(UserInviter userInviter);
 
+	JsonResponse<Boolean> commissionToMoney(BigDecimal commission);
+
+	JsonResponse<Boolean> cardMoneyToUser(CartMoneyDTO dto);
 
 }

@@ -1,7 +1,9 @@
 package com.khy.service.impl;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -158,6 +160,12 @@ public class PayServiceImpl extends BaseService implements PayService {
 			}
 			logger.info("返回去的前置订单信息"+JSON.toJSON(ret));
 			//还可以设置一些额外的参数内容;//TODO 比如用户的余额信息
+			Map<String, Object> extra = new HashMap<>();
+			extra.put("money", userDb.getMoney());
+			extra.put("cardMoney", userDb.getCardMoney());
+			extra.put("isVip", userDb.getIsVip());
+			extra.put("cartDiscount",cartDiscount);
+			jsonResponse.setExtra(extra);
 		} catch (Exception e) {
 			jsonResponse.setRetDesc("生成前置订单异常");
 			e.printStackTrace();
@@ -259,7 +267,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 		}
 		return jsonResponse;
 	}
-
 	
 	@Override
 	public JsonResponse<SubmitOrderResultDTO> payOnline(SubmitOrderDTO dto) {
@@ -267,10 +274,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 		JsonResponse<SubmitOrderResultDTO>jsonResponse = new JsonResponse<>();
 		if(null == dto){
 			jsonResponse.setRetDesc("请求参数不能为空");
-			return jsonResponse;
-		}
-		if(CollectionUtils.isEmpty(dto.getList())){
-			jsonResponse.setRetDesc("购买商品列表为空");
 			return jsonResponse;
 		}
 		if(StringUtils.isBlank(dto.getOrderId())){
@@ -308,6 +311,10 @@ public class PayServiceImpl extends BaseService implements PayService {
 		if(orderInfo.getOrderType().intValue() == Constants.PAY_PRODUCT){
 			json = checkProductOrderInfo(orderInfo,dto,userDb,online);
 		}else if (orderInfo.getOrderType().intValue() == Constants.PAY_VIP){
+			if(dto.getPayType() != Constants.ALIPAY){
+				jsonResponse.setRetDesc("VIP只能通过支付宝购买");
+				return jsonResponse;
+			}
 			json = checkVipOrderInfo(orderInfo,dto,userDb,online);
 		}
 		logger.info("在线支付校验订单内容结果json={}",json.toString());
@@ -326,19 +333,16 @@ public class PayServiceImpl extends BaseService implements PayService {
 			return jsonResponse;
 		}
 		orderInfo.setPayType(dto.getPayType());
-		
 		SubmitOrderResultDTO ret = new SubmitOrderResultDTO();
 		//如果支付方式是点卡
 		if(dto.getPayType() == Constants.CARD_PAY){
 			try {
 				//通过点卡支付  所有的业务内容
 				
+				
 				//包含更新订单状态内容
 				//更新用户的账户信息(点卡/余额)
 				//更新用户的账务流水
-				
-				
-				
 				
 				
 				
@@ -348,24 +352,9 @@ public class PayServiceImpl extends BaseService implements PayService {
 			}
 			
 			
-			
-			
-			
-			
-			
 		}else{
 			//需要在线支付的拼装验签内容;
-			
-
-		
 		}
-		
-		
-		
-		
-		
-		
-		
 		
 		
 		return null;
@@ -397,30 +386,28 @@ public class PayServiceImpl extends BaseService implements PayService {
 			json.put("msg","获取VIP价格异常请您联系管理员稍后再试");
 			return json;
 		}
+		if(new BigDecimal(vipPrice).compareTo(orderInfo.getTotalMoney()) != 0){
+			json.put("msg","VIP价格发生变动请重新添加订单");
+			return json;
+		}
 		BigDecimal totalPay = dto.getTotalPay();
 		if(new BigDecimal(vipPrice).compareTo(totalPay) != 0){
 			json.put("msg","VIP订单价格和应付款金额不一致");
 			return json;
 		}
-		BigDecimal rmb = dto.getRmb()!=null?dto.getRmb():ZERO;
-		BigDecimal cornMoney = dto.getCornMoney() != null ?dto.getCornMoney():ZERO;
-		if(totalPay.compareTo(cornMoney.add(rmb)) != 0){
-			json.put("msg","支付的金额和余额之和不等于应付金额");
+		if(new BigDecimal(vipPrice).compareTo(ZERO) == 0){
+			json.put("msg","VIP价格异常,请联系管理员");
 			return json;
 		}
+		BigDecimal rmb = dto.getRmb() !=null ? dto.getRmb() : ZERO;
+		if(totalPay.compareTo(rmb) != 0){
+			json.put("msg","支付的金额不等于应付金额");
+			return json;
+		}
+		orderInfo.setTotalMoney(totalPay);
+		orderInfo.setTotalPay(totalPay);
 		
-		BigDecimal money = user.getMoney() != null ? user.getMoney():ZERO;
-		if(money.compareTo(cornMoney)< 0){
-			json.put("msg","用户的余额不足");
-			return json;
-		}
-		if(dto.getPayType() == Constants.CARD_PAY){
-			BigDecimal cardMoney = user.getCardMoney() != null ? user.getCardMoney():ZERO;
-			if(cardMoney.compareTo(rmb) < 0){
-				json.put("msg","用户的点卡余额不足");
-				return json;
-			}
-		}
+		
 		json.put("code",1000);
 		json.put("msg","订单校验通过");
 		return json;
@@ -436,6 +423,10 @@ public class PayServiceImpl extends BaseService implements PayService {
 		}
 		if(null == dto.getPayType()){
 			json.put("msg","付款方式不能为空");
+			return json;
+		}
+		if(StringUtils.isAnyBlank(dto.getUserName(),dto.getAddress(),dto.getPhone())){
+			json.put("msg","收件信息不能为空");
 			return json;
 		}
 		if(null == dto.getTotalPay()){
@@ -470,6 +461,9 @@ public class PayServiceImpl extends BaseService implements PayService {
 		}
 		BigDecimal total = new BigDecimal("0.00");
 		BigDecimal payTotal  = new BigDecimal("0.00");
+		BigDecimal discount  = new BigDecimal("1.00");
+		BigDecimal discountMoney  = new BigDecimal("0.00");
+		String discountDetail = "";
 		for (PayProductDetailDTO dto1 : listDb) {
 			boolean flag = true;
 			for (PayProductDetailDTO dto2 : dto.getList()) {
@@ -490,42 +484,70 @@ public class PayServiceImpl extends BaseService implements PayService {
 			total = total.add(new BigDecimal(dto1.getTotal()));
 		}
 		if(null != isVip && isVip == Constants.VIP_USER){//如果是vip用户
+			discountDetail = "vip会员"+vipDiscount+"折    ";
+			discount = discount.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
 			payTotal = total.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
 		}else{
 			payTotal = total;
 		}
 		if(dto.getPayType() == Constants.CARD_PAY){//标识点卡支付
+			discountDetail = discountDetail+"点卡支付"+cardDiscount+"折";
+			discount = discount.multiply(new BigDecimal(cardDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
 			payTotal = payTotal.multiply(new BigDecimal(cardDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
 		}
-		payTotal = payTotal.add(new BigDecimal(postage));//总的应付金额+运费
+		if(payTotal.compareTo(ZERO) == 0){
+			json.put("msg","该订单商品的总的应付款为0");
+			return json;
+		}
+		discountMoney = payTotal;
+		BigDecimal postageMoney = new BigDecimal(postage);
+		payTotal = payTotal.add(postageMoney);//总的应付金额+运费
 		BigDecimal totalPay = dto.getTotalPay();//总的付款金额
+		
 		if(totalPay.compareTo(payTotal) !=0){
-			json.put("msg","付款总额和订单应付金额不一致 付款失败");
+			json.put("msg","付款总额和订单应付金额不一致付款失败");
 			return json;
 		}
 		BigDecimal cornMoney = dto.getCornMoney() != null ?dto.getCornMoney():ZERO;
 		BigDecimal rmb = dto.getRmb() != null ?dto.getRmb():ZERO;
-		if(totalPay.compareTo(cornMoney.add(rmb)) != 0){
-			json.put("msg","支付的金额和余额之和不等于应付金额");
-			return json;
-		}
-		BigDecimal money = user.getMoney() != null ? user.getMoney():ZERO;
-		if(money.compareTo(cornMoney)< 0){
-			json.put("msg","用户的余额不足");
-			return json;
-		}
-		if(dto.getPayType() == Constants.CARD_PAY){
+		if(dto.getPayType() == Constants.CARD_PAY){//点卡付
+			if(rmb.compareTo(totalPay) != 0){
+				json.put("msg","支付的点卡金额不等于应付金额");
+				return json;
+			}
 			BigDecimal cardMoney = user.getCardMoney() != null ? user.getCardMoney():ZERO;
 			if(cardMoney.compareTo(rmb) < 0){
 				json.put("msg","用户的点卡余额不足");
 				return json;
 			}
+		}else if(dto.getPayType() == Constants.ALIPAY){
+			if(totalPay.compareTo(cornMoney.add(rmb)) != 0){
+				json.put("msg","支付的金额和余额之和不等于应付金额");
+				return json;
+			}
+			BigDecimal money = user.getMoney() != null ? user.getMoney():ZERO;
+			if(money.compareTo(cornMoney)< 0){
+				json.put("msg","用户的余额不足");
+				return json;
+			}
 		}
-		
+		orderInfo.setDiscount(discount.floatValue());
+		orderInfo.setDiscountDetail(discountDetail);
+		orderInfo.setDiscountMoney(discountMoney);
+		orderInfo.setTotalMoney(totalPay);
+		orderInfo.setRmb(rmb);
+		orderInfo.setCornMoney(cornMoney);
+		orderInfo.setPostage(postageMoney);
+		orderInfo.setUserName(dto.getUserName());
+		orderInfo.setAddress(dto.getAddress());
+		orderInfo.setPostCode(dto.getPostCode());
+		orderInfo.setPhone(dto.getPhone());
+		orderInfo.setDescription("用户购买的商品内容");
 		json.put("code",1000);
 		json.put("msg","订单校验通过");
 		return json;
 	}
+	
 	private JSONObject checkProduct(List<CartDTO> list, PreOrderResultDTO ret) {
 		JSONObject json = new JSONObject();
 		json.put("code",2000);
@@ -563,12 +585,23 @@ public class PayServiceImpl extends BaseService implements PayService {
 			BeanUtils.copyProperties(productDb, detail);
 			detail.setAmount(amount);
 			detail.setTotal(productDb.getProductPrice().multiply(new BigDecimal(amount)).doubleValue());
-			ret.getList().add(detail);
 			cartMapper.delete(productId, ret.getUid());
 		}
 		if(list.size() == ret.getList().size()){
 			json.put("code",1000);
 		}
 		return json;
+	}
+	public static void main(String[] args) {
+		BigDecimal b1 = new BigDecimal("8.8");
+		BigDecimal b2 = new BigDecimal("8.66");
+		BigDecimal multiply = b1.multiply(b2);
+		System.out.println(multiply.doubleValue());
+		System.out.println(multiply.setScale(2, BigDecimal.ROUND_HALF_UP));
+		
+		BigDecimal divide = b1.multiply(b2).multiply(new BigDecimal(100)).divide(new BigDecimal(100),2, BigDecimal.ROUND_HALF_UP);
+		System.out.println(divide.doubleValue());
+		
+		
 	}
 }

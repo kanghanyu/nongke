@@ -18,15 +18,18 @@ public class Constants {
 
     
     //缓存的key值
-    public static final String USER_SMS_REGISTER = PREFIX.concat("user:sms:register");
-    public static final String USER_SMS_FIND_PASSWORD = PREFIX.concat("user:sms:find:password");
-    public static final String USER_LOGIN = Constants.PREFIX.concat("user.login");
-    public static final String USER_CREATE_PRE_ORDER_LOCK = PREFIX.concat("user:create:pre:order:lock");
-    public static final String USER_ONLINE_PAY_LOCK = PREFIX.concat("user:online:pay:lock");
-    public static final String ONLINE_PARARME = "online_parame";
+    public static final String USER_SMS_REGISTER = PREFIX.concat("user:sms:register:");
+    public static final String USER_SMS_FIND_PASSWORD = PREFIX.concat("user:sms:find:password:");
+    public static final String USER_SMS_UPDATE_BANKINFO = PREFIX.concat("user:sms:update:bankinfo:");
+    public static final String USER_LOGIN = Constants.PREFIX.concat("user.login:");
+    public static final String USER_CREATE_PRE_ORDER_LOCK = PREFIX.concat("user:create:pre:order:lock:");
+    public static final String USER_ONLINE_PAY_LOCK = PREFIX.concat("user:online:pay:lock:");
+    public static final String ONLINE_PARARME = "online_parame:";
+    public static final String LOCK_USER = PREFIX.concat("lock:user:");
     
     public static final String LOCK = "lock";
     public static final int FIVE_MINUTE = 60*5;
+    public static final int TWO_MINUTE = 60*2;
     public static final int ONE_DAY = 60*60*24;
     
     
@@ -69,6 +72,25 @@ public class Constants {
     public static final int WEIXIN_PAY = 3;
     
     
+    //alipay
+	public static final String ALIPAY_APPID = "2018100161603116"; 
+	public static final String PRIVATE_KEY = "1";
+	public static final String METHOD = "alipay.trade.app.pay";
+    public static final String FORMAT_JSON = "json";
+    public static final String CHARSET_UTF8 = "UTF-8";
+	public static final String ALI_PUBLIC_KEY = "";
+	public static final String VERSION = "1.0";
+    public static final String SIGN_TYPE_RSA2 = "RSA2";
+    public static final String NOTIFY_URL = "RSA2";
+
+    //收入/支出
+    public static final int RECORD_INCOME = 1;
+    public static final int RECORD_PAY = 2;
+    
+    public static final int RECORD_MONEY = 1;
+    public static final int RECORD_CARD_MONEY = 2;
+    public static final int RECORD_COMMISSION = 3;
+    public static final int RECORD_RMB = 4;
     
     
 }

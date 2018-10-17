@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -35,17 +36,20 @@ public class LoginInterceptor extends WebMvcConfigurerAdapter{
 	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private static List<String> WHITE_LIST = new ArrayList<String>(){{
 		add("/error");
-		add("/user/login");
-		add("/user/register");
-		add("/user/resetPassword");
-		add("/user/getMessageCode");
-		add("/user/validate/img");
 		add("/swagger-ui.html");
 		add("/swagger-resources.*"); 
 		add("/webjars/springfox-swagger-ui.*"); 
 		add("/v2/api-docs");
 		add("/configuration/ui");
 		add("/configuration/security");
+		add("/user/login");
+		add("/user/register");
+		add("/user/resetPassword");
+		add("/user/getMessageCode");
+		add("/user/getOnlineParame");
+		add("/user/validate/img");
+		add("/product/pageProduct");
+		add("/product/getProduct");
 	}};
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {

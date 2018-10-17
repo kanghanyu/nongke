@@ -1,7 +1,9 @@
 package com.khy.controller;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,11 +19,14 @@ import org.springframework.web.multipart.MultipartRequest;
 
 import com.khy.common.JsonResponse;
 import com.khy.entity.Msg;
+import com.khy.entity.OnlineParame;
 import com.khy.entity.User;
 import com.khy.entity.UserAddress;
 import com.khy.entity.UserBank;
 import com.khy.entity.UserCash;
+import com.khy.entity.UserInviter;
 import com.khy.mapper.dto.UserAddressListDTO;
+import com.khy.mapper.dto.UserInviterDTO;
 import com.khy.service.UesrService;
 import com.khy.utils.SessionHolder;
 import com.khy.utils.SmsUtils;
@@ -141,7 +146,6 @@ public class UserController {
 		return jsonResponse;
 	}
 	
-	
 	@RequestMapping(value = "/saveOrUpdateUserBank",method = RequestMethod.POST)
 	@ApiOperation(value = "新增/修改银行卡信息")
     @ApiImplicitParam(name = "userBank", value = "新增/修改银行卡信息接口参数", required = true, paramType = "body", dataType = "UserBank")
@@ -157,6 +161,13 @@ public class UserController {
 		return jsonResponse;
 	}
 	
+	@RequestMapping(value = "/lisUserInviter",method = RequestMethod.POST)
+	@ApiOperation(value = "获取用户的邀请人列表内容")
+	@ApiImplicitParam(name = "userInviter", value = "获取用户的邀请人列表内容接口参数", required = true, paramType = "body", dataType = "UserInviter")
+	public JsonResponse<List<UserInviterDTO>> lisUserInviter(@RequestBody UserInviter userInviter){
+		JsonResponse<List<UserInviterDTO>> jsonResponse = uesrService.lisUserInviter(userInviter);
+		return jsonResponse;
+	}
 	
 	@RequestMapping(value = "/saveUserCash",method = RequestMethod.POST)
 	@ApiOperation(value = "用户体现接口内容")
@@ -173,7 +184,13 @@ public class UserController {
 		return jsonResponse;
 	}
 	
-
+	@RequestMapping(value = "/getOnlineParame",method = RequestMethod.POST)
+	@ApiOperation(value = "获取用户体现记录内容")
+	public JsonResponse<Map<String,OnlineParame>> getOnlineParame(){
+		JsonResponse<Map<String,OnlineParame>> jsonResponse =uesrService.getOnlineParame();
+		return jsonResponse;
+	}
+	
 	@RequestMapping(value = "/validate/img",method = RequestMethod.POST)
 	public void img(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		 // 设置响应的类型格式为图片格式  

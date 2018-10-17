@@ -7,12 +7,8 @@ import io.swagger.annotations.ApiModelProperty;
 
 public class UserInviter implements Serializable {
     private Long id;
-
+    @ApiModelProperty(value="当前用户的uid")
 	private String uid;
-	
-    @ApiModelProperty(value="1:一级邀请,2:二级邀请 3:三级邀请")
-    private Integer type;
-
     private String invitedUid;
     private Date createTime;
 
@@ -34,14 +30,6 @@ public class UserInviter implements Serializable {
         this.uid = uid;
     }
 
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
     public String getInvitedUid() {
         return invitedUid;
     }
@@ -56,21 +44,5 @@ public class UserInviter implements Serializable {
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getClass().getSimpleName());
-        sb.append(" [");
-        sb.append("Hash = ").append(hashCode());
-        sb.append(", id=").append(id);
-        sb.append(", uid=").append(uid);
-        sb.append(", type=").append(type);
-        sb.append(", invitedUid=").append(invitedUid);
-        sb.append(", createTime=").append(createTime);
-        sb.append(", serialVersionUID=").append(serialVersionUID);
-        sb.append("]");
-        return sb.toString();
     }
 }

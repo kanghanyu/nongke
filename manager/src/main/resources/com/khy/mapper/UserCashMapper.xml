@@ -22,6 +22,9 @@
   </sql>
   
   <insert id="insert" parameterType="com.khy.entity.UserCash">
+   	<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
     insert into t_user_cash
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="uid != null">

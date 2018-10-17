@@ -131,6 +131,15 @@
   		<if test="null != img and img != '' ">
   			img = #{img},
   		</if>
+  		<if test="null != money">
+  			money = #{money},
+  		</if>
+  		<if test="null != cardMoney">
+  			card_money = #{cardMoney},
+  		</if>
+  		<if test="null != commission">
+  			commission = #{commission},
+  		</if>
   	</set> 
 	  	WHERE
 	  		id=#{id}
