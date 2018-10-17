@@ -1,27 +1,17 @@
 package com.khy.controller;
 
-import java.io.UnsupportedEncodingException;
-import java.util.Iterator;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.khy.entity.OnlineParame;
-import com.khy.entity.Product;
-import com.khy.entity.User;
 import com.khy.service.OnlineParameService;
-import com.khy.utils.FileUtils;
-import com.khy.utils.SessionHolder;
-import com.khy.utils.Utils;
 
 @Controller
 @RequestMapping("/online")

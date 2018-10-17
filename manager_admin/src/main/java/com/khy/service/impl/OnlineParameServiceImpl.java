@@ -10,9 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.khy.config.RedisUtils;
 import com.khy.entity.OnlineParame;
 import com.khy.mapper.OnlineParameMapper;
 import com.khy.service.OnlineParameService;
+import com.khy.utils.Constants;
 
 @Service
 @Transactional
@@ -20,6 +22,8 @@ public class OnlineParameServiceImpl implements OnlineParameService {
 
 	@Autowired
 	private OnlineParameMapper onlineParameMapper;
+	@Autowired
+	private RedisUtils RedisUtils;
 
 	@Override
 	public PageInfo<OnlineParame> page(OnlineParame onlineParame) {
@@ -48,6 +52,7 @@ public class OnlineParameServiceImpl implements OnlineParameService {
 		if(flag>0){
 			json.put("code",1000);
 			json.put("msg","保存成功");
+			RedisUtils.KEYS.del(Constants.ONLINE_PARARME);
 		}
 		return json;
 	}
@@ -69,6 +74,7 @@ public class OnlineParameServiceImpl implements OnlineParameService {
 		if(flag>0){
 			json.put("code",1000);
 			json.put("msg","修改成功");
+			RedisUtils.KEYS.del(Constants.ONLINE_PARARME);
 		}
 		return json;
 	}
@@ -85,6 +91,7 @@ public class OnlineParameServiceImpl implements OnlineParameService {
 		if(flag>0){
 			json.put("code",1000);
 			json.put("msg","删除成功");
+			RedisUtils.KEYS.del(Constants.ONLINE_PARARME);
 		}
 		return json;
 	}
