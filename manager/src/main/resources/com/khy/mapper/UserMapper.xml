@@ -95,9 +95,9 @@
 	        #{commission,jdbcType=DECIMAL},
 	      </if>
 	      <if test="img != null">
-	        #{imgUrl,jdbcType=VARCHAR},
+	        #{img,jdbcType=VARCHAR},
 	      </if>
-	      <if test="img != null">
+	      <if test="imgUrl != null">
 	        #{imgUrl,jdbcType=VARCHAR},
 	      </if>
 	      <if test="inviterUid != null">

@@ -66,6 +66,9 @@
   		<if test="null != stockAmount">
   			stock_amount=#{stockAmount},
   		</if>
+  		<if test="null != salesAmount">
+  			sales_amount=#{salesAmount},
+  		</if>
   		<if test="null != status">
   			status=#{status},
   		</if>
@@ -73,5 +76,4 @@
   	where
   		product_id = #{productId}
   </update>
-  
 </mapper>

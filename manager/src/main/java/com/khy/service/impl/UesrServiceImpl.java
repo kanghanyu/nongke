@@ -218,6 +218,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		user.setIsManager(0);
 		user.setIsVip(0);
 		user.setStatus(0);
+		user.setPassword(DigestUtils.md5DigestAsHex(password.getBytes()));
 		int flag = userMapper.insert(user);
 		if(flag >= 1){
 			cacheService.delKey(key);
@@ -506,7 +507,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		//先去查询用户当前有多少可提现的金额-->否则体现失败
 		String uid = user.getUid();
 		JSONObject json = getUserByUidAndLock(uid);
-		if(json.getInteger("code")==1000){
+		if(json.getIntValue("code")==1000){
 			jsonResponse.setRetDesc(json.getString("msg"));
 			return jsonResponse;
 		}
@@ -535,16 +536,8 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 				userDb.setMoney(moneyDb.subtract(amount));
 				userMapper.updateUser(userDb);
 				//记录用户的余额流水内容
-				UserRecord record = new UserRecord();
-				record.setUid(uid);
-				record.setPayType(Constants.RECORD_PAY);
-				record.setType(Constants.RECORD_MONEY);
-				record.setAmount(amount);
-				record.setLastAmount(moneyDb);
-				record.setTargetId(userCash.getId().toString());
-				record.setDescription("体现"+amount+"元");
-				record.setCreateTime(now);
-				save(record);
+				String descr = "体现"+amount+"元";
+				saveUserRecord(uid,Constants.RECORD_PAY,Constants.RECORD_MONEY,amount,moneyDb,userCash.getId().toString(),descr,now);
 				jsonResponse.success(true);
 			}else{
 				jsonResponse.success(false);
@@ -627,7 +620,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		//先去查询用户当前有多少可提现的金额-->否则体现失败
 		String uid = user.getUid();
 		JSONObject json = getUserByUidAndLock(uid);
-		if(json.getInteger("code")==1000){
+		if(json.getIntValue("code")==1000){
 			jsonResponse.setRetDesc(json.getString("msg"));
 			return jsonResponse;
 		}
@@ -648,20 +641,9 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			userDb.setMoney(money.add(commission));
 			userMapper.updateUser(userDb);
 			Date now = new Date();
-			UserRecord record = new UserRecord();
-			record.setUid(uid);
-			record.setPayType(Constants.RECORD_PAY);
-			record.setType(Constants.RECORD_COMMISSION);
-			record.setAmount(commission);
-			record.setLastAmount(commissionDb);
-			record.setDescription("佣金转余额");
-			record.setCreateTime(now);
-			save(record);
-			record.setPayType(Constants.RECORD_INCOME);
-			record.setType(Constants.RECORD_MONEY);
-			record.setAmount(commission);
-			record.setLastAmount(money);
-			save(record);
+			String descr ="佣金转余额";
+			saveUserRecord(uid,Constants.RECORD_PAY,Constants.RECORD_COMMISSION,commission,commissionDb,null,descr,now);
+			saveUserRecord(uid,Constants.RECORD_INCOME,Constants.RECORD_MONEY,commission,money,null,descr,now);
 			jsonResponse.success(true);
 		} catch (Exception e) {
 			logger.error("用户佣金转成余额的接口异常e={}",e.getMessage());
@@ -703,7 +685,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		//先去查询用户当前有多少可提现的金额-->否则体现失败
 		String uid = user.getUid();
 		JSONObject json = getUserByUidAndLock(uid);
-		if(json.getInteger("code")==1000){
+		if(json.getIntValue("code")==1000){
 			jsonResponse.setRetDesc(json.getString("msg"));
 			return jsonResponse;
 		}
@@ -718,7 +700,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			return jsonResponse;
 		}
 		JSONObject jsonUser = getUserByPhoneAndLock(phone);
-		if(json.getInteger("code")==1000){
+		if(json.getIntValue("code")==1000){
 			jsonResponse.setRetDesc(json.getString("msg"));
 			return jsonResponse;
 		}
@@ -735,28 +717,14 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			
 			Date now = new Date();
 			UserRecord record = new UserRecord();
-			record.setUid(uid);
-			record.setPayType(Constants.RECORD_PAY);
-			record.setType(Constants.RECORD_CARD_MONEY);
-			record.setAmount(amount);
-			record.setLastAmount(cardMoney);
-			record.setTargetId(phone);
-			record.setDescription("给"+phone+"账户点卡转账"+amount+":元");
-			record.setCreateTime(now);
-			save(record);
-			
+			String descr = "给"+phone+"账户点卡转账"+amount+":元";
+			saveUserRecord(uid,Constants.RECORD_PAY,Constants.RECORD_CARD_MONEY,amount,cardMoney,phone,descr,now);
+
 			BigDecimal cardMoneyOther = userOther.getCardMoney()!=null ?userOther.getCardMoney():ZERO;
 			userOther.setCardMoney(cardMoneyOther.add(amount));
 			userMapper.updateUser(userOther);
-			record = new UserRecord();
-			record.setUid(userOther.getUid());
-			record.setPayType(Constants.RECORD_INCOME);
-			record.setType(Constants.RECORD_CARD_MONEY);
-			record.setAmount(amount);
-			record.setTargetId(user.getPhone());
-			record.setLastAmount(cardMoneyOther);
-			record.setDescription("账户"+user.getPhone()+"给您点卡转账"+amount+":元");
-			save(record);
+			String description ="给"+phone+"账户点卡转账"+amount+":元";
+			saveUserRecord(userOther.getUid(),Constants.RECORD_INCOME,Constants.RECORD_CARD_MONEY,amount,cardMoneyOther,user.getPhone(),description,now);
 			jsonResponse.success(true);
 		} catch (Exception e) {
 			logger.error("用户点卡转给别人的接口异常e={}",e.getMessage());

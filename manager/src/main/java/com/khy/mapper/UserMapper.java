@@ -1,7 +1,5 @@
 package com.khy.mapper;
 
-import java.util.List;
-
 import com.khy.entity.User;
 
 public interface UserMapper {

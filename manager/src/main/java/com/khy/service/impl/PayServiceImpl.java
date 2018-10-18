@@ -2,10 +2,13 @@ package com.khy.service.impl;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -94,7 +97,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 			ret.setUid(uid);
 			JSONObject json = checkProduct(dto.getList(),ret);
 			logger.info("提交生成前置订单的校验商品内容的结果list={}",JSON.toJSON(dto));
-			if(json.getInteger("code").intValue() == 2000){
+			if(json.getIntValue("code") == 2000){
 				logger.error("提交生成前置订单的校验商品内容的失败ret = "+json.toString());
 				jsonResponse.setRetDesc(json.getString("msg"));
 				return jsonResponse;
@@ -286,7 +289,12 @@ public class PayServiceImpl extends BaseService implements PayService {
 			return jsonResponse;
 		}
 		String uid = user.getUid();
-		User userDb  = userMapper.getUserByUid(uid);
+		JSONObject userRet = getUserByUidAndLock(uid);
+		if(userRet.getIntValue("code") == 1000){
+			jsonResponse.setRetDesc(userRet.getString("msg"));
+			return jsonResponse;
+		}
+		User userDb = userRet.getObject("user",User.class);
 		if(null == userDb){
 			jsonResponse.setRetDesc("当前用户状态异常");
 			return jsonResponse;
@@ -308,8 +316,9 @@ public class PayServiceImpl extends BaseService implements PayService {
 			return jsonResponse;
 		}
 		JSONObject json = null;
+		List<Product>listProduct = new ArrayList<>();
 		if(orderInfo.getOrderType().intValue() == Constants.PAY_PRODUCT){
-			json = checkProductOrderInfo(orderInfo,dto,userDb,online);
+			json = checkProductOrderInfo(orderInfo,dto,userDb,online,listProduct);
 		}else if (orderInfo.getOrderType().intValue() == Constants.PAY_VIP){
 			if(dto.getPayType() != Constants.ALIPAY){
 				jsonResponse.setRetDesc("VIP只能通过支付宝购买");
@@ -319,7 +328,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 		}
 		logger.info("在线支付校验订单内容结果json={}",json.toString());
 		
-		if(json.getInteger("code").intValue() == 2000){
+		if(json.getIntValue("code") == 2000){
 			logger.error("在线支付校验订单内容结果失败json={}",json.toString());
 			jsonResponse.setRetDesc(json.getString("msg"));
 			return jsonResponse;
@@ -335,23 +344,31 @@ public class PayServiceImpl extends BaseService implements PayService {
 		orderInfo.setPayType(dto.getPayType());
 		SubmitOrderResultDTO ret = new SubmitOrderResultDTO();
 		//如果支付方式是点卡
+		Date now = new Date();
 		if(dto.getPayType() == Constants.CARD_PAY){
 			try {
 				//通过点卡支付  所有的业务内容
-				
-				
+				orderInfo.setPayTime(now);
+				orderInfo.setStatus(3);
 				//包含更新订单状态内容
-				//更新用户的账户信息(点卡/余额)
+				orderInfoMapper.update(orderInfo);
+				//更新用户的账户信息(点卡)
+				BigDecimal cardMoney = userDb.getCardMoney() != null ? userDb.getCardMoney():ZERO;
+				userDb.setCardMoney(cardMoney.subtract(dto.getTotalPay()));
+				userMapper.updateUser(userDb);
 				//更新用户的账务流水
-				
-				
-				
+				String descr="购买商品花费"+dto.getTotalPay()+":元";
+				saveUserRecord(uid,Constants.RECORD_PAY,Constants.RECORD_CARD_MONEY,dto.getTotalPay(),cardMoney,orderId,descr,now);
+				//更新商品的数量内容
+				batchUpdateProduct(listProduct);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("用户在线支付订单--->点卡支付异常"+e.getMessage());
+				throw new BusinessException("用户在线支付订单--->点卡支付异常"+e.getMessage());
+			}finally {
+				//清除用户锁和商品锁
+				cacheService.releaseLock(Constants.LOCK_USER+uid);
+				
 			}
-			
-			
 		}else{
 			//需要在线支付的拼装验签内容;
 		}
@@ -360,7 +377,22 @@ public class PayServiceImpl extends BaseService implements PayService {
 		return null;
 	}
 
-	
+	/**
+	 * 批量更新商品的库存和销售数量
+	 * @Description
+	 * @author khy
+	 * @date  2018年10月17日下午6:47:28
+	 * @param listProduct
+	 */
+	private void batchUpdateProduct(List<Product> listProduct) {
+		if(CollectionUtils.isNotEmpty(listProduct)){
+			for (Product product : listProduct) {
+				productMapper.updateProduct(product);	
+			}
+		}
+	}
+
+
 	private JSONObject checkVipOrderInfo(OrderInfo orderInfo, SubmitOrderDTO dto, User user,Map<String, String> online) {
 		JSONObject json = new JSONObject();
 		json.put("code",2000);
@@ -414,7 +446,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 	}
 
 
-	private JSONObject checkProductOrderInfo(OrderInfo orderInfo, SubmitOrderDTO dto, User user, Map<String, String> online) {
+	private JSONObject checkProductOrderInfo(OrderInfo orderInfo, SubmitOrderDTO dto, User user, Map<String, String> online,List<Product>listProduct) {
 		JSONObject json = new JSONObject();
 		json.put("code",2000);
 		if(null == orderInfo || null == dto){
@@ -437,17 +469,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 			json.put("msg","该订单的商品详情不能为空");
 			return json;
 		}
-		Integer isVip = user.getIsVip();
-		String vipDiscount = online.get(Constants.VIP_DISCOUNT);
-		if(StringUtils.isBlank(vipDiscount)){
-			json.put("msg","获取会员折扣异常请您联系管理员稍后再试");
-			return json;
-		}
-		String cardDiscount = online.get(Constants.CARD_DISCOUNT);
-		if(StringUtils.isBlank(cardDiscount)){
-			json.put("msg","获取点卡折扣异常请您联系管理员稍后再试");
-			return json;
-		}
 		String postage = online.get(Constants.POSTAGE);
 		if(StringUtils.isBlank(postage)){
 			json.put("msg","获取运费价格异常请您联系管理员稍后再试");
@@ -464,6 +485,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 		BigDecimal discount  = new BigDecimal("1.00");
 		BigDecimal discountMoney  = new BigDecimal("0.00");
 		String discountDetail = "";
+		Product updateProduct = null;
 		for (PayProductDetailDTO dto1 : listDb) {
 			boolean flag = true;
 			for (PayProductDetailDTO dto2 : dto.getList()) {
@@ -481,16 +503,47 @@ public class PayServiceImpl extends BaseService implements PayService {
 				json.put("msg","商品id为"+dto1.getProductId()+"的信息提交的订单表里面没有该项内容");
 				return json;
 			}
+			Long productId = dto1.getProductId();
+			JSONObject ret = getProductByProductIdAndLock(productId);
+			if(ret.getIntValue("code")==1000){
+				json.put("msg",ret.getString("msg"));
+			}
+			Product findProduct = ret.getObject("product",Product.class);
+			if(findProduct.getStockAmount().compareTo(dto1.getAmount())< 0){
+				json.put("msg","商品id为"+dto1.getProductId()+"的商品不存在/库存不足");
+				return json;
+			}
+			updateProduct = new Product();
+			updateProduct.setProductId(productId);
+			updateProduct.setSalesAmount(findProduct.getSalesAmount()+dto1.getAmount());
+			updateProduct.setStockAmount(findProduct.getStockAmount()-dto1.getAmount());
+			if(updateProduct.getStockAmount().intValue() == 0){
+				updateProduct.setStatus(2);
+			}
+			listProduct.add(updateProduct);
 			total = total.add(new BigDecimal(dto1.getTotal()));
 		}
+		
+		Integer isVip = user.getIsVip();
 		if(null != isVip && isVip == Constants.VIP_USER){//如果是vip用户
+			String vipDiscount = online.get(Constants.VIP_DISCOUNT);
+			if(StringUtils.isBlank(vipDiscount)){
+				json.put("msg","获取会员折扣异常请您联系管理员稍后再试");
+				return json;
+			}
 			discountDetail = "vip会员"+vipDiscount+"折    ";
 			discount = discount.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
 			payTotal = total.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
 		}else{
 			payTotal = total;
 		}
+		
+		String cardDiscount = online.get(Constants.CARD_DISCOUNT);
 		if(dto.getPayType() == Constants.CARD_PAY){//标识点卡支付
+			if(StringUtils.isBlank(cardDiscount)){
+				json.put("msg","获取点卡折扣异常请您联系管理员稍后再试");
+				return json;
+			}
 			discountDetail = discountDetail+"点卡支付"+cardDiscount+"折";
 			discount = discount.multiply(new BigDecimal(cardDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
 			payTotal = payTotal.multiply(new BigDecimal(cardDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);

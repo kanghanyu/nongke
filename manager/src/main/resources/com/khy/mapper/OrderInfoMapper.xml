@@ -208,9 +208,6 @@
       <if test="status != null">
         status = #{status,jdbcType=INTEGER},
       </if>
-      <if test="createTime != null">
-        create_time = #{createTime,jdbcType=TIMESTAMP},
-      </if>
       <if test="payTime != null">
         pay_time = #{payTime,jdbcType=TIMESTAMP},
       </if>

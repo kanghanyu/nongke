@@ -10,7 +10,7 @@ public class Constants {
     public static String accessKeySecret = "00cd2etgTUe6rD4bQXGQv3uZzUJzAA";
     public static String bucketName = "nongke";
     public static final String BASE_URL = "http://nongke.oss-cn-beijing.aliyuncs.com/";
-    public static final String INVITE_USER_REGISTER="http://39.105.127.94:8081/register.html?uid=";
+    public static final String INVITE_USER_REGISTER="http://www.nongke365.com:8081/register.html?uid=";
 
  // 初始化ascClient需要的几个参数
     public static final String product = "Dysmsapi";// 短信API产品名称（短信产品名固定，无需修改）
@@ -26,6 +26,7 @@ public class Constants {
     public static final String USER_ONLINE_PAY_LOCK = PREFIX.concat("user:online:pay:lock:");
     public static final String ONLINE_PARARME = "online_parame:";
     public static final String LOCK_USER = PREFIX.concat("lock:user:");
+    public static final String LOCK_PRODUCT = PREFIX.concat("lock:product:");
     
     public static final String LOCK = "lock";
     public static final int FIVE_MINUTE = 60*5;

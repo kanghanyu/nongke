@@ -3,6 +3,7 @@ package com.khy.mapper;
 import java.util.List;
 
 import com.khy.entity.Product;
+import com.khy.mapper.dto.PayProductDetailDTO;
 import com.khy.mapper.dto.ProductDTO;
 
 public interface ProductMapper {
@@ -14,4 +15,6 @@ public interface ProductMapper {
 	int updateProduct(Product product);
 
 	Product findProduct(Long productId);
+
+	void batchUpdate(List<Product> listProduct);
 }
