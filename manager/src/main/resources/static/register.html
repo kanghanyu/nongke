@@ -37,10 +37,10 @@
                 <input type="password" class="form-control" id="confirmPassword" placeholder="确认密码" maxlength="15">
             </div>
             <div class="form-group">
-               <input type="text" id="code" id="code" class="form-control flat" placeholder="手机验证码" style="width:180px;display:inline;"> 
-			   <input type="button" value="获取短信验证码" id="msgButton" style="color: red" > 
+               <input type="text" id="code" maxlength="6" id="code" class="form-control flat"  placeholder="手机验证码" style="width:160px;display:inline; float:left"> 
+			   <input type="button" value="获取验证码" id="msgButton" style="background-color: #fa0007 ; height: 35px ;width:140px" > 
             </div>
-            <button type="button" id="register" class="btn btn-primary block full-width m-b">登&nbsp;&nbsp;&nbsp;&nbsp;陆</button>
+            <button type="button" id="register" style="background-color: #fa0007" class="btn btn-primary block full-width m-b">注&nbsp;&nbsp;&nbsp;&nbsp;册</button>
             
         <p class="mt40"> <small>拓荒农科公司</small> </p>
         <p > <small>拓荒农科公司一些简介内容</small> </p>
@@ -79,17 +79,17 @@
 					dataType : "json",
 					contentType : 'application/json',
 					success : function(data) {
-						if(null != data && data.retCode == 1000){
+						if(null != data && data.retCode == 10000){
 							var code = $('#msgButton');
 							code.attr("disabled", true);
-							code.attr("style","");
+							code.attr("style","height: 35px ;width:140px");
 							var time = 60;
 							var set=setInterval(function(){	    
 							  code.val("("+--time+")秒后重新获取");	    
 							}, 1000);
 						  setTimeout(function(){	    
 							  code.attr("disabled",false).val("重新获取验证码");	
-							  code.css("color","red")
+							  code.attr("style","background-color: #fa0007 ;height: 35px ;width:140px");
 							  clearInterval(set);	    
 							  }, 60000);
 							
@@ -136,7 +136,7 @@
 					dataType : "json",
 					contentType : 'application/json',
 					success : function(data) {
-						if(null != data && data.code == 1000){
+						if(null != data && data.code == 10000){
 							alert("注册成功去官网下载app体验");
 						}else{
 							alert(data.retDesc);

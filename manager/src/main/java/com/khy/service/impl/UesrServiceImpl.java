@@ -204,7 +204,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		if(StringUtils.isNotBlank(inviterUid)){
 			User inviterUser = userMapper.getUserByUid(inviterUid);
 			if(null != inviterUser){
-				user.setInviterPhone(inviterUser.getInviterPhone());
+				user.setInviterPhone(inviterUser.getPhone());
 				user.setInviterUid(inviterUid);
 			}
 		}
