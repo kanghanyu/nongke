@@ -14,7 +14,6 @@ import com.khy.entity.UserBank;
 import com.khy.entity.UserCash;
 import com.khy.entity.UserInviter;
 import com.khy.mapper.dto.CartMoneyDTO;
-import com.khy.mapper.dto.UserAddressListDTO;
 import com.khy.mapper.dto.UserInviterDTO;
 
 public interface UesrService {
@@ -31,13 +30,9 @@ public interface UesrService {
 
 	JsonResponse<Boolean> resetPassword(User user);
 	
-	JsonResponse<Boolean> saveUserAddress(UserAddress userAddress);
+	JsonResponse<Boolean> saveOrUpdateUserAddress(UserAddress userAddress);
 
-	JsonResponse<UserAddressListDTO> listUserAddress();
-
-	JsonResponse<Boolean> updateUserAddress(UserAddress userAddress);
-
-	JsonResponse<Boolean> deleteUserAddress(Long id);
+	JsonResponse<UserAddress> getUserAddress();
 
 	JsonResponse<Boolean> saveOrUpdateUserBank(UserBank userBank);
 

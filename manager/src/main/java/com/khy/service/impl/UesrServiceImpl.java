@@ -37,7 +37,6 @@ import com.khy.mapper.UserCashMapper;
 import com.khy.mapper.UserInviterMapper;
 import com.khy.mapper.UserMapper;
 import com.khy.mapper.dto.CartMoneyDTO;
-import com.khy.mapper.dto.UserAddressListDTO;
 import com.khy.mapper.dto.UserInviterDTO;
 import com.khy.service.UesrService;
 import com.khy.utils.FileUtils;
@@ -300,7 +299,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 	}
 
 	@Override
-	public JsonResponse<Boolean> saveUserAddress(UserAddress userAddress) {
+	public JsonResponse<Boolean> saveOrUpdateUserAddress(UserAddress userAddress) {
 		logger.info("保存用户的地址请求参数内容user={}"+JSON.toJSONString(userAddress));
 		JsonResponse<Boolean>jsonResponse = new JsonResponse<>();
 		if(null == userAddress){
@@ -313,102 +312,46 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			return jsonResponse;
 		}
 		String uid = user.getUid();
-		userAddress.setUid(uid);
-		userAddress.setCreateTime(new Date());
-		if(null == userAddress.getIsDefault()){
-			userAddress.setIsDefault(0);
-		}else if(userAddress.getIsDefault().intValue()==1){
-			userAddressMapper.batchUpdate(uid);
+		UserAddress userAddressDb = userAddressMapper.getByUid(uid);
+		Date now = new Date();
+		int flag = 0;
+		if(null == userAddressDb){
+			userAddressDb = new UserAddress();
+			BeanUtils.copyProperties(userAddress, userAddressDb);
+			userAddressDb.setUid(uid);
+			userAddressDb.setCreateTime(now);
+			flag = userAddressMapper.insert(userAddress);
+		}else{
+			BeanUtils.copyProperties(userAddress, userAddressDb);
+			userAddressDb.setCreateTime(now);
+			flag = userAddressMapper.update(userAddressDb);
 		}
-		int flag = userAddressMapper.insert(userAddress);
 		if(flag > 0){
 			jsonResponse.success(true);
 		}else{
 			jsonResponse.success(false);
 		}
-		logger.info("保存用户的地址接口响应的参数内容"+JSON.toJSONString(jsonResponse));
+		logger.info("新增/修改的地址接口响应的参数内容"+JSON.toJSONString(jsonResponse));
 		return jsonResponse;
 	}
 
 	@Override
-	public JsonResponse<UserAddressListDTO> listUserAddress() {
-		JsonResponse<UserAddressListDTO> jsonResponse = new JsonResponse<>();
+	public JsonResponse<UserAddress> getUserAddress() {
+		JsonResponse<UserAddress> jsonResponse = new JsonResponse<>();
 		User user = SessionHolder.currentUser();
 		if(null == user){
 			jsonResponse.setRetDesc("请重新登录");
 			return jsonResponse;
 		}
 		String uid = user.getUid();
-		List<UserAddress> list = userAddressMapper.listUserAddress(uid);
-		UserAddressListDTO dto = null;
-		if(CollectionUtils.isNotEmpty(list)){
-			dto = new UserAddressListDTO();
-			dto.setUid(uid);
-			dto.setList(list);
+		
+		UserAddress userAddress = userAddressMapper.getByUid(uid);
+		if(null != userAddress){
+			jsonResponse.success(userAddress);
+		}else{
+			jsonResponse.setRetDesc("您还没有设置收货地址");
 		}
-		jsonResponse.success(dto);
 		logger.info("获取用户的地址接口响应的参数内容"+JSON.toJSONString(jsonResponse));
-		return jsonResponse;
-	}
-
-	@Override
-	public JsonResponse<Boolean> updateUserAddress(UserAddress userAddress) {
-		logger.info("更新用户的地址请求参数内容user={}"+JSON.toJSONString(userAddress));
-		JsonResponse<Boolean>jsonResponse = new JsonResponse<>();
-		if(null == userAddress){
-			jsonResponse.setRetDesc("参数不能为空");
-			return jsonResponse;
-		}
-		User user = SessionHolder.currentUser();
-		if(null == user){
-			jsonResponse.setRetDesc("请重新登录");
-			return jsonResponse;
-		}
-		String uid = user.getUid();
-		userAddress.setUid(uid);
-		
-		UserAddress userAddressDb = userAddressMapper.getById(userAddress.getId());
-		if(null == userAddressDb || null == userAddressDb.getUid() || !userAddressDb.getUid().equals(uid)){
-			jsonResponse.setRetDesc("当前记录不存在");
-			return jsonResponse;
-		}
-		if(null == userAddress.getIsDefault()){
-			userAddress.setIsDefault(0);
-		}else if(userAddress.getIsDefault().intValue()==1){
-			userAddressMapper.batchUpdate(uid);
-		}
-		
-		int flag = userAddressMapper.update(userAddress);
-		if(flag > 0){
-			jsonResponse.success(true);
-		}else{
-			jsonResponse.success(false);
-		}
-		logger.info("更新用户的地址接口响应的参数内容"+JSON.toJSONString(jsonResponse));
-		return jsonResponse;
-	}
-
-	@Override
-	public JsonResponse<Boolean> deleteUserAddress(Long id) {
-		JsonResponse<Boolean>jsonResponse = new JsonResponse<>();
-		User user = SessionHolder.currentUser();
-		if(null == user){
-			jsonResponse.setRetDesc("请重新登录");
-			return jsonResponse;
-		}
-		String uid = user.getUid();
-		UserAddress userAddress = userAddressMapper.getById(id);
-		if(null == userAddress || null == userAddress.getUid() || !userAddress.getUid().equals(uid)){
-			jsonResponse.setRetDesc("当前记录不存在");
-			return jsonResponse;
-		}
-		int flag = userAddressMapper.deleteUserAddress(id);
-		if(flag > 0){
-			jsonResponse.success(true);
-		}else{
-			jsonResponse.success(false);
-		}
-		logger.info("删除用户的地址接口响应的参数内容"+JSON.toJSONString(jsonResponse));
 		return jsonResponse;
 	}
 

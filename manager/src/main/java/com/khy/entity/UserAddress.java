@@ -23,9 +23,6 @@ public class UserAddress implements Serializable {
 	@ApiModelProperty(value="邮编")
     private String postCode;
 
-	@ApiModelProperty(value="1:表示默认地址")
-    private Integer isDefault;
-
 	@ApiModelProperty(value="创建时间")
     private Date createTime;
     private static final long serialVersionUID = 1L;
@@ -33,14 +30,6 @@ public class UserAddress implements Serializable {
     public Long getId() {
         return id;
     }
-
-    public Integer getIsDefault() {
-		return isDefault;
-	}
-
-	public void setIsDefault(Integer isDefault) {
-		this.isDefault = isDefault;
-	}
 
 	public Date getCreateTime() {
 		return createTime;

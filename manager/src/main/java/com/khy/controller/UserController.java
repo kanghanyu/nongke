@@ -1,7 +1,6 @@
 package com.khy.controller;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +24,6 @@ import com.khy.entity.UserAddress;
 import com.khy.entity.UserBank;
 import com.khy.entity.UserCash;
 import com.khy.entity.UserInviter;
-import com.khy.mapper.dto.UserAddressListDTO;
 import com.khy.mapper.dto.UserInviterDTO;
 import com.khy.service.UesrService;
 import com.khy.utils.SessionHolder;
@@ -115,34 +113,18 @@ public class UserController {
 		return jsonResponse;
 	}
 	
-	@RequestMapping(value = "/saveUserAddress",method = RequestMethod.POST)
-	@ApiOperation(value = "新增收货地址")
-    @ApiImplicitParam(name = "userAddress", value = "新增用户收货地址接口参数", required = true, paramType = "body", dataType = "UserAddress")
-	public JsonResponse<Boolean> saveUserAddress(@RequestBody UserAddress userAddress){
-		JsonResponse<Boolean> jsonResponse = uesrService.saveUserAddress(userAddress);
+	@RequestMapping(value = "/saveOrUpdateUserAddress",method = RequestMethod.POST)
+	@ApiOperation(value = "新增/修改收货地址")
+    @ApiImplicitParam(name = "userAddress", value = "新增/修改收货地址接口参数", required = true, paramType = "body", dataType = "UserAddress")
+	public JsonResponse<Boolean> saveOrUpdateUserAddress(@RequestBody UserAddress userAddress){
+		JsonResponse<Boolean> jsonResponse = uesrService.saveOrUpdateUserAddress(userAddress);
 		return jsonResponse;
 	}
 	
-	@RequestMapping(value = "/updateUserAddress",method = RequestMethod.POST)
-	@ApiOperation(value = "修改某一条收货地址")
-	@ApiImplicitParam(name = "userAddress", value = "修改用户收货地址接口参数", required = true, paramType = "body", dataType = "UserAddress")
-	public JsonResponse<Boolean> updateUserAddress(@RequestBody UserAddress userAddress){
-		JsonResponse<Boolean> jsonResponse = uesrService.updateUserAddress(userAddress);
-		return jsonResponse;
-	}
-	
-	@RequestMapping(value = "/deleteUserAddress",method = RequestMethod.POST)
-	@ApiOperation(value = "删除当前用户某一条收货地址")
-	@ApiImplicitParam(paramType = "query", dataType = "Long", name = "id", value = "主键id标识", required = true)
-	public JsonResponse<Boolean> deleteUserAddress(Long id){
-		JsonResponse<Boolean> jsonResponse = uesrService.deleteUserAddress(id);
-		return jsonResponse;
-	}
-	
-	@RequestMapping(value = "/listUserAddress",method = RequestMethod.POST)
-	@ApiOperation(value = "获取当前用户所有收货地址")
-	public JsonResponse<UserAddressListDTO> listUserAddress(){
-		JsonResponse<UserAddressListDTO> jsonResponse = uesrService.listUserAddress();
+	@RequestMapping(value = "/getUserAddress",method = RequestMethod.POST)
+	@ApiOperation(value = "获取当前用户的收货地址")
+	public JsonResponse<UserAddress> listUserAddress(){
+		JsonResponse<UserAddress> jsonResponse = uesrService.getUserAddress();
 		return jsonResponse;
 	}
 	

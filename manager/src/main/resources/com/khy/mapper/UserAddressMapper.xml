@@ -8,12 +8,11 @@
     <result column="address" jdbcType="VARCHAR" property="address" />
     <result column="user_name" jdbcType="VARCHAR" property="userName" />
     <result column="post_code" jdbcType="VARCHAR" property="postCode" />
-    <result column="is_default" jdbcType="INTEGER" property="isDefault" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
   
   <sql id="Base_Column_List">
-    id, uid, phone, address, user_name, post_code, is_default, create_time
+    id, uid, phone, address, user_name, post_code, create_time
   </sql>
   
   <insert id="insert" parameterType="com.khy.entity.UserAddress">
@@ -37,9 +36,6 @@
       <if test="postCode != null">
         post_code,
       </if>
-      <if test="isDefault != null">
-        is_default,
-      </if>
       <if test="createTime != null">
         create_time,
       </if>
@@ -60,38 +56,11 @@
       <if test="postCode != null">
         #{postCode,jdbcType=VARCHAR},
       </if>
-      <if test="isDefault != null">
-        #{isDefault,jdbcType=INTEGER},
-      </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
       </if>
     </trim>
   </insert>
-  
-  <update id="batchUpdate" parameterType="java.lang.String">
-	  	update
-	  		t_user_address
-	  	set	
-	  		is_default = 0
-	  	where
-	  		uid = #{uid}
-  </update>
-
-  <select id="listUserAddress" parameterType="java.lang.String" resultType="com.khy.entity.UserAddress">
-  	select
-  		phone,
-  		address,
-  		user_name,
-  		post_code,
-  		is_default,
-  		create_time
-  	from
-  		t_user_address
-  	where
-  		uid =#{uid}
-  	order by is_default desc ,create_time desc
-  </select>
   
   
   <update id="update" parameterType="com.khy.entity.UserAddress">
@@ -109,27 +78,19 @@
       <if test="postCode != null">
         post_code = #{postCode,jdbcType=VARCHAR},
       </if>
-      <if test="isDefault != null">
-        is_default = #{isDefault,jdbcType=INTEGER},
-      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
   
   
-  <select id="getById" parameterType="java.lang.Long" resultType="com.khy.entity.UserAddress">
+  <select id="getByUid" parameterType="java.lang.String" resultType="com.khy.entity.UserAddress">
   	select
   		<include refid="Base_Column_List" />
   	from
   		t_user_address
   	where 
-  		id = #{id}
+  		uid = #{uid}
+  	limit 1
   </select>
-  
-  <delete id="deleteUserAddress" parameterType="java.lang.Long">
-    delete from 
-    	t_user_address
-    where id = #{id,jdbcType=BIGINT}
-  </delete>
   
 </mapper>
