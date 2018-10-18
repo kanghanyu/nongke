@@ -10,7 +10,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +38,7 @@ import com.khy.mapper.UserMapper;
 import com.khy.mapper.dto.CartMoneyDTO;
 import com.khy.mapper.dto.UserInviterDTO;
 import com.khy.service.UesrService;
+import com.khy.utils.BeanUtils;
 import com.khy.utils.FileUtils;
 import com.khy.utils.SessionHolder;
 import com.khy.utils.Utils;
@@ -320,7 +320,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			BeanUtils.copyProperties(userAddress, userAddressDb);
 			userAddressDb.setUid(uid);
 			userAddressDb.setCreateTime(now);
-			flag = userAddressMapper.insert(userAddress);
+			flag = userAddressMapper.insert(userAddressDb);
 		}else{
 			BeanUtils.copyProperties(userAddress, userAddressDb);
 			userAddressDb.setCreateTime(now);
@@ -364,6 +364,16 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			jsonResponse.setRetDesc("请重新登录");
 			return jsonResponse;
 		}
+		String key = Constants.USER_SMS_UPDATE_BANKINFO+user.getPhone();
+		String redisCode = cacheService.getString(key);
+		if(StringUtils.isBlank(redisCode)){
+			jsonResponse.setRetDesc("验证码已失效");
+			return jsonResponse;
+		}
+		if(!userBank.getCode().equals(redisCode)){
+			jsonResponse.setRetDesc("验证码错误");
+			return jsonResponse;
+		}
 		String uid = user.getUid();
 		UserBank bank = userBankMapper.getByUid(uid);
 		int flag = 0;
@@ -378,21 +388,12 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			flag = userBankMapper.insert(bank);
 		}else{
 			//更新
-			String key = Constants.USER_SMS_UPDATE_BANKINFO+user.getPhone();
-			String redisCode = cacheService.getString(key);
-			if(StringUtils.isBlank(redisCode)){
-				jsonResponse.setRetDesc("验证码已失效");
-				return jsonResponse;
-			}
-			if(!userBank.getCode().equals(redisCode)){
-				jsonResponse.setRetDesc("验证码错误");
-				return jsonResponse;
-			}
 			BeanUtils.copyProperties(userBank, bank);
 			bank.setUpdateTime(date);
 			flag = userBankMapper.update(bank);
 		}
 		if(flag > 0){
+			cacheService.delKey(key);
 			jsonResponse.success(true);
 		}else{
 			jsonResponse.success(false);

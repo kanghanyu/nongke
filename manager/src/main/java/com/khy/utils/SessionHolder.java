@@ -17,7 +17,7 @@ public class SessionHolder {
 
   public static User currentUser() {
 //	  User user = new User();
-//	  user.setUid("10101611");
+//	  user.setUid("10180943");
 //	  user.setPhone("15501271310");
 //	  return user;
     return userStore.get ();

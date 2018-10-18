@@ -15,7 +15,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +39,7 @@ import com.khy.mapper.dto.PreOrderResultDTO;
 import com.khy.mapper.dto.SubmitOrderDTO;
 import com.khy.mapper.dto.SubmitOrderResultDTO;
 import com.khy.service.PayService;
+import com.khy.utils.BeanUtils;
 import com.khy.utils.SessionHolder;
 import com.khy.utils.Utils;
 @Transactional

@@ -2,7 +2,7 @@ package com.khy.mapper.dto;
 
 import java.math.BigDecimal;
 
-import org.springframework.beans.BeanUtils;
+import com.khy.utils.BeanUtils;
 
 import io.swagger.annotations.ApiModelProperty;
 
