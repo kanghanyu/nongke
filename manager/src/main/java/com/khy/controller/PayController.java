@@ -44,19 +44,27 @@ public class PayController{
 		return jsonResponse;
 	}
 	
-	///还有话费充值和点卡购买的
-	@RequestMapping(value = "/payOnline",method = RequestMethod.POST)
-	@ApiOperation(value = "在线支付订单内容")
-    @ApiImplicitParam(name = "dto", value = "购买商品提交订单信息", required = true, paramType = "body", dataType = "SubmitOrderDTO")
+	@RequestMapping(value = "/payForProductOnline",method = RequestMethod.POST)
+	@ApiOperation(value = "在线购物支付订单内容")
+    @ApiImplicitParam(name = "dto", value = "在线购物支付订单内容", required = true, paramType = "body", dataType = "SubmitOrderDTO")
 	public JsonResponse<SubmitOrderResultDTO> payOnline(@RequestBody SubmitOrderDTO dto){
-		JsonResponse<SubmitOrderResultDTO> jsonResponse = payService.payOnline(dto);
+		JsonResponse<SubmitOrderResultDTO> jsonResponse = payService.payForProductOnline(dto);
+		return jsonResponse;
+	}
+	
+	
+	@RequestMapping(value = "/async/notify",method = RequestMethod.POST)
+	@ApiOperation(value = "在线购物支付订单内容")
+	@ApiImplicitParam(name = "dto", value = "在线购物支付订单内容", required = true, paramType = "body", dataType = "SubmitOrderDTO")
+	public JsonResponse<SubmitOrderResultDTO> async(@RequestBody SubmitOrderDTO dto){
+		JsonResponse<SubmitOrderResultDTO> jsonResponse = payService.payForProductOnline(dto);
 		return jsonResponse;
 	}
 	
 	
 	
 	
-	///////////////////////////////////////////
+	//////////////////////////放回UserController中去/////////////////
 	
 	@RequestMapping(value = "/commissionToMoney",method = RequestMethod.POST)
 	@ApiOperation(value = "佣金转成余额")

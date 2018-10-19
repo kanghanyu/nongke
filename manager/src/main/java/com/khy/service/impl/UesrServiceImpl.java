@@ -644,11 +644,11 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			return jsonResponse;
 		}
 		JSONObject jsonUser = getUserByPhoneAndLock(phone);
-		if(json.getIntValue("code")==1000){
-			jsonResponse.setRetDesc(json.getString("msg"));
+		if(jsonUser.getIntValue("code")==1000){
+			jsonResponse.setRetDesc(jsonUser.getString("msg"));
 			return jsonResponse;
 		}
-		User userOther = json.getObject("user", User.class);
+		User userOther = jsonUser.getObject("user", User.class);
 		if(null == userOther){
 			jsonResponse.setRetDesc("对方账户不存在");
 			return jsonResponse;

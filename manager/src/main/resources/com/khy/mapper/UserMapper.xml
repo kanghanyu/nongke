@@ -143,6 +143,7 @@
   	</set> 
 	  	WHERE
 	  		id=#{id}
+	  	and uid = #{uid}
   </update>
   
  </mapper>

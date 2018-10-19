@@ -16,7 +16,10 @@ public class SubmitOrderDTO implements Serializable {
 
 	@ApiModelProperty(value="1:标识点卡 2标识 支付宝 3标识微信")
 	private Integer payType;
-
+	
+	@ApiModelProperty(value="1:标识vip 购买 2:标识点卡购买 3:标识话费充值 4:标识购物内容 ")
+	private Integer orderType;
+	
 	@ApiModelProperty(value="uid")
 	private String uid;
 	
@@ -68,6 +71,14 @@ public class SubmitOrderDTO implements Serializable {
 
 	public void setUid(String uid) {
 		this.uid = uid;
+	}
+
+	public Integer getOrderType() {
+		return orderType;
+	}
+
+	public void setOrderType(Integer orderType) {
+		this.orderType = orderType;
 	}
 
 	public BigDecimal getTotalPay() {
@@ -141,5 +152,20 @@ public class SubmitOrderDTO implements Serializable {
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
-
+//	1:标识vip 购买 2:标识点卡购买 3:标识话费充值 4:标识购物内容
+	public String getSubject(){
+		String ret = "商品消费";
+		if(null != orderType){
+			if(orderType == 1){
+				ret = "升级成为VIP";
+			}else if(orderType == 2){
+				ret = "购买点卡";
+			}else if(orderType == 3){
+				ret = "手机话费充值";
+			}else if(orderType == 4){
+				ret = "购买商城物品";
+			}
+		}
+		return ret;
+	}
 }

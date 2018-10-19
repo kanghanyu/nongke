@@ -62,6 +62,7 @@ public class Constants {
     /**充值vip 3级邀请人佣金提成15元*/
     public static final String PAY_VIP_BILL_EXTRACT_3 = "pay_vip_bill_extract_3";
 	
+    //orderType
     public static final int PAY_VIP = 1;
     public static final int PAY_CARD = 2;
     public static final int PAY_Phone = 3;
@@ -73,16 +74,6 @@ public class Constants {
     public static final int WEIXIN_PAY = 3;
     
     
-    //alipay
-	public static final String ALIPAY_APPID = "2018100161603116"; 
-	public static final String PRIVATE_KEY = "1";
-	public static final String METHOD = "alipay.trade.app.pay";
-    public static final String FORMAT_JSON = "json";
-    public static final String CHARSET_UTF8 = "UTF-8";
-	public static final String ALI_PUBLIC_KEY = "";
-	public static final String VERSION = "1.0";
-    public static final String SIGN_TYPE_RSA2 = "RSA2";
-    public static final String NOTIFY_URL = "RSA2";
 
     //收入/支出
     public static final int RECORD_INCOME = 1;
@@ -94,4 +85,18 @@ public class Constants {
     public static final int RECORD_RMB = 4;
     
     
+    
+    
+    
+    //alipay
+    public static final String ALIPAY_APPID = "2018100161603116"; 
+    public static final String PRIVATE_KEY = "1";
+    public static final String METHOD = "alipay.trade.app.pay";
+    public static final String FORMAT_JSON = "json";
+    public static final String CHARSET_UTF8 = "UTF-8";
+    public static final String ALI_PUBLIC_KEY = "";
+    public static final String VERSION = "1.0";
+    public static final String SIGN_TYPE_RSA2 = "RSA2";
+    public static final String NOTIFY_URL = "http://www.nongke365.com:8081/pay/async/notify";
+    public static final String TIMEOUT_EXPRESS = "5m";
 }

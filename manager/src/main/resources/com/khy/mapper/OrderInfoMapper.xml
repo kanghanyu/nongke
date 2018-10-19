@@ -149,7 +149,6 @@
   		<include refid="Base_Column_List"/>
   	from
   		t_order_info
-  		
   	<where>
   		<if test="null != uid and uid != '' ">
 	  		uid =#{uid}
@@ -164,11 +163,6 @@
 	  		and order_type =#{orderType}
   		</if>
   	</where>
-  	where
-  		
-  	and
-  		order_type=#{orderType}
-  	and status = 1
   </select>
   
   

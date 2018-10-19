@@ -12,6 +12,6 @@ public interface PayService {
 
 	JsonResponse<PreOrderResultDTO> buyVip();
 
-	JsonResponse<SubmitOrderResultDTO> payOnline(SubmitOrderDTO dto);
+	JsonResponse<SubmitOrderResultDTO> payForProductOnline(SubmitOrderDTO dto);
 
 }

@@ -1,5 +1,6 @@
 package com.khy.utils;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -8,10 +9,10 @@ import org.springframework.util.DigestUtils;
 public class Utils {
 
 //	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private static SimpleDateFormat sdf = new SimpleDateFormat("MMddHHmm");
-	private static SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMddHHmmss");
-	private static SimpleDateFormat orderSdf = new SimpleDateFormat("yyMMddHHmmss");
-
+	private final static SimpleDateFormat sdf = new SimpleDateFormat("MMddHHmm");
+	private final static SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMddHHmmss");
+	private final static SimpleDateFormat orderSdf = new SimpleDateFormat("yyMMddHHmmss");
+	public final static String STANDARD_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 	public static String getUid(){
 		String uid = sdf.format(new Date());
 		return uid;
@@ -32,6 +33,14 @@ public class Utils {
 	public static String getFileName(){
 		String fileName = sdf1.format(new Date());
 		return fileName;
+	}
+	
+	public static String formatDateTime(Date date) {
+		if (date == null){
+			return null;
+		}
+		DateFormat format = new SimpleDateFormat(STANDARD_DATETIME_PATTERN);
+		return format.format(date);
 	}
 	
 }
