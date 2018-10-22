@@ -28,6 +28,8 @@ public class Constants {
     public static final String LOCK_USER = PREFIX.concat("lock:user:");
     public static final String LOCK_PRODUCT = PREFIX.concat("lock:product:");
     
+    public static final String USER_PHONE_RECHARGE= PREFIX.concat("user:phone:recharge");
+    
     public static final String LOCK = "lock";
     public static final int FIVE_MINUTE = 60*5;
     public static final int TWO_MINUTE = 60*2;
@@ -43,10 +45,16 @@ public class Constants {
     public static final String CARD_DISCOUNT = "card_discount";
     /**vip的价格内容*/
     public static final String VIP_PRICE = "vip_price";
+    public static final String VIP_PRICE_FORMONEY = "vip_price_formoney";
+    
     /**vip购买商品的折扣内容*/
     public static final String VIP_DISCOUNT = "vip_discount";
 	/**邮费*/
     public static final String POSTAGE = "postage";
+    
+    /**vip会员每个自然月话费充值的额度*/
+    public static final String VIP_PHONE_RECHARGE = "vip_phone_recharge";
+    
     /**话费充值1级邀请人佣金提成 */
     public static final String PAY_PHONE_BILL_EXTRACT_1 = "pay_phone_bill_extract_1";
     /**话费充值2级邀请人佣金提成 */
@@ -62,19 +70,24 @@ public class Constants {
     /**充值vip 3级邀请人佣金提成15元*/
     public static final String PAY_VIP_BILL_EXTRACT_3 = "pay_vip_bill_extract_3";
 	
+    
+    
+    
     //orderType
     public static final int PAY_VIP = 1;
     public static final int PAY_CARD = 2;
-    public static final int PAY_Phone = 3;
+    public static final int PAY_PHONE = 3;
     public static final int PAY_PRODUCT = 4;
     
     //payType
     public static final int CARD_PAY = 1;
-    public static final int ALIPAY = 2;
-    public static final int WEIXIN_PAY = 3;
+    public static final int MONEY_PAY = 2;
+    public static final int ALIPAY = 3;
+    public static final int WEIXIN_PAY = 4;
     
     
 
+    //流水内容
     //收入/支出
     public static final int RECORD_INCOME = 1;
     public static final int RECORD_PAY = 2;
