@@ -31,6 +31,9 @@
 				<ul class="treeview-menu">
 					<li><a href="${pageContext.request.contextPath }/online/toOnline?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>在线参数管理</a></li>
 				</ul>
+				<ul class="treeview-menu">
+					<li><a href="${pageContext.request.contextPath }/message/toMessageList?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>公告管理</a></li>
+				</ul>
 			</li>
 		</ul>
 	</section>

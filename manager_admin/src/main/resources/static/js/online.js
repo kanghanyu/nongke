@@ -87,7 +87,7 @@ function search(){
 				     htmlStr += '<td width="40%">'+content+'</td>';
 				     htmlStr += '<td width="7%">'+item.createTimeStr+'</td>';
 					 htmlStr += '<td width="30%">';
-						 htmlStr += '<button class="btn btn-primary btn-sm" onclick="detail(\''+item.title+'\')"> <i class="glyphicon glyphicon-edit">修改</i></button> '
+						 htmlStr += '<button class="btn btn-primary btn-sm" onclick="detail(\''+item.title+'\')"> <i class="glyphicon glyphicon-edit">详情</i></button> '
 					 htmlStr += '<button class="btn btn-primary btn-sm" onclick="edit(\''+item.title+'\')"> <i class="glyphicon glyphicon-edit">修改</i></button> '
 					 htmlStr += '<button class="btn btn-info btn-sm" onclick="del(\''+item.title+'\')">删除</button>'
 					 htmlStr += '</td>';

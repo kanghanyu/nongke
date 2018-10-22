@@ -217,6 +217,7 @@ function detailUserInfo(uid){
 					$("#moneyD").val(user.money);
 					$("#cardMoneyD").val(user.cardMoney);
 					$("#commissionD").val(user.commission);
+					$("#imgUrlD").val(user.imgUrl);
 					if(null != user.isManager){
 						$("#isManagerD").val(user.isManager==0?"普通用户":"管理员");
 					}
@@ -229,13 +230,19 @@ function detailUserInfo(uid){
 				}
 				
 				var bank = data.bank;
-
 				if(null != bank){
 					$("#bankNameD").val(bank.bankName);
 					$("#bankNumD").val(bank.bankNum);
 					$("#userNameD").val(bank.userName);
 					$("#phoneD1").val(bank.phone);
 					$("#bankAdressD").val(bank.bankAdress);
+				}
+				var address = data.address;
+				if(null != address){
+					$("#userNameDD").val(address.userName);
+					$("#phoneDD").val(address.phone);
+					$("#postCodeDD").val(address.postCode);
+					$("#addressDD").val(address.address);
 				}
 			}
 		}

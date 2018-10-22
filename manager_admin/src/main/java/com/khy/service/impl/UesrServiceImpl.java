@@ -16,7 +16,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.khy.config.RedisUtils;
 import com.khy.entity.User;
+import com.khy.entity.UserAddress;
 import com.khy.entity.UserBank;
+import com.khy.mapper.UserAddressMapper;
 import com.khy.mapper.UserBankMapper;
 import com.khy.mapper.UserMapper;
 import com.khy.service.UesrService;
@@ -31,6 +33,8 @@ public class UesrServiceImpl implements UesrService {
 	private UserMapper userMapper;
 	@Autowired
 	private UserBankMapper userBankMapper;
+	@Autowired
+	private UserAddressMapper userAddressMapper;
 	
 	@Autowired
 	private RedisUtils RedisUtils;
@@ -194,8 +198,10 @@ public class UesrServiceImpl implements UesrService {
 		}
 		
 		UserBank bank = userBankMapper.getByUid(uid);
+		UserAddress address = userAddressMapper.getByUid(uid);
 		json.put("user", userDb);
 		json.put("bank", bank);
+		json.put("address", address);
 		json.put("code",1000);
 		return json.toJSONString();
 	}

@@ -128,7 +128,7 @@
 					<div>
 						<h3 align="center">基础信息</h3>
 						<div class='form-group'>
-							<label for='url'>uid：</label> 
+							<label for='url'>uid：&nbsp;</label> 
 								<input type="text" id="uidD" class="form-control flat"  disabled="disabled" style="width:160px;display:inline;"> 
 							<label for='url'>手机号：</label> 
 								<input type="text" id="phoneD" class="form-control flat" disabled="disabled" style="width:160px;display:inline;"> 
@@ -156,6 +156,10 @@
 							<label for='url'>用户类型：</label> 
 								<input type="text" id="isVipD" class="form-control flat"  disabled="disabled" style="width:100px;display:inline;"> 
 						</div>
+						<div class='form-group'>
+							<label for='url'>邀请二维码地址：</label> 
+								<input type="text" id="imgUrlD" class="form-control flat"  disabled="disabled" style="width:300px;display:inline;"> 
+						</div>
 					</div>
 					<div>
 						<h3 align="center">银行卡信息</h3>
@@ -174,6 +178,23 @@
 						<div class='form-group'>
 							<label for='url'>开户地址：</label> 
 								<input type="text" id="bankAdressD" class="form-control flat"  disabled="disabled" style="width:320px;display:inline;"> 
+						</div>
+					</div>
+					<div>
+						<h3 align="center">收货地址信息</h3>
+						<div class='form-group'>
+							<label for='url'>收件人姓名：</label> 
+								<input type="text" id="userNameDD" class="form-control flat"  disabled="disabled" style="width:160px;display:inline;"> 
+							<label for='url'>收件人电话：</label> 
+								<input type="text" id="phoneDD" class="form-control flat" disabled="disabled" style="width:160px;display:inline;"> 
+						</div>
+						<div class='form-group'>
+							<label for='url'>邮编：</label> 
+								<input type="text" id="postCodeDD" class="form-control flat"  disabled="disabled" style="width:180px;display:inline;"> 
+						</div>
+						<div class='form-group'>
+							<label for='url'>收货地址：</label> 
+								<input type="text" id="addressDD" class="form-control flat"  disabled="disabled" style="width:320px;display:inline;"> 
 						</div>
 					</div>
 					<div class='modal-footer'>

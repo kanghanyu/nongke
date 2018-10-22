@@ -184,7 +184,7 @@
 						</div>
 						<div class='form-group'>
 							<label for='driver'>在线参数内容:</label> 
-							<textarea rows="5" id="contentD"  cols=27 disabled="disabled"  onpropertychange= "this.style.posHeight=this.scrollHeight "></textarea>
+							<textarea rows="5" id="contentD"  cols=80 disabled="disabled"  onpropertychange= "this.style.posHeight=this.scrollHeight "></textarea>
 						</div>
 						<div class='modal-footer'>
 							<button type='button' class='btn btn-default'
