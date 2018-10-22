@@ -105,9 +105,9 @@ public class SmsUtils {
 			cacheService.setString(key, code, Constants.FIVE_MINUTE);
 			jsonResponse.success(true);
 			jsonResponse.setRetDesc("获取短信验证码成功");
-		}else{
-			logger.error("获取短信验证码失败原{"+ret+"}");
-			jsonResponse.setRetDesc("获取短信验证码失败原{"+ret+"}");
+		}else if(StringUtils.isNotBlank(ret)&&ret.equals("isv.MOBILE_COUNT_OVER_LIMIT")){
+			logger.error("获取短信发送过于频繁");
+			jsonResponse.setRetDesc("获取短信发送过于频繁");
 		}
 		return jsonResponse;
 	}
