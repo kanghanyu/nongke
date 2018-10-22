@@ -35,7 +35,13 @@
 		tui.create_time,
 		tu.phone,
 		tu.commission,
-		tu.img
+		tu.img,
+		CASE 
+		WHEN(tu.is_vip=0) 
+		THEN '普通会员' 
+		WHEN(tu.is_vip=1) 
+		THEN "VIP会员" 
+		END AS isVip		
 	FROM
 		t_user_inviter tui,
 		t_user tu

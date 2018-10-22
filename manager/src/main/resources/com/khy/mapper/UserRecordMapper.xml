@@ -16,6 +16,25 @@
     id, uid, pay_type, type, amount, last_amount, target_id, description, create_time
   </sql>
   
+  <select id="listUserRecord" parameterType="com.khy.entity.UserRecord" resultType="com.khy.entity.UserRecord">
+  	select 
+  		<include refid="Base_Column_List"/>
+  	from
+  		t_user_record
+  	<where>
+  		target_id is null
+  		<if test="null != uid and uid != '' ">
+  			and	uid = #{uid}
+  		</if>
+  		<if test="null != pay_type">
+  			and pay_type = #{payType}
+  		</if>
+  		<if test="null != type">
+  			and type = #{type}
+  		</if>
+  	</where>
+  	order by create_time desc
+  </select>
   
   <insert id="insert" parameterType="com.khy.entity.UserRecord">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">

@@ -37,17 +37,17 @@ public class SubmitOrderResultDTO implements Serializable {
 	
 	@ApiModelProperty(value="该订单的邮费")
 	private BigDecimal postage;
+	 
+	@ApiModelProperty(value="支付的sign内容")
+	private String paySign;
 	
-	@ApiModelProperty(value="该订单的收件人")
-	private String userName;
-
-	@ApiModelProperty(value="该订单的收件人地址")
-	private String address;
-
-	@ApiModelProperty(value="该订单的收件人邮编")
-	private String postCode;
-
-	@ApiModelProperty(value="该订单的收件人手机号")
-	private String phone;
-
+	//如果是点卡支付/或者余额全部抵扣支付成功的1:如果需要调用sdk支付的
+	private Integer flag;
+	
+	public String getPaySign() {
+		return paySign;
+	}
+	public void setPaySign(String paySign) {
+		this.paySign = paySign;
+	}
 }

@@ -24,6 +24,9 @@ public class UserInviterDTO implements Serializable {
     @ApiModelProperty(value="被邀请人的佣金")
 	private BigDecimal commission;
     
+    @ApiModelProperty(value="会员信息")
+    private String isVip;
+    
     private Date createTime;
 
     private static final long serialVersionUID = 1L;

@@ -33,7 +33,7 @@ public class OrderInfo implements Serializable {
 	
 	private String producDetail;
 
-	/** 1未付款,2 付款中 3付款完成 4待收货   */
+	/** 1未付款,2 付款中 3付款完成 4:失败   */
 	private Integer status;
 
 	private Date createTime;

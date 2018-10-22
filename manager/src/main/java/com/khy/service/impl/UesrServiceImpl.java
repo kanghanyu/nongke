@@ -1,6 +1,7 @@
 package com.khy.service.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -35,8 +36,10 @@ import com.khy.mapper.UserBankMapper;
 import com.khy.mapper.UserCashMapper;
 import com.khy.mapper.UserInviterMapper;
 import com.khy.mapper.UserMapper;
+import com.khy.mapper.UserRecordMapper;
 import com.khy.mapper.dto.CartMoneyDTO;
 import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserRecordDTO;
 import com.khy.service.UesrService;
 import com.khy.utils.BeanUtils;
 import com.khy.utils.FileUtils;
@@ -59,6 +62,8 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 	private CacheService cacheService;
 	@Autowired
 	private UserInviterMapper userInviterMapper;
+	@Autowired
+	private UserRecordMapper userRecordMapper;
 	@Override
 	public JsonResponse<User> login(User user) {
 		JsonResponse<User> jsonResponse = new JsonResponse<>();
@@ -624,7 +629,6 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		if(phone.equals(user.getPhone())){
 			jsonResponse.setRetDesc("点卡转账不能转给自己");
 			return jsonResponse;
-			
 		}
 		//先去查询用户当前有多少可提现的金额-->否则体现失败
 		String uid = user.getUid();
@@ -660,10 +664,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			userMapper.updateUser(userDb);
 			
 			Date now = new Date();
-			UserRecord record = new UserRecord();
-			String descr = "给"+phone+"账户点卡转账"+amount+":元";
-			saveUserRecord(uid,Constants.RECORD_PAY,Constants.RECORD_CARD_MONEY,amount,cardMoney,phone,descr,now);
-
+			saveUserRecord(uid,Constants.RECORD_PAY,Constants.RECORD_CARD_MONEY,amount,cardMoney,null,phone,now);
 			BigDecimal cardMoneyOther = userOther.getCardMoney()!=null ?userOther.getCardMoney():ZERO;
 			userOther.setCardMoney(cardMoneyOther.add(amount));
 			userMapper.updateUser(userOther);
@@ -677,6 +678,42 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			cacheService.releaseLock(Constants.LOCK_USER+uid);
 			cacheService.releaseLock(Constants.LOCK_USER+userOther.getUid());
 		}
+		return jsonResponse;
+	}
+
+	@Override
+	public JsonResponse<List<UserRecordDTO>> listUserRecord(Integer type) {
+		JsonResponse<List<UserRecordDTO>> jsonResponse = new JsonResponse<>();
+		if(null == type){
+			jsonResponse.setRetDesc("请求参数不为空");
+			return jsonResponse;
+		}
+		User user = SessionHolder.currentUser();
+		if(null == user){
+			jsonResponse.setRetDesc("请重新登录");
+			return jsonResponse;
+		}
+		String uid = user.getUid();
+		UserRecord record = new UserRecord();
+		if(type == 2 || type == 3){
+			record.setUid(uid);
+			record.setType(type);
+			if(type == 2){
+				record.setPayType(2);
+			}
+		}else{
+			record.setType(-1);
+		}		
+		List<UserRecord> list = userRecordMapper.listUserRecord(record);
+		List<UserRecordDTO> dtos = new ArrayList<>();
+		if(CollectionUtils.isNotEmpty(list)){
+			for (UserRecord source : list) {
+				UserRecordDTO target = new UserRecordDTO();
+				BeanUtils.copyProperties(source, target);
+				dtos.add(target);
+			}
+		}
+		jsonResponse.success(dtos);
 		return jsonResponse;
 	}
 

@@ -1,5 +1,6 @@
 package com.khy.service.impl;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -330,89 +331,90 @@ public class PayServiceImpl extends BaseService implements PayService {
 		Integer payType = dto.getPayType();
 		orderInfo.setPayType(payType);
 		SubmitOrderResultDTO ret = new SubmitOrderResultDTO();
-		//如果支付方式是点卡
+		BeanUtils.copyProperties(orderInfo, ret);
 		Date now = new Date();
 		List<Long> productIds = null;
 		if(CollectionUtils.isNotEmpty(listProduct)){
 			productIds = listProduct.stream().map(Product::getProductId).collect(Collectors.toList());
 		}
-		if(payType == Constants.CARD_PAY){
-			try {
-				//包含更新订单状态内容
+		try {
+			if (payType == Constants.CARD_PAY) {
+				// 包含更新订单状态内容
 				orderInfo.setPayTime(now);
 				orderInfo.setStatus(3);
 				orderInfoMapper.update(orderInfo);
-				
-				//更新用户的账户信息(点卡)
-				BigDecimal cardMoney = userDb.getCardMoney() != null ? userDb.getCardMoney():ZERO;
+
+				// 更新用户的账户信息(点卡)
+				BigDecimal cardMoney = userDb.getCardMoney() != null ? userDb.getCardMoney() : ZERO;
 				userDb.setCardMoney(cardMoney.subtract(dto.getTotalPay()));
 				userMapper.updateUser(userDb);
-				
-				//更新用户的账务流水
-				String descr="购买商品花费点卡"+dto.getTotalPay()+":元";
-				saveUserRecord(uid,Constants.RECORD_PAY,Constants.RECORD_CARD_MONEY,dto.getTotalPay(),cardMoney,orderId,descr,now);
-				
-				//更新商品的数量内容
+
+				// 更新用户的账务流水
+				String descr = "购买商品花费点卡" + dto.getTotalPay() + ":元";
+				saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_CARD_MONEY, dto.getTotalPay(), cardMoney,
+						orderId, descr, now);
+				// 更新商品的数量内容
 				batchUpdateProduct(listProduct);
-			} catch (Exception e) {
-				logger.error("用户在线支付订单--->点卡支付异常"+e.getMessage());
-				throw new BusinessException("用户在线支付订单--->点卡支付异常"+e.getMessage());
-			}finally {
-				//清除用户锁和商品锁
-				cacheService.releaseLock(Constants.LOCK_USER+uid);
-				//批量清除商品锁内容
-				if(CollectionUtils.isNotEmpty(productIds)){
-					for (Long productId : productIds) {
-						cacheService.releaseLock(Constants.LOCK_PRODUCT+productId);
-					}
-				}
-			}
-		}else if(payType == Constants.ALIPAY){
-			if(dto.getRmb().compareTo(ZERO) == 0 && dto.getCornMoney().compareTo(dto.getTotalPay()) == 0){
-				try {
-					//说明全部是余额抵扣的和点卡购买的路径一样
-					//包含更新订单状态内容
+			} else if (payType == Constants.ALIPAY) {
+				if (dto.getRmb().compareTo(ZERO) == 0 && dto.getCornMoney().compareTo(dto.getTotalPay()) == 0) {
+					// 说明全部是余额抵扣的和点卡购买的路径一样
+					// 包含更新订单状态内容
 					orderInfo.setPayTime(now);
 					orderInfo.setStatus(3);
 					orderInfoMapper.update(orderInfo);
-					
-					//更新用户的账户信息(余额)
-					BigDecimal money = userDb.getMoney() != userDb.getMoney() ? userDb.getMoney():ZERO;
+
+					// 更新用户的账户信息(余额)
+					BigDecimal money = userDb.getMoney() != userDb.getMoney() ? userDb.getMoney() : ZERO;
 					userDb.setMoney(money.subtract(dto.getCornMoney()));
 					userMapper.updateUser(userDb);
-					
-					//更新用户的账务流水
-					String descr="购买商品花费余额"+dto.getTotalPay()+":元";
-					saveUserRecord(uid,Constants.RECORD_PAY,Constants.RECORD_MONEY,dto.getCornMoney(),money,orderId,descr,now);
-					//更新商品的数量内容
+
+					// 更新用户的账务流水
+					String descr = "购买商品花费余额" + dto.getTotalPay() + ":元";
+					saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, dto.getCornMoney(), money,
+							orderId, descr, now);
+					// 更新商品的数量内容
 					batchUpdateProduct(listProduct);
-				} catch (Exception e) {
-					logger.error("用户在线支付商品订单--->余额支付异常"+e.getMessage());
-					throw new BusinessException("用户在线支付商品订单--->余额支付异常"+e.getMessage());
-				}finally {
-					//清除用户锁和商品锁
-					cacheService.releaseLock(Constants.LOCK_USER+uid);
-					//批量清除商品锁内容
-					if(CollectionUtils.isNotEmpty(productIds)){
-						for (Long productId : productIds) {
-							cacheService.releaseLock(Constants.LOCK_PRODUCT+productId);
-						}
+				} else {
+					// 需要在线支付的拼装验签内容;
+					// 根据支付方式选择验签的内容;
+					logger.info("在线支付拼装网关验签内容的接口orderInfo{}", JSON.toJSON(orderInfo));
+					if (payType == Constants.ALIPAY) {
+						PayUtil.setProductSign(ret, dto);
+					} else if (payType == Constants.WEIXIN_PAY) {
+						// 这个是微信的签名内容
+
 					}
-				}
-			}else{
-				//需要在线支付的拼装验签内容;
-				//根据支付方式选择验签的内容;
-				logger.info("在线支付拼装网关验签内容的接口orderInfo{}",JSON.toJSON(orderInfo));
-				if(payType == Constants.ALIPAY){
-//					PayUtil.setSign(ret,dto,userDb,orderInfo);
 					
-				}else if(payType == Constants.WEIXIN_PAY){
+					orderInfo.setPayTime(now);
+					orderInfo.setStatus(2);// 标识付款中-->如果真的付款完成回调中再次更新订单内容
+					orderInfoMapper.update(orderInfo);
+
+					// 扣除余额抵扣的部分内容;
+					//如果不是回调里面余额抵扣和商品数量不应该去更新使用-->都放到回调里面去支付
+					// 更新用户的账户信息(余额)
+//					BigDecimal money = userDb.getMoney() != userDb.getMoney() ? userDb.getMoney() : ZERO;
+//					userDb.setMoney(money.subtract(dto.getCornMoney()));
+//					userMapper.updateUser(userDb);
+//
+//					// 更新用户的账务流水
+//					String descr = "购买商品花费余额" + dto.getTotalPay() + ":元";
+//					saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, dto.getCornMoney(), money,
+//							orderId, descr, now);
 					
 				}
-				
-				
-				
-				//扣除余额抵扣的部分内容;
+			}
+		} catch (Exception e) {
+			logger.error("用户在线支付商品订单--->接口异常" + e.getMessage());
+			throw new BusinessException("用户在线支付商品订单--->接口异常" + e.getMessage());
+		} finally {
+			cacheService.releaseLock(key);
+			// 清除用户锁和商品锁
+			cacheService.releaseLock(Constants.LOCK_USER + uid);
+			// 批量清除商品锁内容
+			if (CollectionUtils.isNotEmpty(productIds)) {
+				for (Long productId : productIds) {
+					cacheService.releaseLock(Constants.LOCK_PRODUCT + productId);
+				}
 			}
 		}
 		return null;

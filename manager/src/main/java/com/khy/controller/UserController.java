@@ -1,6 +1,7 @@
 package com.khy.controller;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +25,9 @@ import com.khy.entity.UserAddress;
 import com.khy.entity.UserBank;
 import com.khy.entity.UserCash;
 import com.khy.entity.UserInviter;
+import com.khy.mapper.dto.CartMoneyDTO;
 import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserRecordDTO;
 import com.khy.service.UesrService;
 import com.khy.utils.SessionHolder;
 import com.khy.utils.SmsUtils;
@@ -172,6 +175,32 @@ public class UserController {
 		JsonResponse<Map<String,OnlineParame>> jsonResponse =uesrService.getOnlineParame();
 		return jsonResponse;
 	}
+	
+	
+	@RequestMapping(value = "/commissionToMoney", method = RequestMethod.POST)
+	@ApiOperation(value = "佣金转成余额")
+	@ApiImplicitParam(paramType = "query", dataType = "BigDecimal", name = "amount", value = "佣金转成余额的数量", required = true)
+	public JsonResponse<Boolean> commissionToMoney(BigDecimal amount) {
+		JsonResponse<Boolean> jsonResponse = uesrService.commissionToMoney(amount);
+		return jsonResponse;
+	}
+
+	@RequestMapping(value = "/cardMoneyToUser", method = RequestMethod.POST)
+	@ApiOperation(value = "点卡转账给别人")
+	@ApiImplicitParam(name = "dto", value = "点卡转账给别人", required = true, paramType = "body", dataType = "CartMoneyDTO")
+	public JsonResponse<Boolean> cardMoneyToUser(@RequestBody CartMoneyDTO dto) {
+		JsonResponse<Boolean> jsonResponse = uesrService.cardMoneyToUser(dto);
+		return jsonResponse;
+	}
+
+	@RequestMapping(value = "/listUserRecord", method = RequestMethod.POST)
+	@ApiOperation(value = "获取用户佣金记录/转账记录内容")
+	@ApiImplicitParam(paramType = "query", dataType = "Integer", name = "type", value = "2:表示转账记录/3标识佣金记录", required = true)
+	public JsonResponse<List<UserRecordDTO>> listUserRecord(Integer type) {
+		JsonResponse<List<UserRecordDTO>> jsonResponse = uesrService.listUserRecord(type);
+		return jsonResponse;
+	}
+	
 	
 	@RequestMapping(value = "/validate/img",method = RequestMethod.POST)
 	public void img(HttpServletRequest request, HttpServletResponse response) throws IOException {

@@ -15,6 +15,7 @@ import com.khy.entity.UserCash;
 import com.khy.entity.UserInviter;
 import com.khy.mapper.dto.CartMoneyDTO;
 import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserRecordDTO;
 
 public interface UesrService {
 
@@ -49,5 +50,7 @@ public interface UesrService {
 	JsonResponse<Boolean> commissionToMoney(BigDecimal commission);
 
 	JsonResponse<Boolean> cardMoneyToUser(CartMoneyDTO dto);
+
+	JsonResponse<List<UserRecordDTO>> listUserRecord(Integer type);
 
 }

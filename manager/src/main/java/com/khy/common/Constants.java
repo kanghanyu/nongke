@@ -79,6 +79,7 @@ public class Constants {
     public static final int RECORD_INCOME = 1;
     public static final int RECORD_PAY = 2;
     
+    //余额.点卡.佣金.人民币
     public static final int RECORD_MONEY = 1;
     public static final int RECORD_CARD_MONEY = 2;
     public static final int RECORD_COMMISSION = 3;
@@ -86,11 +87,9 @@ public class Constants {
     
     
     
-    
-    
     //alipay
-    public static final String ALIPAY_APPID = "2018100161603116"; 
-    public static final String PRIVATE_KEY = "1";
+    public static final String ALIPAY_APPID = "2018071960718514"; 
+    public static final String PRIVATE_KEY = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCATYHeBHKiq07iELm6viJazjVRdIqZrxtlWkTUupxsM+4NtFfHP7zRHk2E28zjRgx+fG5bTX/Hp6VT/oeh7UpmJ5uYRpNfsfFjP5mmcR66T2D4fkRjXJWpa70Aj0TGJ4CJhFhbKhud+WEeUK/H+hiRTOTKJ+w6L4LtxLmeHbRhGwxBY61zwlnqjccjpaVY+5SsYoaHP0mucyuXhiRpgctwV5QVvzEr3GnBsGXAkf1lfuVWu2HxWuJ9YZBUT93zgVGPxLE42g1a6bkocSGvaxsfO5zKj8/qGOd4CEZ6i3LEYOc2ZaNskmGqmafty5Bki5xcPlG8y9bcBTfbU96b7MR3AgMBAAECggEAW39quvsvCWTjt4I4Ab3wYBOooHNdGGZxQiFS7uY6AUwzW2CeLMD+lZ9npvTdM8NTy6xPQxuMocSjubfN4COKKDnc04aZOOh8fcvwdms7f6B2RiA+AyIWtSDZQ5nocOvg1bElFbZ8xXb/1I+0HAf2F0Df9G7uHzycwZXGzcTfS1PnsAhwWSu1vm6DQlN+8AC9bhXBlIwmOX3VgW1wSbDmpOAj5w5/qKGFsBfKbm1XoY8xwWJCEI1UoGWPwIac384kLpnrjlvvGw90z6nhwmtqpial/ODZT9hhJVm3pMQVKHStEZMc1jvDmTfFvuy+8DPUJC1gYdQ+SypXHsIlXOaJkQKBgQDexoTo+yU51kryJmrREK/CANk5FnpSa8ylEvn4GXYmAeyKc57uRl0kwRyqiKhKTqFgNgApGOYms+WlSusYQPeG1GeKmmvsstHBk93AQF+NJmthCuKFIVh/QrfEzeytzExGnymcEfysuGNwQasJXuzPQeGyVKLudJWLo9YLh/VT+QKBgQCTcA6WzV8kkeQCBpYuS9YdjalIIC5Xq8ukB2S1pfbA27HRjdMJQw5/dE7EafNiJkIHmQb3pfwJaNxTeC3BJLMJibAwMom51toDJIOZBHKE/Fx2CA/743eDWb2GQZvLqkCUv0NEhjLRVJckLJ1Wak7pGoz5gSUAcT+UPctq5BgX7wKBgCBGlMUIdek+Qdd5d2pYx44M/2vE9O3yDlEwQaUPU03IY5PfknwlF6OWkuemKvOxFrJQwI8zu0yKLdBX3V3DM9mF9oZfPxmpArjQCoWrDezuTwpdQFpXbXHqoaNSzmKTwc1NjAK/nGMNx+JgsT4HUbnpaqCioIR5wZzcnMtI5GNJAoGAWUpB655RAorANWHbzgnrkFZcsOucZUgLujkoCsKKH95tYGWt6ywLObEsitNHrKdS0dshVxXU/7XbyUk9HH2nWB1k8KuKsVunCMQyVpdU66kSLgFP/NKTbJ8KoqZVPhDLr8ntaTCE0jWSmzvRxaX4SD/mJKzLxerQAG00JnYhCU0CgYA9uesU//XD5/H18ScI8oaOdB0iQycZB1oI0BB9l6VsnScdG9IyECWJuO+IEY9p43UtahIq/DImjh4yPJR1NzD2DLPrty0TodV3wOL6ubc3obIOJclpAsaulmDLB9/804nLKBwDiiu+jgT9oxfILTVjFCijoNjt32BtfQJq63qyUQ==";
     public static final String METHOD = "alipay.trade.app.pay";
     public static final String FORMAT_JSON = "json";
     public static final String CHARSET_UTF8 = "UTF-8";
