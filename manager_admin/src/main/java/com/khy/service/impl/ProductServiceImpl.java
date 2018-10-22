@@ -36,7 +36,6 @@ public class ProductServiceImpl implements ProductService {
 		json.put("code",2000);
 		product.setStatus(0);
 		product.setSalesAmount(0);
-		product.setStockAmount(product.getInitAmount()!= null?product.getInitAmount():0);
 		product.setCreateTime(new Date());
 		int flag = productMapper.insert(product);
 		if(flag>0){

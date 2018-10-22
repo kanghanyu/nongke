@@ -26,8 +26,6 @@ public class Product extends BaseEntity implements Serializable {
 	
 	private String productPriceStr;
 
-	/**初始化商品的总数量*/
-	private Integer initAmount;
 	/**
 	 * 库存数量
 	 */
@@ -65,14 +63,6 @@ public class Product extends BaseEntity implements Serializable {
 	 * 详情的图片多张,隔开
 	 */
 	private String detailImgs;
-
-	public Integer getInitAmount() {
-		return initAmount;
-	}
-
-	public void setInitAmount(Integer initAmount) {
-		this.initAmount = initAmount;
-	}
 
 	public Long getProductId() {
 		return productId;

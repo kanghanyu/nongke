@@ -46,11 +46,10 @@ $(function(){
     					 var status = item.status==0?"未上架":(item.status==1?"已上架":"已下架");
     					 htmlStr += "<tr>";
     					 htmlStr += '<td width="5%">'+item.productId+'</td>';
-    					 htmlStr += '<td width="8%">'+productName+'</td>';
+    					 htmlStr += '<td width="10%">'+productName+'</td>';
     					 htmlStr += '<td width="9%">'+productPriceStr+'</td>';
-    					 htmlStr += '<td width="5%">'+item.stockAmount+'</td>';
-    				     htmlStr += '<td width="8%">'+item.salesAmount+'</td>';
-    				     htmlStr += '<td width="8%">'+item.initAmount+'</td>';
+    					 htmlStr += '<td width="10%">'+item.stockAmount+'</td>';
+    				     htmlStr += '<td width="10%">'+item.salesAmount+'</td>';
     				     htmlStr += '<td width="9%">'+detail+'</td>';
     				     htmlStr += '<td width="7%">'+status+'</td>';
     				     htmlStr += '<td width="7%">'+item.createTimeStr+'</td>';
@@ -103,11 +102,10 @@ function search(){
 					 var status = item.status==0?"未上架":(item.status==1?"已上架":"已下架");
 					 htmlStr += "<tr>";
 					 htmlStr += '<td width="5%">'+item.productId+'</td>';
-					 htmlStr += '<td width="8%">'+productName+'</td>';
+					 htmlStr += '<td width="10%">'+productName+'</td>';
 					 htmlStr += '<td width="9%">'+productPriceStr+'</td>';
-					 htmlStr += '<td width="5%">'+item.stockAmount+'</td>';
-				     htmlStr += '<td width="8%">'+item.salesAmount+'</td>';
-				     htmlStr += '<td width="8%">'+item.initAmount+'</td>';
+					 htmlStr += '<td width="10%">'+item.stockAmount+'</td>';
+				     htmlStr += '<td width="10%">'+item.salesAmount+'</td>';
 				     htmlStr += '<td width="9%">'+detail+'</td>';
 				     htmlStr += '<td width="7%">'+status+'</td>';
 				     htmlStr += '<td width="7%">'+item.createTimeStr+'</td>';
@@ -272,7 +270,7 @@ function detailImgsUpload(num){
 function saveProduct(){
 	var productName = $("#productNameSave").val();
 	var productPrice = $("#productPrice").val();
-	var initAmount = $("#initAmount").val();
+	var stockAmount = $("#stockAmount").val();
 	var coverImg ="";
 	$(".coverImgSrc").each(function (index,item){
 		var ret = $(item).attr("src");
@@ -301,7 +299,7 @@ function saveProduct(){
 		alert("商品价格不能为空");
 		return false;
 	}
-	if(null == initAmount || initAmount == ''){
+	if(null == stockAmount || stockAmount == ''){
 		alert("商品库存不能为空");
 		return false;
 	}
@@ -323,7 +321,7 @@ function saveProduct(){
 	}
 	
 	var data = {
-			"productName":productName,"productPrice":productPrice,"initAmount":initAmount,"coverImg":coverImg,"detailImgs":detailImgs,"detail":detail,"img":img
+			"productName":productName,"productPrice":productPrice,"stockAmount":stockAmount,"coverImg":coverImg,"detailImgs":detailImgs,"detail":detail,"img":img
 	}
 	$.ajax({
 		type : "post",
@@ -360,7 +358,6 @@ function detailProduct(id) {
 				$("#productPriceDetail").val(data.product.productPrice);
 				$("#stockAmountDetail").val(data.product.stockAmount);
 				$("#salesAmountDetail").val(data.product.salesAmount);
-				$("#initAmountDetail").val(data.product.initAmount);
 				$("#detailDetail").val(data.product.detail);
 				$("#imgDetail").attr("src",data.product.img)
 				$('#detailProduct').modal('toggle');
@@ -456,7 +453,6 @@ function editProduct(productId) {
 				$("#productPriceE").val(data.product.productPrice);
 				$("#stockAmountE").val(data.product.stockAmount);
 				$("#salesAmountE").val(data.product.salesAmount);
-				$("#initAmountE").val(data.product.initAmount);
 				$("#detailE").val(data.product.detail);
 				$("#imgE").attr("src",data.product.img);
 				var coverImg = data.product.coverImg;
@@ -600,7 +596,7 @@ function editDbProduct(){
 	var productId = $("#productIdE").val();
 	var productName = $("#productNameE").val();
 	var productPrice = $("#productPriceE").val();
-	var initAmount = $("#initAmountE").val();
+	var stockAmount = $("#stockAmountE").val();
 	var salesAmount = $("#salesAmountE").val();
 	
 	var coverImg ="";
@@ -631,15 +627,10 @@ function editDbProduct(){
 		alert("商品价格不能为空");
 		return false;
 	}
-	if(null == initAmount || initAmount == ''){
-		alert("商品总数不能为空");
+	if(null == stockAmount || stockAmount == ''){
+		alert("商品库存不能为空");
 		return false;
 	}
-	if(null != salesAmount && salesAmount > initAmount){
-		alert("商品总数不能小于销售数量");
-		return false;
-	}
-	
 	if(null == coverImg || coverImg == ''){
 		alert("商品封面图片不能为空");
 		return false;
@@ -658,7 +649,7 @@ function editDbProduct(){
 	}
 	
 	var data = {
-			"productId":productId,"productName":productName,"productPrice":productPrice,"initAmount":initAmount,"coverImg":coverImg,"detailImgs":detailImgs,"detail":detail,"img":img
+			"productId":productId,"productName":productName,"productPrice":productPrice,"stockAmount":stockAmount,"coverImg":coverImg,"detailImgs":detailImgs,"detail":detail,"img":img
 	}
 	$.ajax({
 		type : "post",

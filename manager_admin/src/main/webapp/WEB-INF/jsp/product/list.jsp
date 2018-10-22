@@ -52,10 +52,9 @@
 									<tr>
 										<th>商品标识</th>
 										<th>商品名称</th>
-										<th>价格</th>
-										<th>库存数量</th>
-										<th>销售数量</th>
-										<th>总数量</th>
+										<th>价格(:元)</th>
+										<th>库存数量(:个)</th>
+										<th>销售数量(:个)</th>
 										<th>详情</th>
 										<th>状态</th>
 										<th>创建时间</th>
@@ -66,7 +65,7 @@
 									<c:forEach var="entity" items="${page.list}">
 										<tr>
 											<td width="5%">${entity.productId}</td>
-											<td width="8%">
+											<td width="10%">
 												<c:if test="${fn:length(entity.productName)>8 }">                         
 													${fn:substring(entity.productName, 0, 8)}...                   
 												</c:if>                  
@@ -75,9 +74,8 @@
 												</c:if>
 											</td>
 											<td width="9%">${entity.productPriceStr}</td>
-											<td width="5%">${entity.stockAmount}</td>
-											<td width="8%">${entity.salesAmount}</td>
-											<td width="8%">${entity.initAmount}</td>
+											<td width="10%">${entity.stockAmount}</td>
+											<td width="10%">${entity.salesAmount}</td>
 											<td width="9%">
 												<c:if test="${fn:length(entity.detail)>15 }">                         
 													${fn:substring(entity.detail, 0, 15)}...                   
@@ -135,7 +133,7 @@
 						</div>
 						<div >
 							<label>商品单价:<input type="text" class='form-control' name="productPrice" id='productPrice' placeholder='商品单价'></label> 
-							<label>商品库存:<input type="text" class='form-control' name="initAmount" id='initAmount' placeholder='商品库存'></label> 
+							<label>商品库存:<input type="text" class='form-control' name="stockAmount" id='stockAmount' placeholder='商品库存'></label> 
 						</div>
 						
 						<div >
@@ -180,7 +178,7 @@
 						
 						<div class='form-group'>
 							<label for='driver'>详情内容:</label> 
-							<textarea rows="5" id="detail"  cols=27   onpropertychange= "this.style.posHeight=this.scrollHeight "></textarea>
+							<textarea rows="5" id="detail"  cols=80   onpropertychange= "this.style.posHeight=this.scrollHeight "></textarea>
 						</div>
 						
 						<div class='modal-footer'>
@@ -214,7 +212,6 @@
 							<label style="width:100px;" >商品单价:<input type="text" class='form-control' name="productPrice" id='productPriceDetail' placeholder='商品单价' ></label> 
 							<label>商品库存:<input type="text" class='form-control' name="stockAmount" id='stockAmountDetail'  ></label> 
 							<label>商品销量:<input type="text" class='form-control' name="salesAmount" id='salesAmountDetail' ></label> 
-							<label>商品总量:<input type="text" class='form-control' name="initAmount" id='initAmountDetail' ></label> 
 						</div>
 						<div>
 							<div class='form-group'>
@@ -235,7 +232,7 @@
 						</div>
 						<div class='form-group'>
 							<label for='driver'>详情内容:</label> 
-							<textarea rows="5" id="detailDetail"  cols=27   onpropertychange= "this.style.posHeight=this.scrollHeight "></textarea>
+							<textarea rows="5" id="detailDetail"  cols=80   onpropertychange= "this.style.posHeight=this.scrollHeight "></textarea>
 						</div>
 						<div class='modal-footer'>
 							<button type='button' class='btn btn-default'
@@ -269,11 +266,9 @@
 							<label for='url'>商品单价:</label> 
 								<input type="text" class='form-control' id='productPriceE' style="width:50px;display:inline;">
 							<label for='url'>商品库存:</label> 
-								<input type="text" class='form-control' id='stockAmountE' disabled="disabled" style="width:50px;display:inline;">
+								<input type="text" class='form-control' id='stockAmountE' style="width:50px;display:inline;">
 							<label for='url'>商品销量:</label> 
 								<input type="text" class='form-control' id='salesAmountE' disabled="disabled" style="width:50px;display:inline;">
-							<label for='url'>商品总数:</label> 
-								<input type="text" class='form-control' id='initAmountE' style="width:50px;display:inline;">
 						</div>
 						
 						<div class='form-group' >
@@ -305,7 +300,7 @@
 						</div>
 						<div class='form-group'>
 							<label for='driver'>详情内容:</label> 
-							<textarea rows="5" id="detailE"  cols=27   onpropertychange= "this.style.posHeight=this.scrollHeight "></textarea>
+							<textarea rows="5" id="detailE"  cols=80   onpropertychange= "this.style.posHeight=this.scrollHeight "></textarea>
 						</div>
 						
 						<div class='modal-footer'>
