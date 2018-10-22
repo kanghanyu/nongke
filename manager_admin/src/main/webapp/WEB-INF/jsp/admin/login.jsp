@@ -24,9 +24,12 @@
 		function check(){
 			var phone = $("#phone").val();
 			var password = $("#password").val();
+			var myreg=/^[1][3,4,5,7,8][0-9]{9}$/;     
 			if(phone == null || phone==''){
 				alert("手机号不能为空")
-				error();
+				return false;
+			}else if(!myreg.test(phone)){
+				alert("手机号不合法")
 				return false;
 			}
 			if (password == null || password == '') {

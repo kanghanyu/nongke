@@ -65,7 +65,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		$("#msgButton").click(function(){
 			
 			var phone = $("#phone").val()+"";
-			var myreg = /^(((13[0-9]{1})|(14[0-9]{1})|(17[0]{1})|(15[0-3]{1})|(15[5-9]{1})|(18[0-9]{1}))+\d{8})$/;             
+			var myreg=/^[1][3,4,5,7,8][0-9]{9}$/;       
 			if(phone == null || phone==''){
 				alert("手机号不能为空")
 				return false;
@@ -111,8 +111,12 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			var password = $("#password").val()+"";
 			var confirmPassword = $("#confirmPassword").val();
 			var code = $("#code").val();
+			var myreg=/^[1][3,4,5,7,8][0-9]{9}$/;     
 			if(phone == null || phone==''){
 				alert("手机号不能为空")
+				return false;
+			}else if(!myreg.test(phone)){
+				alert("手机号不合法")
 				return false;
 			}
 			if (password == null || password == '') {
