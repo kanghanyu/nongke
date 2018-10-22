@@ -31,35 +31,69 @@ public class UserInviterDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    public Long getId() {
-        return id;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public String getUid() {
-        return uid;
-    }
+	public String getUid() {
+		return uid;
+	}
 
-    public void setUid(String uid) {
-        this.uid = uid;
-    }
+	public void setUid(String uid) {
+		this.uid = uid;
+	}
 
-    public String getInvitedUid() {
-        return invitedUid;
-    }
+	public String getInvitedUid() {
+		return invitedUid;
+	}
 
-    public void setInvitedUid(String invitedUid) {
-        this.invitedUid = invitedUid;
-    }
+	public void setInvitedUid(String invitedUid) {
+		this.invitedUid = invitedUid;
+	}
 
-    public Date getCreateTime() {
-        return createTime;
-    }
+	public String getPhone() {
+		return phone;
+	}
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getImg() {
+		return img;
+	}
+
+	public void setImg(String img) {
+		this.img = img;
+	}
+
+	public BigDecimal getCommission() {
+		return commission;
+	}
+
+	public void setCommission(BigDecimal commission) {
+		this.commission = commission;
+	}
+
+	public String getIsVip() {
+		return isVip;
+	}
+
+	public void setIsVip(String isVip) {
+		this.isVip = isVip;
+	}
+
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+  
 }

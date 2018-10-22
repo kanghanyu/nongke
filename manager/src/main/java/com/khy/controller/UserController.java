@@ -170,7 +170,7 @@ public class UserController {
 	}
 	
 	@RequestMapping(value = "/getOnlineParame",method = RequestMethod.POST)
-	@ApiOperation(value = "获取用户体现记录内容")
+	@ApiOperation(value = "获取在线参数的内容")
 	public JsonResponse<Map<String,OnlineParame>> getOnlineParame(){
 		JsonResponse<Map<String,OnlineParame>> jsonResponse =uesrService.getOnlineParame();
 		return jsonResponse;
