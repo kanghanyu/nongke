@@ -1,8 +1,8 @@
 package com.khy.service.impl;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +34,8 @@ import com.khy.mapper.dto.CartDTO;
 import com.khy.mapper.dto.PayProductDetailDTO;
 import com.khy.mapper.dto.PreOrderDTO;
 import com.khy.mapper.dto.PreOrderResultDTO;
+import com.khy.mapper.dto.RechargeResultDTO;
+import com.khy.mapper.dto.RechargeSubmitDTO;
 import com.khy.mapper.dto.SubmitOrderDTO;
 import com.khy.mapper.dto.SubmitOrderResultDTO;
 import com.khy.service.PayService;
@@ -180,89 +182,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 	}
 
 
-	@Override
-	public JsonResponse<PreOrderResultDTO> buyVip() {
-		JsonResponse<PreOrderResultDTO>jsonResponse = new JsonResponse<>();
-		User user = SessionHolder.currentUser();
-		if(null == user){
-			jsonResponse.setRetDesc("请重新登录");
-			return jsonResponse;
-		}
-		String uid = user.getUid();
-		User userDb  = userMapper.getUserByUid(uid);
-		if(null == userDb){
-			jsonResponse.setRetDesc("当前用户状态异常");
-			return jsonResponse;
-		}
-		Integer isVip = userDb.getIsVip();
-		if(null != isVip && isVip.intValue()==Constants.VIP_USER){
-			jsonResponse.setRetDesc("当前已经是vip用户");
-			return jsonResponse;
-		}
-		Map<String, String> online = getOnline();
-		logger.info("获取在线参数的map={}",JSON.toJSON(online));
-		if(null ==online || online.size() == 0){
-			jsonResponse.setRetDesc("获取在线参数异常,请联系管理员");
-			return jsonResponse;
-		}
-		String vipPrice = online.get(Constants.VIP_PRICE);
-		if(StringUtils.isBlank(vipPrice)){
-			jsonResponse.setRetDesc("获取VIP价格异常请您联系管理员稍后再试");
-			return jsonResponse;
-		}
-		Integer orderType = Constants.PAY_VIP;
-		//针对生成前置订单的用户加锁防止生成多个前置订单;
-		boolean lock = cacheService.lock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),Constants.LOCK ,Constants.FIVE_MINUTE);
-		logger.info("VIP购买提交前置订单的加锁操作key = {},结果 = {}",Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),lock);
-		if(lock){
-			jsonResponse.setRetDesc("VIP购买提交订单生成失败请稍后再试");
-			return jsonResponse;
-		}
-		try {
-			//先查询当前用户是否之前生成过未付款的vip购买的订单内容;
-			OrderInfo info = new OrderInfo();
-			info.setUid(uid);
-			info.setOrderType(orderType);
-			info.setStatus(1);
-			OrderInfo infoDb = orderInfoMapper.getPayOrder(info);
-			Date now = new Date();
-			BigDecimal total = new BigDecimal(vipPrice);
-			int flag = 0;
-			if(infoDb == null){//如果不存在则新增
-				infoDb = new OrderInfo();
-				infoDb.setOrderId(Utils.getOrderId());
-				infoDb.setOrderType(orderType);
-				infoDb.setUid(uid);
-				infoDb.setTotalMoney(total);
-				infoDb.setStatus(1);
-				infoDb.setCreateTime(now);
-				infoDb.setProducDetail("购买成为VIP");
-				logger.info("VIP购买提交前置订单的插入orderInfo="+JSON.toJSONString(info));
-				flag = orderInfoMapper.insert(infoDb);
-			}else{//存在则修改原来的
-				infoDb.setOrderId(Utils.getOrderId());
-				infoDb.setTotalMoney(total);
-				infoDb.setStatus(1);
-				infoDb.setCreateTime(now);
-				infoDb.setProducDetail("购买vip内容");
-				logger.info("VIP购买提交前置订单的修改orderInfo="+JSON.toJSONString(info));
-				flag = orderInfoMapper.update(infoDb);
-			}
-			PreOrderResultDTO ret = new PreOrderResultDTO();
-			BeanUtils.copyProperties(infoDb, ret);
-			jsonResponse.success(ret, "获取购买vip的信息成功");
-			logger.info("VIP购买提交前置订单的成功后返回的内容PreOrderResultDTO="+JSON.toJSONString(ret));
-		} catch (Exception e) {
-			jsonResponse.setRetDesc("vip购买生成前置订单异常");
-			e.printStackTrace();
-			logger.error("vip购买生成前置订单异常"+e.getMessage());
-			throw new BusinessException("vip购买生成前置订单异常"+e.getMessage());
-		}finally {
-			cacheService.releaseLock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)));
-		}
-		return jsonResponse;
-	}
-	
 	@Override
 	public JsonResponse<SubmitOrderResultDTO> payForProductOnline(SubmitOrderDTO dto) {
 		logger.info("用户在线支付商品订单的请求参数SubmitOrderDTO = "+JSON.toJSONString(dto));
@@ -420,6 +339,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 		return null;
 	}
 
+	
 	/**
 	 * 批量更新商品的库存和销售数量
 	 * @Description
@@ -434,60 +354,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 			}
 		}
 	}
-
-
-	private JSONObject checkVipOrderInfo(OrderInfo orderInfo, SubmitOrderDTO dto, User user,Map<String, String> online) {
-		JSONObject json = new JSONObject();
-		json.put("code",2000);
-		if(null == orderInfo || null == dto){
-			json.put("msg","参数不能为空");
-			return json;
-		}
-		if(null == dto.getPayType()){
-			json.put("msg","付款方式不能为空");
-			return json;
-		}
-		if(null == dto.getTotalPay()){
-			json.put("msg","该订单的付款的总额不能为空");
-			return json;
-		}
-		Integer isVip = user.getIsVip();
-		if(null != isVip && isVip == Constants.VIP_USER){//如果是vip用户
-			json.put("msg","你已经是VIP用户");
-			return json;
-		}
-		String vipPrice = online.get(Constants.VIP_PRICE);
-		if(StringUtils.isBlank(vipPrice)){
-			json.put("msg","获取VIP价格异常请您联系管理员稍后再试");
-			return json;
-		}
-		if(new BigDecimal(vipPrice).compareTo(orderInfo.getTotalMoney()) != 0){
-			json.put("msg","VIP价格发生变动请重新添加订单");
-			return json;
-		}
-		BigDecimal totalPay = dto.getTotalPay();
-		if(new BigDecimal(vipPrice).compareTo(totalPay) != 0){
-			json.put("msg","VIP订单价格和应付款金额不一致");
-			return json;
-		}
-		if(new BigDecimal(vipPrice).compareTo(ZERO) == 0){
-			json.put("msg","VIP价格异常,请联系管理员");
-			return json;
-		}
-		BigDecimal rmb = dto.getRmb() !=null ? dto.getRmb() : ZERO;
-		if(totalPay.compareTo(rmb) != 0){
-			json.put("msg","支付的金额不等于应付金额");
-			return json;
-		}
-		orderInfo.setTotalMoney(totalPay);
-		orderInfo.setTotalPay(totalPay);
-		
-		
-		json.put("code",1000);
-		json.put("msg","订单校验通过");
-		return json;
-	}
-
 
 	private JSONObject checkProductOrderInfo(OrderInfo orderInfo, SubmitOrderDTO dto, User user, Map<String, String> online,List<Product>listProduct) {
 		JSONObject json = new JSONObject();
@@ -688,16 +554,309 @@ public class PayServiceImpl extends BaseService implements PayService {
 		}
 		return json;
 	}
-	public static void main(String[] args) {
-		BigDecimal b1 = new BigDecimal("8.8");
-		BigDecimal b2 = new BigDecimal("8.66");
-		BigDecimal multiply = b1.multiply(b2);
-		System.out.println(multiply.doubleValue());
-		System.out.println(multiply.setScale(2, BigDecimal.ROUND_HALF_UP));
+	
+	
+	@Override
+	public JsonResponse<PreOrderResultDTO> buyVip() {
+		JsonResponse<PreOrderResultDTO>jsonResponse = new JsonResponse<>();
+		User user = SessionHolder.currentUser();
+		if(null == user){
+			jsonResponse.setRetDesc("请重新登录");
+			return jsonResponse;
+		}
+		String uid = user.getUid();
+		User userDb  = userMapper.getUserByUid(uid);
+		if(null == userDb){
+			jsonResponse.setRetDesc("当前用户状态异常");
+			return jsonResponse;
+		}
+		Integer isVip = userDb.getIsVip();
+		if(null != isVip && isVip.intValue()==Constants.VIP_USER){
+			jsonResponse.setRetDesc("当前已经是vip用户");
+			return jsonResponse;
+		}
+		Map<String, String> online = getOnline();
+		logger.info("获取在线参数的map={}",JSON.toJSON(online));
+		if(null ==online || online.size() == 0){
+			jsonResponse.setRetDesc("获取在线参数异常,请联系管理员");
+			return jsonResponse;
+		}
+		String vipPrice = online.get(Constants.VIP_PRICE);
+		if(StringUtils.isBlank(vipPrice)){
+			jsonResponse.setRetDesc("获取VIP价格异常请您联系管理员稍后再试");
+			return jsonResponse;
+		}
+		Integer orderType = Constants.PAY_VIP;
+		//针对生成前置订单的用户加锁防止生成多个前置订单;
+		boolean lock = cacheService.lock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),Constants.LOCK ,Constants.FIVE_MINUTE);
+		logger.info("VIP购买提交前置订单的加锁操作key = {},结果 = {}",Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),lock);
+		if(lock){
+			jsonResponse.setRetDesc("VIP购买提交订单生成失败请稍后再试");
+			return jsonResponse;
+		}
+		try {
+			//先查询当前用户是否之前生成过未付款的vip购买的订单内容;
+			OrderInfo info = new OrderInfo();
+			info.setUid(uid);
+			info.setOrderType(orderType);
+			info.setStatus(1);
+			OrderInfo infoDb = orderInfoMapper.getPayOrder(info);
+			Date now = new Date();
+			BigDecimal total = new BigDecimal(vipPrice);
+			int flag = 0;
+			if(infoDb == null){//如果不存在则新增
+				infoDb = new OrderInfo();
+				infoDb.setOrderId(Utils.getOrderId());
+				infoDb.setOrderType(orderType);
+				infoDb.setUid(uid);
+				infoDb.setTotalMoney(total);
+				infoDb.setStatus(1);
+				infoDb.setCreateTime(now);
+				infoDb.setProducDetail("购买成为VIP");
+				logger.info("VIP购买提交前置订单的插入orderInfo="+JSON.toJSONString(info));
+				flag = orderInfoMapper.insert(infoDb);
+			}else{//存在则修改原来的
+				infoDb.setOrderId(Utils.getOrderId());
+				infoDb.setTotalMoney(total);
+				infoDb.setStatus(1);
+				infoDb.setCreateTime(now);
+				infoDb.setProducDetail("购买vip内容");
+				logger.info("VIP购买提交前置订单的修改orderInfo="+JSON.toJSONString(info));
+				flag = orderInfoMapper.update(infoDb);
+			}
+			PreOrderResultDTO ret = new PreOrderResultDTO();
+			BeanUtils.copyProperties(infoDb, ret);
+			jsonResponse.success(ret, "获取购买vip的信息成功");
+			logger.info("VIP购买提交前置订单的成功后返回的内容PreOrderResultDTO="+JSON.toJSONString(ret));
+		} catch (Exception e) {
+			jsonResponse.setRetDesc("vip购买生成前置订单异常");
+			e.printStackTrace();
+			logger.error("vip购买生成前置订单异常"+e.getMessage());
+			throw new BusinessException("vip购买生成前置订单异常"+e.getMessage());
+		}finally {
+			cacheService.releaseLock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)));
+		}
+		return jsonResponse;
+	}
+	
+	@Override
+	public JsonResponse<RechargeResultDTO> recharge(RechargeSubmitDTO dto) {
+		JsonResponse<RechargeResultDTO>jsonResponse = new JsonResponse<>();
+		if(null == dto){
+			jsonResponse.setRetDesc("请求参数不能为空");
+			return jsonResponse;
+		}
+		User user = SessionHolder.currentUser();
+		if(null == user){
+			jsonResponse.setRetDesc("请重新登录");
+			return jsonResponse;
+		}
+		String uid = user.getUid();
+		user  = userMapper.getUserByUid(uid);
+		if(null == user){
+			jsonResponse.setRetDesc("当前用户状态异常");
+			return jsonResponse;
+		}
+		Map<String, String> online = getOnline();
+		logger.info("获取在线参数的map={}",JSON.toJSON(online));
+		if(null ==online || online.size() == 0){
+			jsonResponse.setRetDesc("获取在线参数异常,请联系管理员");
+			return jsonResponse;
+		}
+		Integer orderType = dto.getOrderType();
+		//针对生成前置订单的用户加锁防止生成多个前置订单;
+		boolean lock = cacheService.lock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),Constants.LOCK ,Constants.FIVE_MINUTE);
+		logger.info("充值加锁操作key = {},结果 = {}",Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),lock);
+		if(lock){
+			jsonResponse.setRetDesc("VIP购买提交订单生成失败请稍后再试");
+			return jsonResponse;
+		}
+		OrderInfo info = new OrderInfo();
+		RechargeResultDTO ret = new RechargeResultDTO();
+		JSONObject json = check(dto,user,online,info);
+		if(json.getIntValue("code") == 2000){
+			logger.error("提交充值订单的校验内容的失败ret = "+json.toString());
+			jsonResponse.setRetDesc(json.getString("msg"));
+			return jsonResponse;
+		}
+		Date now = new Date();
+		//校验通过开始处理扣费
+		info.setCreateTime(now);
+		Integer payType = dto.getPayType();
+		try {
+			BeanUtils.copyProperties(info, ret);
+			if(payType == Constants.MONEY_PAY){//等于余额抵扣的 那么余额和点卡当时更新完毕生效
+				info.setStatus(3);
+				info.setPayTime(now);
+				orderInfoMapper.insert(info);
+				
+				//更新用户的余额内容
+				BigDecimal totalPay = dto.getTotalPay();
+				BigDecimal money = user.getMoney();
+				BigDecimal cardMoney = user.getCardMoney();
+				user.setMoney(money.subtract(totalPay));
+				user.setCardMoney(cardMoney.add(totalPay));
+				userMapper.updateUser(user);
+				//余额 流水
+				String desc ="余额充值点卡";
+				saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, totalPay, money, info.getOrderId(), desc, now);
+				desc = "点卡充值";
+				saveUserRecord(uid, Constants.RECORD_INCOME, Constants.RECORD_CARD_MONEY, totalPay, cardMoney, info.getOrderId(), desc, now);
+			}else if(payType == Constants.ALIPAY){
+				PayUtil.setRechargeSign(info,ret);
+				
+			}
+			
+			
+			
+			
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			//释放加锁内容;
+			
+		}
 		
-		BigDecimal divide = b1.multiply(b2).multiply(new BigDecimal(100)).divide(new BigDecimal(100),2, BigDecimal.ROUND_HALF_UP);
-		System.out.println(divide.doubleValue());
 		
 		
+		return null;
+	}
+
+	
+	
+	
+
+	private JSONObject check(RechargeSubmitDTO dto, User user, Map<String, String> online, OrderInfo info) {
+		JSONObject json = new JSONObject();
+		json.put("code",2000);
+		Integer orderType = dto.getOrderType();
+		Integer payType = dto.getPayType();
+		BigDecimal totalPay = dto.getTotalPay();
+		BigDecimal totalMoney = dto.getTotalMoney();
+		if(null == orderType){
+			json.put("msg","充值类型不能为空");
+			return json;
+		}
+		if(null == payType){
+			json.put("msg","付款方式不能为空");
+			return json;
+		}
+		if(null == totalPay){
+			json.put("msg","付款总额不能为空");
+			return json;
+		}
+		if(null == totalMoney){
+			json.put("msg","当前充值金额不为空");
+			return json;
+		}
+		if(orderType == Constants.PAY_VIP){
+			if(payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
+				json.put("msg","VIP只能支付宝/微信支付");
+				return json;
+			}
+			Integer isVip = user.getIsVip();
+			if(null != isVip && isVip.intValue()==Constants.VIP_USER){
+				json.put("msg","您已经是会员请勿重复购买");
+				return json;
+			}
+			if(StringUtils.isBlank(online.get(Constants.VIP_PRICE))){
+				json.put("msg","获取会员价格请您联系管理员稍后再试");
+				return json;
+			}
+			BigDecimal vipPrice = new BigDecimal(online.get(Constants.VIP_PRICE));
+			String forMoney = online.get(Constants.VIP_PRICE_FORMONEY);
+			if(StringUtils.isBlank(forMoney)){
+				json.put("msg","购买vip送的余额数值异常,请联系管理员");
+				return json;
+			}
+			if(totalPay.compareTo(vipPrice) != 0){
+				json.put("msg","VIP价格和应付金额不一致请重新下单");
+				return json;
+			}
+			info.setProducDetail("用户购买成为VIP用户,花费"+totalPay+":元");
+		}else if(orderType == Constants.PAY_CARD){
+			if(payType != Constants.MONEY_PAY || payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
+				json.put("msg","点卡只支持支付宝/微信/余额购买");
+				return json;
+			}
+			BigDecimal money = user.getMoney() != null ?user.getMoney() :ZERO;
+			if(payType == Constants.MONEY_PAY && money.compareTo(totalPay) < 0){
+				json.put("msg","用户余额不足");
+				return json;
+			}
+			info.setProducDetail("用户购买"+totalPay+":元的点卡");
+		}else if(orderType == Constants.PAY_PHONE){//话费充值
+			if(payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
+				json.put("msg","话充值只能支付宝/微信支付");
+				return json;
+			}
+			if(totalMoney.intValue() %50 != 0 ){
+				json.put("msg","当前充值金额必须是50的整倍数");
+				return json;
+			}
+			//充值话费总金额和付款总金额是否相同正常充值
+			if(totalMoney.compareTo(totalPay) != 0){
+				//标识会员折扣充值
+				Integer isVip = user.getIsVip();
+				if(isVip == Constants.VIP_USER){
+					String vipDiscount = online.get(Constants.VIP_DISCOUNT);
+					if (StringUtils.isBlank(vipDiscount)) {
+						json.put("msg", "获取vip充值话费折扣异常请您联系管理员稍后再试");
+						return json;
+					}
+					BigDecimal dicountMoney = totalMoney.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
+					if(dicountMoney.compareTo(totalPay) == 0){ 
+						//查询当月vip用户已经充值了多少钱的
+						String key = getKey(user.getUid());
+						String accumulate = cacheService.getString(key);
+						BigDecimal accumulatePrice = StringUtils.isNotBlank(accumulate)? new BigDecimal(accumulate):ZERO;
+						String phoneRecharge = online.get(Constants.VIP_PHONE_RECHARGE);
+						if (StringUtils.isBlank(phoneRecharge)) {
+							json.put("msg", "获取vip充值话费每月优惠额度数据折扣异常请您联系管理员稍后再试");
+							return json;
+						}
+						if(accumulatePrice.compareTo(new BigDecimal(phoneRecharge)) > 0){
+							json.put("msg", "您当月VIP已经优惠充值了"+accumulate+":元,现在充值"+totalMoney+":元,已超出优惠额度");
+							return json;
+						}
+						info.setDiscount(Float.valueOf(vipDiscount)/100);
+						info.setDiscountDetail("会员话费充值折扣优惠内容");
+						info.setDiscountMoney(dicountMoney);
+					}else{
+						json.put("msg","VIP充值话费应付金额不等于折扣后价格");
+						return json;
+					}
+				}else{
+					json.put("msg","您不是会员不享受话费充值优惠");
+					return json;
+				}
+			}
+			info.setProducDetail("用户手机充值话费"+totalMoney+":元");
+		}else{
+			json.put("msg","当前充值类型不匹配,充值失败");
+			return json;
+		}
+		info.setOrderId(Utils.getOrderId());
+		info.setOrderType(orderType);
+		info.setPayType(payType);
+		info.setUid(user.getUid());
+		info.setTotalMoney(totalMoney);;
+		info.setTotalPay(totalPay);
+		if(payType == Constants.MONEY_PAY){
+			info.setCornMoney(totalPay);
+		}else{
+			info.setRmb(totalPay);
+		}
+		json.put("code",1000);
+		return json;
+	}
+	private String getKey(String uid) {
+		String key = Constants.USER_PHONE_RECHARGE;
+		Calendar calendar = Calendar.getInstance();
+		int month = calendar.get(Calendar.MONTH) + 1;
+		key = key.concat(month+"").concat(uid);
+		return key;
 	}
 }

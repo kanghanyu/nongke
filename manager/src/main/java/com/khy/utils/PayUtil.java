@@ -17,14 +17,16 @@ import com.alibaba.fastjson.JSON;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.khy.common.Constants;
+import com.khy.entity.OrderInfo;
 import com.khy.exception.BusinessException;
+import com.khy.mapper.dto.RechargeResultDTO;
 import com.khy.mapper.dto.SubmitOrderDTO;
 import com.khy.mapper.dto.SubmitOrderResultDTO;
 
 public class PayUtil {
 	public final static Logger logger = LoggerFactory.getLogger(PayUtil.class);
 	public static void setProductSign(SubmitOrderResultDTO ret, SubmitOrderDTO dto) throws UnsupportedEncodingException {
-		logger.info("支付宝验签开始");		
+		logger.info("支付宝商品支付验签开始");		
 		Map<String, String> param = new HashMap<>();
 		param.put("app_id", Constants.ALIPAY_APPID);
 		param.put("method", Constants.METHOD);
@@ -53,6 +55,46 @@ public class PayUtil {
 //		orderDescr.put("timeout_express", "30m");
 //		orderDescr.put("total_amount", "0.01");
 //		orderDescr.put("product_code","QUICK_MSECURITY_PAY");
+		param.put("biz_content", JSON.toJSONString(orderDescr));
+		String sign = null;
+		try {
+			sign = 	getSign(param,Constants.CHARSET_UTF8, Constants.SIGN_TYPE_RSA2);
+			logger.info("支付宝验签生成的sign={}",sign);		
+		} catch (AlipayApiException e) {
+			logger.error("支付宝生成验签失败失败"+e.getMessage());
+			throw new BusinessException("支付宝生成验签失败失败"+e.getMessage());
+		}
+		String result = "";
+		if(StringUtils.isNotBlank(sign)){
+			result = getSignEncodeUrl(param,sign,Constants.CHARSET_UTF8);
+			logger.info("支付宝验签生成的全部信息结果ret={}",ret);		
+		}
+		ret.setPaySign(result);
+	}
+	
+	
+	public static void setRechargeSign(OrderInfo info, RechargeResultDTO ret) throws UnsupportedEncodingException {
+		logger.info("支付宝支付验签开始");		
+		Map<String, String> param = new HashMap<>();
+		param.put("app_id", Constants.ALIPAY_APPID);
+		param.put("method", Constants.METHOD);
+		param.put("format", Constants.FORMAT_JSON);
+		param.put("charset", Constants.CHARSET_UTF8);
+		param.put("sign_type", Constants.SIGN_TYPE_RSA2);
+		param.put("version", Constants.VERSION);
+		param.put("notify_url", Constants.NOTIFY_URL);
+		param.put("timestamp", Utils.formatDateTime(new Date()));
+		
+	
+		Map<String, Object> orderDescr = new HashMap<>();
+		Integer orderType = info.getOrderType();
+		orderDescr.put("body",info.getDescription());
+		orderDescr.put("subject", ret.getSubject());
+		orderDescr.put("out_trade_no", info.getOrderId());
+		orderDescr.put("timeout_express", Constants.TIMEOUT_EXPRESS);
+		orderDescr.put("total_amount", info.getRmb());
+		orderDescr.put("product_code","QUICK_MSECURITY_PAY");
+		orderDescr.put("goods_type",orderType == 4 ? "1" : "0");
 		param.put("biz_content", JSON.toJSONString(orderDescr));
 		String sign = null;
 		try {
