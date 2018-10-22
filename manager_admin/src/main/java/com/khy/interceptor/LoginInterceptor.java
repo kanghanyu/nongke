@@ -20,7 +20,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import com.alibaba.fastjson.JSONObject;
 import com.khy.entity.User;
 import com.khy.utils.SessionHolder;
-@Configuration
+//@Configuration
 public class LoginInterceptor extends WebMvcConfigurerAdapter{
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(LoginInterceptor.class);

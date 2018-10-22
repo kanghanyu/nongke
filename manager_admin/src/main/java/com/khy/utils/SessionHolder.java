@@ -16,8 +16,8 @@ public class SessionHolder {
   }
 
   public static User currentUser() {
-    return userStore.get ();
-//	return new User("10101611","15501271310");
+//    return userStore.get ();
+	return new User("10101611","15501271310");
   }
 
   public static void cleanUser() {

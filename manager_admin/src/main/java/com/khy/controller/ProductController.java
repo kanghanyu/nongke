@@ -71,7 +71,6 @@ public class ProductController {
 		return json.toString();
 	}
 	
-	
 	@RequestMapping("/uploadCoverImg")
 	@ResponseBody
 	public String batchUpload(MultipartRequest request) {

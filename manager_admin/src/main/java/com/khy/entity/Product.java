@@ -23,6 +23,13 @@ public class Product extends BaseEntity implements Serializable {
 	 * 价格
 	 */
 	private BigDecimal productPrice;
+	/**
+	 * 进价
+	 */
+	private BigDecimal costPrice;
+	
+	/**0:标识[普通 1:标识hot*/
+	private Integer isHot;
 	
 	private String productPriceStr;
 
@@ -168,9 +175,17 @@ public class Product extends BaseEntity implements Serializable {
 	public void setDetailImgs(String detailImgs) {
 		this.detailImgs = detailImgs;
 	}
-public static void main(String[] args) {
-	SimpleDateFormat sdf= new SimpleDateFormat();
-	sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
-	System.out.println(sdf.format(new Date()));
-}
+	public BigDecimal getCostPrice() {
+		return costPrice;
+	}
+	public void setCostPrice(BigDecimal costPrice) {
+		this.costPrice = costPrice;
+	}
+	public Integer getIsHot() {
+		return isHot;
+	}
+	public void setIsHot(Integer isHot) {
+		this.isHot = isHot;
+	}
+	
 }

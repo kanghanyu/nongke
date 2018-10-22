@@ -22,9 +22,6 @@ public class Product extends BaseEntity implements Serializable {
 	private BigDecimal productPrice;
 
 	@ApiModelProperty(value="库存数量")
-	private Integer initAmount;
-	
-	@ApiModelProperty(value="库存数量")
 	private Integer stockAmount;
 
 	@ApiModelProperty(value=" 销售数量")
@@ -119,14 +116,6 @@ public class Product extends BaseEntity implements Serializable {
 
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
-	}
-
-	public Integer getInitAmount() {
-		return initAmount;
-	}
-
-	public void setInitAmount(Integer initAmount) {
-		this.initAmount = initAmount;
 	}
 
 	public String getDetailImgs() {

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.khy.mapper.ProductMapper">
   <sql id="Base_Column_List">
-    product_id, product_name, product_price,stock_amount, sales_amount, cover_img, detail, detail_imgs,img,status, create_time
+    product_id, product_name, product_price,cost_price,is_hot,stock_amount, sales_amount, cover_img, detail, detail_imgs,img,status, create_time
   </sql>
   
   	
@@ -47,11 +47,14 @@
   		<if test="null != productPrice">
   			product_price=#{productPrice},
   		</if>
+  		<if test="null != costPrice">
+  			cost_price=#{costPrice},
+  		</if>
   		<if test="null != stockAmount">
   			stock_amount=#{stockAmount},
   		</if>
-  		<if test="null != salesAmount">
-  			sales_amount=#{salesAmount},
+  		<if test="null != isHot">
+  			is_hot=#{isHot},
   		</if>
   		<if test="null != coverImg and coverImg != '' ">
   			cover_img =#{coverImg},
@@ -85,6 +88,12 @@
       <if test="productPrice != null">
         product_price,
       </if>
+      <if test="costPrice != null">
+        cost_price,
+      </if>
+      <if test="isHot != null">
+        is_hot,
+      </if>
       <if test="stockAmount != null">
         stock_amount,
       </if>
@@ -116,6 +125,12 @@
       </if>
       <if test="productPrice != null">
         #{productPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="costPrice != null">
+        #{costPrice,jdbcType=DECIMAL},
+      </if>
+      <if test="isHot != null">
+        #{isHot,jdbcType=INTEGER},
       </if>
       <if test="stockAmount != null">
         #{stockAmount,jdbcType=INTEGER},
