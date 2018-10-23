@@ -25,7 +25,7 @@ import com.khy.mapper.dto.SubmitOrderResultDTO;
 
 public class PayUtil {
 	public final static Logger logger = LoggerFactory.getLogger(PayUtil.class);
-	public static void setProductSign(SubmitOrderResultDTO ret, SubmitOrderDTO dto) throws UnsupportedEncodingException {
+	public static String setProductSign(SubmitOrderDTO dto) {
 		logger.info("支付宝商品支付验签开始");		
 		Map<String, String> param = new HashMap<>();
 		param.put("app_id", Constants.ALIPAY_APPID);
@@ -65,11 +65,16 @@ public class PayUtil {
 			throw new BusinessException("支付宝生成验签失败失败"+e.getMessage());
 		}
 		String result = "";
-		if(StringUtils.isNotBlank(sign)){
-			result = getSignEncodeUrl(param,sign,Constants.CHARSET_UTF8);
-			logger.info("支付宝验签生成的全部信息结果ret={}",ret);		
+		try {
+			if (StringUtils.isNotBlank(sign)) {
+				result = getSignEncodeUrl(param, sign, Constants.CHARSET_UTF8);
+			}
+		} catch (UnsupportedEncodingException e) {
+			logger.error("支付宝验签转化异常" + e.getMessage());
+			throw new BusinessException("支付宝验签转化异常" + e.getMessage());
 		}
-		ret.setPaySign(result);
+		logger.info("支付宝验签生成的全部信息结果result={}", result);
+		return result;
 	}
 	
 	

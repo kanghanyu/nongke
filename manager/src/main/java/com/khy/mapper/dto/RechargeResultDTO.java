@@ -24,6 +24,16 @@ public class RechargeResultDTO {
 	@ApiModelProperty(value="支付的sign内容")
 	private String paySign;
 	
+	@ApiModelProperty(value="1:标识余额扣除成功 2 标识支付宝/微信")
+	private Integer flag;
+	public Integer getFlag() {
+		return flag;
+	}
+
+	public void setFlag(Integer flag) {
+		this.flag = flag;
+	}
+
 	public String getPaySign() {
 		return paySign;
 	}

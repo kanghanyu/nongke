@@ -49,4 +49,12 @@ public class ProductServiceImpl implements ProductService {
 		return jsonResponse;
 	}
 
+	@Override
+	public JsonResponse<List<Product>> getBannerProduct() {
+		JsonResponse<List<Product>> jsonResponse = new JsonResponse<>();
+		List<Product> list = productMapper.getBannerProduct();
+		jsonResponse.success(list);
+		return jsonResponse;
+	}
+
 }

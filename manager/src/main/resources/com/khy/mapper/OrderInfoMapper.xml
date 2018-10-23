@@ -4,8 +4,8 @@
  
   <sql id="Base_Column_List">
     id, order_id, order_type, pay_type, uid, total_money, discount, discount_detail, 
-    discount_money,total_pay,rmb,corn_money, produc_detail,status, create_time, 
-    pay_time,postage,user_name,address,post_code,phone,description
+    discount_money,total_pay,rmb,corn_money,total_cost, product_detail,status, pay_status,create_time, 
+   invalid_time,pay_time,postage,user_name,address,post_code,phone,description
   </sql>
   
   <insert id="insert" parameterType="com.khy.entity.OrderInfo">
@@ -41,20 +41,29 @@
       <if test="totalPay != null">
         total_pay,
       </if>
+      <if test="totalCost != null">
+        total_cost,
+      </if>
       <if test="rmb != null">
         rmb,
       </if>
       <if test="cornMoney != null">
         corn_money,
       </if>
-      <if test="producDetail != null">
-        produc_detail,
+      <if test="productDetail != null">
+        product_detail,
       </if>
       <if test="status != null">
         status,
       </if>
+      <if test="payStatus != null">
+        pay_status,
+      </if>
       <if test="createTime != null">
         create_time,
+      </if>
+      <if test="invalidTime != null">
+        invalid_time,
       </if>
       <if test="payTime != null">
         pay_time,
@@ -106,20 +115,29 @@
       <if test="totalPay != null">
         #{totalPay,jdbcType=DECIMAL},
       </if>
+      <if test="totalCost != null">
+        #{totalCost,jdbcType=DECIMAL},
+      </if>
       <if test="rmb != null">
         #{rmb,jdbcType=DECIMAL},
       </if>
       <if test="cornMoney != null">
         #{cornMoney,jdbcType=DECIMAL},
       </if>
-      <if test="producDetail != null">
-        #{producDetail,jdbcType=LONGVARCHAR},
+      <if test="productDetail != null">
+        #{productDetail,jdbcType=LONGVARCHAR},
       </if>
       <if test="status != null">
         #{status,jdbcType=INTEGER},
       </if>
+      <if test="payStatus != null">
+        #{payStatus,jdbcType=INTEGER},
+      </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="invalidTime != null">
+        #{invalidTime,jdbcType=TIMESTAMP},
       </if>
       <if test="payTime != null">
         #{payTime,jdbcType=TIMESTAMP},
@@ -162,19 +180,27 @@
   		<if test="null != status">
 	  		and status =#{status}
   		</if>
-  		<if test="null != orderType">
-	  		and order_type =#{orderType}
+  		<if test="null != payStatus">
+	  		and pay_status =#{payStatus}
   		</if>
   	</where>
   </select>
   
   
+  <select id="getNotPayOrder" resultType="com.khy.entity.OrderInfo">
+  	select	
+  		<include refid="Base_Column_List"/>
+  	from
+  		t_order_info
+  	where
+  		status = 1
+  	and pay_status = 1
+  	and invalid_time &lt; now();
+  </select>
+  
   <update id="update" parameterType="com.khy.entity.OrderInfo">
     update t_order_info
     <set>
-      <if test="orderId != null">
-        order_id = #{orderId,jdbcType=VARCHAR},
-      </if>
       <if test="orderType != null">
         order_type = #{orderType,jdbcType=INTEGER},
       </if>
@@ -196,6 +222,9 @@
       <if test="totalPay != null">
         total_pay = #{totalPay,jdbcType=DECIMAL},
       </if>
+      <if test="totalCost != null">
+        total_cost = #{totalCost,jdbcType=DECIMAL},
+      </if>
       <if test="rmb != null">
         rmb = #{rmb,jdbcType=DECIMAL},
       </if>
@@ -204,6 +233,9 @@
       </if>
       <if test="status != null">
         status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="payStatus != null">
+        pay_status = #{payStatus,jdbcType=INTEGER},
       </if>
       <if test="payTime != null">
         pay_time = #{payTime,jdbcType=TIMESTAMP},
@@ -226,12 +258,12 @@
       <if test="description != null">
         description = #{description,jdbcType=VARCHAR},
       </if>
-      <if test="producDetail != null">
-        produc_detail = #{producDetail,jdbcType=LONGVARCHAR},
+      <if test="productDetail != null">
+        product_detail = #{productDetail,jdbcType=LONGVARCHAR},
       </if>
     </set>
     where 
-    	id = #{id,jdbcType=BIGINT}
+    	order_id = #{orderId,jdbcType=BIGINT}
     and 
     	uid = #{uid}
   </update>

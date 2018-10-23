@@ -17,6 +17,9 @@ public class PayProductDetailDTO {
 
 	@ApiModelProperty(value="价格")
 	private BigDecimal productPrice;
+	
+	//进价
+	private BigDecimal costPrice;
 
 	@ApiModelProperty(value="缩略图")
 	private String img;
@@ -26,7 +29,16 @@ public class PayProductDetailDTO {
 	
 	@ApiModelProperty(value="该商品总金额")
 	private Double total;
+	
+	//商品的总成本 进价*数量
+	private Double cost;
 
+	public BigDecimal getCostPrice() {
+		return costPrice;
+	}
+	public void setCostPrice(BigDecimal costPrice) {
+		this.costPrice = costPrice;
+	}
 	public Long getProductId() {
 		return productId;
 	}
@@ -44,6 +56,12 @@ public class PayProductDetailDTO {
 		return productPrice;
 	}
 
+	public Double getCost() {
+		return cost;
+	}
+	public void setCost(Double cost) {
+		this.cost = cost;
+	}
 	public void setProductPrice(BigDecimal productPrice) {
 		this.productPrice = productPrice;
 	}
@@ -132,6 +150,7 @@ public class PayProductDetailDTO {
 		dto.setTotal(100D);
 		PayProductDetailDTO dto2 = new PayProductDetailDTO();
 		BeanUtils.copyProperties(dto, dto2);
+		dto2.setCost(2.22D);
 		System.out.println(dto.equals(dto2));
 	}
 }

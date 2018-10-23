@@ -17,4 +17,6 @@ public interface ProductMapper {
 	Product findProduct(Long productId);
 
 	void batchUpdate(List<Product> listProduct);
+
+	List<Product> getBannerProduct();
 }

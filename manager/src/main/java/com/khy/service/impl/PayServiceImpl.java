@@ -148,12 +148,18 @@ public class PayServiceImpl extends BaseService implements PayService {
 				totalCardMoney =ret.getTotalMoney().multiply(new BigDecimal(cartDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
 			}
 			ret.setTotalCardMoney(totalCardMoney);
-			Date now = new Date();
+			
+			Calendar calendar = Calendar.getInstance();
+			Date now = calendar.getTime();
+			calendar.add(Calendar.MINUTE, 30);
+			Date invalidTime = calendar.getTime();
 			ret.setCreateTime(now);
-			ret.setProducDetail(JSONObject.toJSONString(ret.getList()));
+			ret.setProductDetail(JSONObject.toJSONString(ret.getList()));
 			OrderInfo info = new OrderInfo();
 			BeanUtils.copyProperties(ret, info);
-			info.setStatus(1);
+			info.setStatus(Constants.ORDER_STATUS_WWC);
+			info.setPayStatus(Constants.ORDER_PAYSTATUS_WFK);
+			info.setInvalidTime(invalidTime);
 			/**生成订单信息*/
 			logger.info("插入订单信息内容orderInfo="+JSON.toJSON(info));
 			int flag = orderInfoMapper.insert(info);
@@ -210,17 +216,33 @@ public class PayServiceImpl extends BaseService implements PayService {
 			jsonResponse.setRetDesc("当前用户状态异常");
 			return jsonResponse;
 		}
+		Date now = new Date();
 		String orderId = dto.getOrderId();
 		OrderInfo info  = new OrderInfo();
 		info.setUid(uid);
 		info.setOrderId(orderId);
-		info.setStatus(1);
+		info.setStatus(Constants.ORDER_STATUS_WWC);
+		info.setPayStatus(Constants.ORDER_PAYSTATUS_WFK);
 		OrderInfo orderInfo = orderInfoMapper.getPayOrder(info);
 		logger.info("用户在线支付订单的获取数据库订单信息orderInfoDb={},查询的参数内容info={}",JSON.toJSONString(orderInfo),JSON.toJSONString(info));
 		if(null == orderInfo){
 			jsonResponse.setRetDesc("当前前置订单状态异常");
 			return jsonResponse;
 		}
+		if(orderInfo.getInvalidTime().before(now)){
+			//说明该订单已经过了支付的时间了订单失效
+			//更新订单的状态内容;
+			OrderInfo updateInfo = new OrderInfo();
+			updateInfo.setPayStatus(Constants.ORDER_PAYSTATUS_YQX);
+			updateInfo.setStatus(Constants.ORDER_STATUS_WC);
+			updateInfo.setUid(uid);
+			updateInfo.setOrderId(orderId);
+			logger.info("用户提交支付的订单orderId={},当前订单已经失效,去更新数据库该订单的信息内容updateInfo={}",orderId,JSON.toJSON(updateInfo));
+			orderInfoMapper.update(orderInfo);
+			jsonResponse.setRetDesc("当前订单30分钟内未付款,已失效");
+			return jsonResponse;
+		}
+		
 		if(orderInfo.getOrderType() != Constants.PAY_PRODUCT){
 			jsonResponse.setRetDesc("商品购买支付的专用付款方式");
 			return jsonResponse;
@@ -228,6 +250,14 @@ public class PayServiceImpl extends BaseService implements PayService {
 		Map<String, String> online = getOnline();
 		if(null ==online || online.size() == 0){
 			jsonResponse.setRetDesc("获取在线参数异常,请联系管理员");
+			return jsonResponse;
+		}
+		//为了防止重复付款 先对用户的付款订单进行加锁
+		String key = Constants.USER_ONLINE_PAY_LOCK.concat(uid).concat(orderId);
+		boolean lock = cacheService.lock(key,Constants.LOCK ,Constants.FIVE_MINUTE);
+		logger.info("用户在线支付订单的加锁操作key = {},结果 = {}",key,lock);
+		if(lock){
+			jsonResponse.setRetDesc("订单支付中,请勿重复支付");
 			return jsonResponse;
 		}
 		List<Product>listProduct = new ArrayList<>();
@@ -239,19 +269,10 @@ public class PayServiceImpl extends BaseService implements PayService {
 			jsonResponse.setRetDesc(json.getString("msg"));
 			return jsonResponse;
 		}
-		//为了防止重复付款 先对用户的付款订单进行加锁
-		String key = Constants.USER_ONLINE_PAY_LOCK.concat(uid).concat(orderId);
-		boolean lock = cacheService.lock(key,Constants.LOCK ,Constants.FIVE_MINUTE);
-		logger.info("用户在线支付订单的加锁操作key = {},结果 = {}",key,lock);
-		if(lock){
-			jsonResponse.setRetDesc("订单支付中,请勿重复支付");
-			return jsonResponse;
-		}
 		Integer payType = dto.getPayType();
 		orderInfo.setPayType(payType);
 		SubmitOrderResultDTO ret = new SubmitOrderResultDTO();
 		BeanUtils.copyProperties(orderInfo, ret);
-		Date now = new Date();
 		List<Long> productIds = null;
 		if(CollectionUtils.isNotEmpty(listProduct)){
 			productIds = listProduct.stream().map(Product::getProductId).collect(Collectors.toList());
@@ -260,9 +281,8 @@ public class PayServiceImpl extends BaseService implements PayService {
 			if (payType == Constants.CARD_PAY) {
 				// 包含更新订单状态内容
 				orderInfo.setPayTime(now);
-				orderInfo.setStatus(3);
+				orderInfo.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
 				orderInfoMapper.update(orderInfo);
-
 				// 更新用户的账户信息(点卡)
 				BigDecimal cardMoney = userDb.getCardMoney() != null ? userDb.getCardMoney() : ZERO;
 				userDb.setCardMoney(cardMoney.subtract(dto.getTotalPay()));
@@ -272,16 +292,22 @@ public class PayServiceImpl extends BaseService implements PayService {
 				String descr = "购买商品花费点卡" + dto.getTotalPay() + ":元";
 				saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_CARD_MONEY, dto.getTotalPay(), cardMoney,
 						orderId, descr, now);
+				
 				// 更新商品的数量内容
 				batchUpdateProduct(listProduct);
+				ret.setFlag(1);
+				
+				//根据已完成的订单内容记录进出账的账单内容--->应该可以通过定时器去跑数据内容
 			} else if (payType == Constants.ALIPAY) {
 				if (dto.getRmb().compareTo(ZERO) == 0 && dto.getCornMoney().compareTo(dto.getTotalPay()) == 0) {
 					// 说明全部是余额抵扣的和点卡购买的路径一样
 					// 包含更新订单状态内容
 					orderInfo.setPayTime(now);
-					orderInfo.setStatus(3);
+					orderInfo.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
 					orderInfoMapper.update(orderInfo);
 
+					//根据已完成的订单内容记录进出账的账单内容;
+					
 					// 更新用户的账户信息(余额)
 					BigDecimal money = userDb.getMoney() != userDb.getMoney() ? userDb.getMoney() : ZERO;
 					userDb.setMoney(money.subtract(dto.getCornMoney()));
@@ -291,23 +317,38 @@ public class PayServiceImpl extends BaseService implements PayService {
 					String descr = "购买商品花费余额" + dto.getTotalPay() + ":元";
 					saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, dto.getCornMoney(), money,
 							orderId, descr, now);
+					
 					// 更新商品的数量内容
 					batchUpdateProduct(listProduct);
+					ret.setFlag(1);
+					
+					//根据已完成的订单内容记录进出账的账单内容--->应该可以通过定时器去跑数据内容
+					
+					
 				} else {
 					// 需要在线支付的拼装验签内容;
 					// 根据支付方式选择验签的内容;
 					logger.info("在线支付拼装网关验签内容的接口orderInfo{}", JSON.toJSON(orderInfo));
+					String sign = null;
 					if (payType == Constants.ALIPAY) {
-						PayUtil.setProductSign(ret, dto);
+						sign = PayUtil.setProductSign(dto);
 					} else if (payType == Constants.WEIXIN_PAY) {
 						// 这个是微信的签名内容
 
 					}
+					if(StringUtils.isBlank(sign)){
+						jsonResponse.setRetDesc("获取APP支付验签失败");
+						return jsonResponse;
+					}
+					ret.setPaySign(sign);
+					ret.setFlag(2);
 					
-					orderInfo.setPayTime(now);
-					orderInfo.setStatus(2);// 标识付款中-->如果真的付款完成回调中再次更新订单内容
-					orderInfoMapper.update(orderInfo);
-
+					
+					//订单的状态不用变化-->等到支付成功之后异步回调才去操作这些内容
+//					orderInfo.setPayTime(now);
+//					orderInfo.setStatus(2);// 标识付款中-->如果真的付款完成回调中再次更新订单内容
+//					orderInfoMapper.update(orderInfo);
+					
 					// 扣除余额抵扣的部分内容;
 					//如果不是回调里面余额抵扣和商品数量不应该去更新使用-->都放到回调里面去支付
 					// 更新用户的账户信息(余额)
@@ -336,7 +377,8 @@ public class PayServiceImpl extends BaseService implements PayService {
 				}
 			}
 		}
-		return null;
+		jsonResponse.success(ret);
+		return jsonResponse;
 	}
 
 	
@@ -379,13 +421,14 @@ public class PayServiceImpl extends BaseService implements PayService {
 			json.put("msg","获取运费价格异常请您联系管理员稍后再试");
 			return json;
 		}
-		String producDetail = orderInfo.getProducDetail();
+		String producDetail = orderInfo.getProductDetail();
 		List<PayProductDetailDTO> listDb = JSONArray.parseArray(producDetail, PayProductDetailDTO.class);
 		if(dto.getList().size() != listDb.size()){
 			json.put("msg","该订单的商品种类和前置订单不一致");
 			return json;
 		}
 		BigDecimal total = new BigDecimal("0.00");
+		BigDecimal totalCost = new BigDecimal("0.00");
 		BigDecimal payTotal  = new BigDecimal("0.00");
 		BigDecimal discount  = new BigDecimal("1.00");
 		BigDecimal discountMoney  = new BigDecimal("0.00");
@@ -418,14 +461,22 @@ public class PayServiceImpl extends BaseService implements PayService {
 				json.put("msg","商品id为"+dto1.getProductId()+"的商品不存在/库存不足");
 				return json;
 			}
+			
+			//设置更新数量的商品列表
 			updateProduct = new Product();
 			updateProduct.setProductId(productId);
 			updateProduct.setSalesAmount(findProduct.getSalesAmount()+dto1.getAmount());
 			updateProduct.setStockAmount(findProduct.getStockAmount()-dto1.getAmount());
 			if(updateProduct.getStockAmount().intValue() == 0){
-				updateProduct.setStatus(2);
+				updateProduct.setStatus(Constants.PRODUCT_STATUS_YXJ);
 			}
 			listProduct.add(updateProduct);
+			
+			//已完成订单设置进价/成本内容;
+			dto1.setCostPrice(findProduct.getCostPrice());
+			BigDecimal cost = dto1.getCostPrice().multiply(new BigDecimal(dto1.getAmount()));
+			dto1.setCost(cost.doubleValue());
+			totalCost = totalCost.add(cost);
 			total = total.add(new BigDecimal(dto1.getTotal()));
 		}
 		
@@ -492,11 +543,13 @@ public class PayServiceImpl extends BaseService implements PayService {
 				return json;
 			}
 		}
+		orderInfo.setProductDetail(JSONObject.toJSONString(listDb));
+		orderInfo.setTotalCost(totalCost);
+		orderInfo.setTotalMoney(total);
 		orderInfo.setDiscount(discount.floatValue());
 		orderInfo.setDiscountDetail(discountDetail);
 		orderInfo.setDiscountMoney(discountMoney);
 		orderInfo.setTotalPay(totalPay);
-		orderInfo.setTotalMoney(total);
 		orderInfo.setRmb(rmb);
 		orderInfo.setCornMoney(cornMoney);
 		orderInfo.setPostage(postageMoney);
@@ -515,6 +568,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 		json.put("code",2000);
 		int num =1;
 		PayProductDetailDTO detail = null;
+		List<PayProductDetailDTO>dtos = new ArrayList<>();
 		for (CartDTO dto : list) {
 			if(null == dto){
 				json.put("msg", "第"+num+"个商品参数不为空");
@@ -547,96 +601,14 @@ public class PayServiceImpl extends BaseService implements PayService {
 			BeanUtils.copyProperties(productDb, detail);
 			detail.setAmount(amount);
 			detail.setTotal(productDb.getProductPrice().multiply(new BigDecimal(amount)).doubleValue());
+			dtos.add(detail);
 			cartMapper.delete(productId, ret.getUid());
 		}
+		ret.setList(dtos);
 		if(list.size() == ret.getList().size()){
 			json.put("code",1000);
 		}
 		return json;
-	}
-	
-	
-	@Override
-	public JsonResponse<PreOrderResultDTO> buyVip() {
-		JsonResponse<PreOrderResultDTO>jsonResponse = new JsonResponse<>();
-		User user = SessionHolder.currentUser();
-		if(null == user){
-			jsonResponse.setRetDesc("请重新登录");
-			return jsonResponse;
-		}
-		String uid = user.getUid();
-		User userDb  = userMapper.getUserByUid(uid);
-		if(null == userDb){
-			jsonResponse.setRetDesc("当前用户状态异常");
-			return jsonResponse;
-		}
-		Integer isVip = userDb.getIsVip();
-		if(null != isVip && isVip.intValue()==Constants.VIP_USER){
-			jsonResponse.setRetDesc("当前已经是vip用户");
-			return jsonResponse;
-		}
-		Map<String, String> online = getOnline();
-		logger.info("获取在线参数的map={}",JSON.toJSON(online));
-		if(null ==online || online.size() == 0){
-			jsonResponse.setRetDesc("获取在线参数异常,请联系管理员");
-			return jsonResponse;
-		}
-		String vipPrice = online.get(Constants.VIP_PRICE);
-		if(StringUtils.isBlank(vipPrice)){
-			jsonResponse.setRetDesc("获取VIP价格异常请您联系管理员稍后再试");
-			return jsonResponse;
-		}
-		Integer orderType = Constants.PAY_VIP;
-		//针对生成前置订单的用户加锁防止生成多个前置订单;
-		boolean lock = cacheService.lock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),Constants.LOCK ,Constants.FIVE_MINUTE);
-		logger.info("VIP购买提交前置订单的加锁操作key = {},结果 = {}",Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),lock);
-		if(lock){
-			jsonResponse.setRetDesc("VIP购买提交订单生成失败请稍后再试");
-			return jsonResponse;
-		}
-		try {
-			//先查询当前用户是否之前生成过未付款的vip购买的订单内容;
-			OrderInfo info = new OrderInfo();
-			info.setUid(uid);
-			info.setOrderType(orderType);
-			info.setStatus(1);
-			OrderInfo infoDb = orderInfoMapper.getPayOrder(info);
-			Date now = new Date();
-			BigDecimal total = new BigDecimal(vipPrice);
-			int flag = 0;
-			if(infoDb == null){//如果不存在则新增
-				infoDb = new OrderInfo();
-				infoDb.setOrderId(Utils.getOrderId());
-				infoDb.setOrderType(orderType);
-				infoDb.setUid(uid);
-				infoDb.setTotalMoney(total);
-				infoDb.setStatus(1);
-				infoDb.setCreateTime(now);
-				infoDb.setProducDetail("购买成为VIP");
-				logger.info("VIP购买提交前置订单的插入orderInfo="+JSON.toJSONString(info));
-				flag = orderInfoMapper.insert(infoDb);
-			}else{//存在则修改原来的
-				infoDb.setOrderId(Utils.getOrderId());
-				infoDb.setTotalMoney(total);
-				infoDb.setStatus(1);
-				infoDb.setCreateTime(now);
-				infoDb.setProducDetail("购买vip内容");
-				logger.info("VIP购买提交前置订单的修改orderInfo="+JSON.toJSONString(info));
-				flag = orderInfoMapper.update(infoDb);
-			}
-			PreOrderResultDTO ret = new PreOrderResultDTO();
-			BeanUtils.copyProperties(infoDb, ret);
-			jsonResponse.success(ret, "获取购买vip的信息成功");
-			logger.info("VIP购买提交前置订单的成功后返回的内容PreOrderResultDTO="+JSON.toJSONString(ret));
-		} catch (Exception e) {
-			jsonResponse.setRetDesc("vip购买生成前置订单异常");
-			e.printStackTrace();
-			logger.error("vip购买生成前置订单异常"+e.getMessage());
-			throw new BusinessException("vip购买生成前置订单异常"+e.getMessage());
-		}finally {
-			cacheService.releaseLock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)));
-		}
-		return jsonResponse;
 	}
 	
 	@Override
@@ -652,7 +624,12 @@ public class PayServiceImpl extends BaseService implements PayService {
 			return jsonResponse;
 		}
 		String uid = user.getUid();
-		user  = userMapper.getUserByUid(uid);
+		JSONObject userRet = getUserByUidAndLock(uid);
+		if(userRet.getIntValue("code") == 1000){
+			jsonResponse.setRetDesc(userRet.getString("msg"));
+			return jsonResponse;
+		}
+		user = userRet.getObject("user",User.class);
 		if(null == user){
 			jsonResponse.setRetDesc("当前用户状态异常");
 			return jsonResponse;
@@ -702,21 +679,20 @@ public class PayServiceImpl extends BaseService implements PayService {
 				saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, totalPay, money, info.getOrderId(), desc, now);
 				desc = "点卡充值";
 				saveUserRecord(uid, Constants.RECORD_INCOME, Constants.RECORD_CARD_MONEY, totalPay, cardMoney, info.getOrderId(), desc, now);
+				ret.setFlag(1);
 			}else if(payType == Constants.ALIPAY){
 				PayUtil.setRechargeSign(info,ret);
-				
 			}
 			
-			
-			
-			
-			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			jsonResponse.setRetDesc("充值订单异常");
+			logger.error("充值订单异常"+e.getMessage());
+			throw new BusinessException("充值订单异常"+e.getMessage());
 		}finally {
 			//释放加锁内容;
-			
+			cacheService.releaseLock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)));
+			// 清除用户锁和商品锁
+			cacheService.releaseLock(Constants.LOCK_USER + uid);
 		}
 		
 		
@@ -775,7 +751,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				json.put("msg","VIP价格和应付金额不一致请重新下单");
 				return json;
 			}
-			info.setProducDetail("用户购买成为VIP用户,花费"+totalPay+":元");
+			info.setProductDetail("用户购买成为VIP用户,花费"+totalPay+":元");
 		}else if(orderType == Constants.PAY_CARD){
 			if(payType != Constants.MONEY_PAY || payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
 				json.put("msg","点卡只支持支付宝/微信/余额购买");
@@ -786,7 +762,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				json.put("msg","用户余额不足");
 				return json;
 			}
-			info.setProducDetail("用户购买"+totalPay+":元的点卡");
+			info.setProductDetail("用户购买"+totalPay+":元的点卡");
 		}else if(orderType == Constants.PAY_PHONE){//话费充值
 			if(payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
 				json.put("msg","话充值只能支付宝/微信支付");
@@ -833,7 +809,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 					return json;
 				}
 			}
-			info.setProducDetail("用户手机充值话费"+totalMoney+":元");
+			info.setProductDetail("用户手机充值话费"+totalMoney+":元");
 		}else{
 			json.put("msg","当前充值类型不匹配,充值失败");
 			return json;

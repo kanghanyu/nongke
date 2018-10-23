@@ -1,5 +1,7 @@
 package com.khy.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +41,14 @@ public class ProductController {
 		JsonResponse<PageInfo<Product>> jsonResponse = productService.pageProduct(dto);
 		return jsonResponse;
 	}
+	
+	@RequestMapping(value = "/getBannerProduct",method = RequestMethod.POST)
+	@ApiOperation(value = "获取banner位上的全部商品")
+	public JsonResponse<List<Product>> getBannerProduct(){
+		JsonResponse<List<Product>> jsonResponse = productService.getBannerProduct();
+		return jsonResponse;
+	}
+	
 	
 	@RequestMapping(value = "/getProduct",method = RequestMethod.POST)
 	@ApiOperation(value = "根据商品的id获取商品详情商品内容")

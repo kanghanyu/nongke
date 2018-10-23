@@ -31,15 +31,23 @@ public class OrderInfo implements Serializable {
 	/**余额抵扣的钱*/
 	private BigDecimal cornMoney;
 	
-	private String producDetail;
+	/**总的成本价格*/
+	private BigDecimal totalCost;
+	
+	private String productDetail;
 
-	/** 1未付款,2 付款中 3付款完成 4:失败   */
+	/**订单状态 1订单未完成 2:订单完成 */
 	private Integer status;
+	
+	/**付款状态 1未付款,2已付款 3:已取消 */
+	private Integer payStatus;
 
 	private Date createTime;
 
 	private Date payTime;
 
+	/**失效时间创建时间30分钟之后*/
+	private Date invalidTime;
 
 	// 邮费
 	private BigDecimal postage;
@@ -59,12 +67,28 @@ public class OrderInfo implements Serializable {
 		return id;
 	}
 
+	public BigDecimal getTotalCost() {
+		return totalCost;
+	}
+
+	public void setTotalCost(BigDecimal totalCost) {
+		this.totalCost = totalCost;
+	}
+
 	public BigDecimal getPostage() {
 		return postage;
 	}
 
 	public void setPostage(BigDecimal postage) {
 		this.postage = postage;
+	}
+
+	public Date getInvalidTime() {
+		return invalidTime;
+	}
+
+	public void setInvalidTime(Date invalidTime) {
+		this.invalidTime = invalidTime;
 	}
 
 	public String getUserName() {
@@ -223,35 +247,20 @@ public class OrderInfo implements Serializable {
 		this.payTime = payTime;
 	}
 
-	public String getProducDetail() {
-		return producDetail;
+	public String getProductDetail() {
+		return productDetail;
 	}
 
-	public void setProducDetail(String producDetail) {
-		this.producDetail = producDetail == null ? null : producDetail.trim();
+	public void setProductDetail(String productDetail) {
+		this.productDetail = productDetail;
 	}
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(getClass().getSimpleName());
-		sb.append(" [");
-		sb.append("Hash = ").append(hashCode());
-		sb.append(", id=").append(id);
-		sb.append(", orderId=").append(orderId);
-		sb.append(", orderType=").append(orderType);
-		sb.append(", payType=").append(payType);
-		sb.append(", uid=").append(uid);
-		sb.append(", totalMoney=").append(totalMoney);
-		sb.append(", discount=").append(discount);
-		sb.append(", discountDetail=").append(discountDetail);
-		sb.append(", discountMoney=").append(discountMoney);
-		sb.append(", status=").append(status);
-		sb.append(", createTime=").append(createTime);
-		sb.append(", payTime=").append(payTime);
-		sb.append(", producDetail=").append(producDetail);
-		sb.append(", serialVersionUID=").append(serialVersionUID);
-		sb.append("]");
-		return sb.toString();
+	public Integer getPayStatus() {
+		return payStatus;
 	}
+
+	public void setPayStatus(Integer payStatus) {
+		this.payStatus = payStatus;
+	}
+
 }

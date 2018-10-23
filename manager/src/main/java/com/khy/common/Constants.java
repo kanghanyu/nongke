@@ -85,6 +85,20 @@ public class Constants {
     public static final int ALIPAY = 3;
     public static final int WEIXIN_PAY = 4;
     
+    // order_status
+    public static final int ORDER_STATUS_WWC = 1;
+    public static final int ORDER_STATUS_WC = 2;
+    
+    //order_payStatus
+    public static final int ORDER_PAYSTATUS_WFK = 1;
+    public static final int ORDER_PAYSTATUS_YFK = 2;
+    public static final int ORDER_PAYSTATUS_YQX = 3;
+    
+    
+    //product_status
+    public static final int PRODUCT_STATUS_WSJ = 0;
+    public static final int PRODUCT_STATUS_SJ = 1;
+    public static final int PRODUCT_STATUS_YXJ = 2;
     
 
     //流水内容

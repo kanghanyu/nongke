@@ -1,5 +1,7 @@
 package com.khy.mapper;
 
+import java.util.List;
+
 import com.khy.entity.OrderInfo;
 
 public interface OrderInfoMapper {
@@ -8,5 +10,7 @@ public interface OrderInfoMapper {
 	OrderInfo getPayOrder(OrderInfo info);
 	
 	int update(OrderInfo info);
+
+	List<OrderInfo> getNotPayOrder();
 	
 }

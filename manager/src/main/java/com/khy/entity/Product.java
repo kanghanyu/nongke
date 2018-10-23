@@ -20,6 +20,9 @@ public class Product extends BaseEntity implements Serializable {
 
 	@ApiModelProperty(value="价格")
 	private BigDecimal productPrice;
+	
+	//进价
+	private BigDecimal costPrice;
 
 	@ApiModelProperty(value="库存数量")
 	private Integer stockAmount;
@@ -45,13 +48,30 @@ public class Product extends BaseEntity implements Serializable {
 	@ApiModelProperty(value="缩略图")
 	private String img;
 	
+	/**0:标识普通 1:标识hot*/
+	private Integer isHot;
 	
+	public Integer getIsHot() {
+		return isHot;
+	}
+
+	public void setIsHot(Integer isHot) {
+		this.isHot = isHot;
+	}
+
 	public Long getProductId() {
 		return productId;
 	}
 
 	public void setProductId(Long productId) {
 		this.productId = productId;
+	}
+	public BigDecimal getCostPrice() {
+		return costPrice;
+	}
+
+	public void setCostPrice(BigDecimal costPrice) {
+		this.costPrice = costPrice;
 	}
 
 	public String getProductName() {

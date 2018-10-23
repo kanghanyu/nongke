@@ -50,4 +50,10 @@ public class SubmitOrderResultDTO implements Serializable {
 	public void setPaySign(String paySign) {
 		this.paySign = paySign;
 	}
+	public Integer getFlag() {
+		return flag;
+	}
+	public void setFlag(Integer flag) {
+		this.flag = flag;
+	}
 }

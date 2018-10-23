@@ -2,6 +2,8 @@ package com.khy.mapper.dto;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -37,7 +39,7 @@ public class PreOrderResultDTO implements Serializable {
 	@ApiModelProperty(value="时间")
 	private Date createTime;
 
-	private String producDetail;
+	private String productDetail;
 	
 	@ApiModelProperty(value="折扣后的点卡的总金额")
 	private BigDecimal totalCardMoney;
@@ -134,11 +136,23 @@ public class PreOrderResultDTO implements Serializable {
 		this.createTime = createTime;
 	}
 
-	public String getProducDetail() {
-		return producDetail;
+	public String getProductDetail() {
+		return productDetail;
 	}
 
-	public void setProducDetail(String producDetail) {
-		this.producDetail = producDetail;
+	public void setProductDetail(String productDetail) {
+		this.productDetail = productDetail;
+	}
+	
+	public static void main(String[] args) {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		System.out.println(sdf.format(new Date()));
+		Calendar calendar = Calendar.getInstance();
+		
+		System.out.println(sdf.format(calendar.getTime()));
+		calendar.add(Calendar.MINUTE, 30);
+		System.out.println(sdf.format(calendar.getTime()));
+		
+		
 	}
 }
