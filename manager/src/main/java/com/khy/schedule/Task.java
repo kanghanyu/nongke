@@ -16,7 +16,7 @@ import com.khy.common.Constants;
 import com.khy.entity.OrderInfo;
 import com.khy.mapper.OrderInfoMapper;
 
-@Component
+//@Component
 public class Task {
 	public final static Logger logger = LoggerFactory.getLogger(Task.class);
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -24,7 +24,7 @@ public class Task {
 	@Autowired
 	private OrderInfoMapper orderInfoMapper;
 	
-//	@Scheduled(cron = "*/5 * * * * ?")
+	@Scheduled(cron = "*/5 * * * * ?")
 	public void updateNotPayOrder(){
 		//先查询所有的符合条件的订单内容
 		List<OrderInfo>list = orderInfoMapper.getNotPayOrder();
