@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartRequest;
 
 import com.khy.common.JsonResponse;
+import com.khy.entity.Message;
 import com.khy.entity.Msg;
 import com.khy.entity.OnlineParame;
 import com.khy.entity.User;
@@ -201,6 +202,12 @@ public class UserController {
 		return jsonResponse;
 	}
 	
+	@RequestMapping(value = "/listMessage", method = RequestMethod.POST)
+	@ApiOperation(value = "获取全部公告列表内容")
+	public JsonResponse<List<Message>> listMessage() {
+		JsonResponse<List<Message>> jsonResponse = uesrService.listMessage();
+		return jsonResponse;
+	}
 	
 	@RequestMapping(value = "/validate/img",method = RequestMethod.POST)
 	public void img(HttpServletRequest request, HttpServletResponse response) throws IOException {

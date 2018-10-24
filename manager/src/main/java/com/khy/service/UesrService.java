@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.web.multipart.MultipartRequest;
 
 import com.khy.common.JsonResponse;
+import com.khy.entity.Message;
 import com.khy.entity.OnlineParame;
 import com.khy.entity.User;
 import com.khy.entity.UserAddress;
@@ -52,5 +53,7 @@ public interface UesrService {
 	JsonResponse<Boolean> cardMoneyToUser(CartMoneyDTO dto);
 
 	JsonResponse<List<UserRecordDTO>> listUserRecord(Integer type);
+
+	JsonResponse<List<Message>> listMessage();
 
 }

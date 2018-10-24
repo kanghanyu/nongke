@@ -22,6 +22,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.khy.common.Constants;
 import com.khy.common.JsonResponse;
+import com.khy.entity.Message;
 import com.khy.entity.OnlineParame;
 import com.khy.entity.User;
 import com.khy.entity.UserAddress;
@@ -31,6 +32,7 @@ import com.khy.entity.UserInviter;
 import com.khy.entity.UserRecord;
 import com.khy.exception.BusinessException;
 import com.khy.interceptor.LoginInterceptor;
+import com.khy.mapper.MessageMapper;
 import com.khy.mapper.UserAddressMapper;
 import com.khy.mapper.UserBankMapper;
 import com.khy.mapper.UserCashMapper;
@@ -64,6 +66,8 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 	private UserInviterMapper userInviterMapper;
 	@Autowired
 	private UserRecordMapper userRecordMapper;
+	@Autowired
+	private MessageMapper messageMapper;
 	@Override
 	public JsonResponse<User> login(User user) {
 		JsonResponse<User> jsonResponse = new JsonResponse<>();
@@ -203,18 +207,29 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			jsonResponse.setRetDesc("手机号已注册");
 			return jsonResponse;
 		}
+		Date now = new Date();
+		String uid = getUid();
+		user.setUid(uid);
 		//邀请人
 		String inviterUid = user.getInviterUid();
 		if(StringUtils.isNotBlank(inviterUid)){
 			User inviterUser = userMapper.getUserByUid(inviterUid);
 			if(null != inviterUser){
+				if(inviterUser.getIsVip() == Constants.GENERAL_UER){
+					jsonResponse.setRetDesc("非VIP用户不支持邀请");
+					return jsonResponse;
+				}
 				user.setInviterPhone(inviterUser.getPhone());
 				user.setInviterUid(inviterUid);
+				//设置 邀请用户的列表数据
+				UserInviter inviter = new UserInviter();
+				inviter.setUid(inviterUid);
+				inviter.setInvitedUid(uid);
+				inviter.setCreateTime(now);
+				userInviterMapper.insert(inviter);
 			}
 		}
-		String uid = getUid();
-		user.setUid(uid);
-		user.setCreateTime(new Date());
+		user.setCreateTime(now);
 		user.setMoney(ZERO);
 		user.setCardMoney(ZERO);
 		user.setCommission(ZERO);
@@ -714,6 +729,16 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			}
 		}
 		jsonResponse.success(dtos);
+		return jsonResponse;
+	}
+
+	
+	
+	@Override
+	public JsonResponse<List<Message>> listMessage() {
+		JsonResponse<List<Message>> jsonResponse = new JsonResponse<>();
+		List<Message> list = messageMapper.listAll();
+		jsonResponse.success(list);
 		return jsonResponse;
 	}
 
