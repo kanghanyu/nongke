@@ -15,6 +15,7 @@ import com.khy.entity.UserBank;
 import com.khy.entity.UserCash;
 import com.khy.entity.UserInviter;
 import com.khy.mapper.dto.CartMoneyDTO;
+import com.khy.mapper.dto.UserBillDTO;
 import com.khy.mapper.dto.UserInviterDTO;
 import com.khy.mapper.dto.UserRecordDTO;
 
@@ -55,5 +56,7 @@ public interface UesrService {
 	JsonResponse<List<UserRecordDTO>> listUserRecord(Integer type);
 
 	JsonResponse<List<Message>> listMessage();
+
+	JsonResponse<List<UserBillDTO>> listUserBill();
 
 }

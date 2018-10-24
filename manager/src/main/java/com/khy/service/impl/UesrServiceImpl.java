@@ -24,6 +24,7 @@ import com.khy.common.Constants;
 import com.khy.common.JsonResponse;
 import com.khy.entity.Message;
 import com.khy.entity.OnlineParame;
+import com.khy.entity.OrderInfo;
 import com.khy.entity.User;
 import com.khy.entity.UserAddress;
 import com.khy.entity.UserBank;
@@ -33,6 +34,7 @@ import com.khy.entity.UserRecord;
 import com.khy.exception.BusinessException;
 import com.khy.interceptor.LoginInterceptor;
 import com.khy.mapper.MessageMapper;
+import com.khy.mapper.OrderInfoMapper;
 import com.khy.mapper.UserAddressMapper;
 import com.khy.mapper.UserBankMapper;
 import com.khy.mapper.UserCashMapper;
@@ -40,6 +42,7 @@ import com.khy.mapper.UserInviterMapper;
 import com.khy.mapper.UserMapper;
 import com.khy.mapper.UserRecordMapper;
 import com.khy.mapper.dto.CartMoneyDTO;
+import com.khy.mapper.dto.UserBillDTO;
 import com.khy.mapper.dto.UserInviterDTO;
 import com.khy.mapper.dto.UserRecordDTO;
 import com.khy.service.UesrService;
@@ -68,6 +71,8 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 	private UserRecordMapper userRecordMapper;
 	@Autowired
 	private MessageMapper messageMapper;
+	@Autowired
+	private OrderInfoMapper orderInfoMapper;
 	@Override
 	public JsonResponse<User> login(User user) {
 		JsonResponse<User> jsonResponse = new JsonResponse<>();
@@ -738,6 +743,22 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 	public JsonResponse<List<Message>> listMessage() {
 		JsonResponse<List<Message>> jsonResponse = new JsonResponse<>();
 		List<Message> list = messageMapper.listAll();
+		jsonResponse.success(list);
+		return jsonResponse;
+	}
+
+	
+	@Override
+	public JsonResponse<List<UserBillDTO>> listUserBill() {
+		JsonResponse<List<UserBillDTO>> jsonResponse = new JsonResponse<>();
+		User user = SessionHolder.currentUser();
+		if(null == user){
+			jsonResponse.setRetDesc("请重新登录");
+			return jsonResponse;
+		}
+		String uid = user.getUid();
+		OrderInfo info = new OrderInfo();
+		List<UserBillDTO> list = orderInfoMapper.getUserBill(info);
 		jsonResponse.success(list);
 		return jsonResponse;
 	}

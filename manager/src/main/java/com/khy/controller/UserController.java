@@ -27,6 +27,7 @@ import com.khy.entity.UserBank;
 import com.khy.entity.UserCash;
 import com.khy.entity.UserInviter;
 import com.khy.mapper.dto.CartMoneyDTO;
+import com.khy.mapper.dto.UserBillDTO;
 import com.khy.mapper.dto.UserInviterDTO;
 import com.khy.mapper.dto.UserRecordDTO;
 import com.khy.service.UesrService;
@@ -208,6 +209,19 @@ public class UserController {
 		JsonResponse<List<Message>> jsonResponse = uesrService.listMessage();
 		return jsonResponse;
 	}
+	
+	@RequestMapping(value = "/listUserBill", method = RequestMethod.POST)
+	@ApiOperation(value = "获取用户-->我的账单列表")
+	public JsonResponse<List<UserBillDTO>> listUserBill() {
+		JsonResponse<List<UserBillDTO>> jsonResponse = uesrService.listUserBill();
+		return jsonResponse;
+	}
+	
+	
+	
+	
+	
+	
 	
 	@RequestMapping(value = "/validate/img",method = RequestMethod.POST)
 	public void img(HttpServletRequest request, HttpServletResponse response) throws IOException {

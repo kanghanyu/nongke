@@ -268,4 +268,16 @@
     	uid = #{uid}
   </update>
   
+  
+  <select id="getUserBill" parameterType="com.khy.entity.OrderInfo" resultType="com.khy.mapper.dto.UserBillDTO">
+  	select	
+  		<include refid="Base_Column_List"/>
+  	from
+  		t_order_info
+  	where
+  		status = 1
+  	and pay_status = 1
+  	and invalid_time &lt; now();
+  </select>
+  
 </mapper>

@@ -283,6 +283,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				orderInfo.setPayTime(now);
 				orderInfo.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
 				orderInfoMapper.update(orderInfo);
+				
 				// 更新用户的账户信息(点卡)
 				BigDecimal cardMoney = userDb.getCardMoney() != null ? userDb.getCardMoney() : ZERO;
 				userDb.setCardMoney(cardMoney.subtract(dto.getTotalPay()));
@@ -292,12 +293,16 @@ public class PayServiceImpl extends BaseService implements PayService {
 				String descr = "购买商品花费点卡" + dto.getTotalPay() + ":元";
 				saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_CARD_MONEY, dto.getTotalPay(), cardMoney,
 						orderId, descr, now);
-				
 				// 更新商品的数量内容
 				batchUpdateProduct(listProduct);
 				ret.setFlag(1);
 				
-				//根据已完成的订单内容记录进出账的账单内容--->应该可以通过定时器去跑数据内容
+				//根据已完成的订单内容记录进出账的账单内容--->应该可以通过定时器去跑数据内容-->余额抵扣/点卡购买的不生成账单内容;
+				
+				//如果当前用户是会员用户则还存在佣金分成的内容
+				//计算个邀请人的分佣金额
+				//setCommission(uid,orderInfo.getOrderId());
+				
 			} else if (payType == Constants.ALIPAY) {
 				if (dto.getRmb().compareTo(ZERO) == 0 && dto.getCornMoney().compareTo(dto.getTotalPay()) == 0) {
 					// 说明全部是余额抵扣的和点卡购买的路径一样
@@ -321,9 +326,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 					// 更新商品的数量内容
 					batchUpdateProduct(listProduct);
 					ret.setFlag(1);
-					
 					//根据已完成的订单内容记录进出账的账单内容--->应该可以通过定时器去跑数据内容
-					
 					
 				} else {
 					// 需要在线支付的拼装验签内容;
@@ -381,7 +384,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 		return jsonResponse;
 	}
 
-	
 	/**
 	 * 批量更新商品的库存和销售数量
 	 * @Description
@@ -752,6 +754,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				return json;
 			}
 			info.setProductDetail("用户购买成为VIP用户,花费"+totalPay+":元");
+			info.setDescription("升级VIP");
 		}else if(orderType == Constants.PAY_CARD){
 			if(payType != Constants.MONEY_PAY || payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
 				json.put("msg","点卡只支持支付宝/微信/余额购买");
@@ -786,14 +789,14 @@ public class PayServiceImpl extends BaseService implements PayService {
 					if(dicountMoney.compareTo(totalPay) == 0){ 
 						//查询当月vip用户已经充值了多少钱的
 						String key = getKey(user.getUid());
-						String accumulate = cacheService.getString(key);
+						String accumulate = cacheService.getString(key);//已经充值的额度incr自增内容
 						BigDecimal accumulatePrice = StringUtils.isNotBlank(accumulate)? new BigDecimal(accumulate):ZERO;
 						String phoneRecharge = online.get(Constants.VIP_PHONE_RECHARGE);
 						if (StringUtils.isBlank(phoneRecharge)) {
 							json.put("msg", "获取vip充值话费每月优惠额度数据折扣异常请您联系管理员稍后再试");
 							return json;
 						}
-						if(accumulatePrice.compareTo(new BigDecimal(phoneRecharge)) > 0){
+						if((accumulatePrice.add(totalMoney)).compareTo(new BigDecimal(phoneRecharge)) > 0){
 							json.put("msg", "您当月VIP已经优惠充值了"+accumulate+":元,现在充值"+totalMoney+":元,已超出优惠额度");
 							return json;
 						}
