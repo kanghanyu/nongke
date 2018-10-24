@@ -533,7 +533,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 	}
 
 	@Override
-	public JsonResponse<List<UserInviterDTO>> lisUserInviter(UserInviter userInviter) {
+	public JsonResponse<List<UserInviterDTO>> listUserInviter(UserInviter userInviter) {
 		JsonResponse<List<UserInviterDTO>>jsonResponse = new JsonResponse<>();
 		if(null == userInviter || null == userInviter.getUid()){
 			jsonResponse.setRetDesc("参数不能为空");

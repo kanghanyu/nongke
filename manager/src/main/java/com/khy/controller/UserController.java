@@ -146,11 +146,11 @@ public class UserController {
 		return jsonResponse;
 	}
 	
-	@RequestMapping(value = "/lisUserInviter",method = RequestMethod.POST)
+	@RequestMapping(value = "/listUserInviter",method = RequestMethod.POST)
 	@ApiOperation(value = "获取用户的邀请人列表内容")
 	@ApiImplicitParam(name = "userInviter", value = "获取用户的邀请人列表内容接口参数", required = true, paramType = "body", dataType = "UserInviter")
-	public JsonResponse<List<UserInviterDTO>> lisUserInviter(@RequestBody UserInviter userInviter){
-		JsonResponse<List<UserInviterDTO>> jsonResponse = uesrService.lisUserInviter(userInviter);
+	public JsonResponse<List<UserInviterDTO>> listUserInviter(@RequestBody UserInviter userInviter){
+		JsonResponse<List<UserInviterDTO>> jsonResponse = uesrService.listUserInviter(userInviter);
 		return jsonResponse;
 	}
 	

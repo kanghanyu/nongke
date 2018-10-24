@@ -45,7 +45,7 @@ public interface UesrService {
 
 	JsonResponse<Map<String, OnlineParame>> getOnlineParame();
 
-	JsonResponse<List<UserInviterDTO>> lisUserInviter(UserInviter userInviter);
+	JsonResponse<List<UserInviterDTO>> listUserInviter(UserInviter userInviter);
 
 	JsonResponse<Boolean> commissionToMoney(BigDecimal commission);
 
