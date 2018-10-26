@@ -31,8 +31,10 @@
 					<div class="box">
 						<div class="box-body">
 							<div class="row">
-									手机号: <input placeholder="手机号" type="text" maxlength="11"  id="phone">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-									邀请人手机号: <input placeholder="邀请人手机号" type="text" maxlength="11" id="inviterPhone">
+									手机号: <input type="text" maxlength="11"  id="phone">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									邀请人手机号: <input type="text" maxlength="11" id="inviterPhone">&nbsp;&nbsp;
+									开始时间:<input id="startDate" style="width: 100px;height: 26px" class="Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd',readOnly:true,maxDate:'#F{$dp.$D(\'endDate\');}'})" />&nbsp;&nbsp;
+									结束时间:<input id="endDate" style="width: 100px;height: 26px" class="Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd',readOnly:true,minDate:'#F{$dp.$D(\'startDate\');}'})" />
 									角色:
 									<select id="isManager">
 										<option value="">-请选择-</option>
@@ -63,7 +65,6 @@
 										<th>点卡</th>
 										<th>佣金</th>
 										<th>头像</th>
-										<th>邀请id</th>
 										<th>邀请人</th>
 										<th>角色</th>
 										<th>用户类型</th>
@@ -79,20 +80,15 @@
 											<td width="5%">${user.money==null?0:user.money}</td>
 											<td width="5%">${user.cardMoney==null?0:user.cardMoney}</td>
 											<td width="5%">${user.commission==null?0:user.commission}</td>
-											<td width="10%"><img src='${user.img==null?"":user.img}' height="50px" width="50px"></td>
-											<td width="8%">${user.inviterUid==null?"无":user.inviterUid}</td>
+											<td width="8%"><img src='${user.img==null?"":user.img}' height="50px" width="50px"></td>
 											<td width="9%">${user.inviterPhone==null?"无":user.inviterPhone}</td>
 											<td width="7%">${user.isManager==0?"普通用户":"管理员"}</td>
 											<td width="7%">${user.isVip==0?"普通用户":"VIP用户"}</td>
 											<td width="30%">
 												<button class="btn btn-primary btn-sm"
-													onclick="detailUserInfo('${user.uid }')">
-													<i class="glyphicon glyphicon-edit">详情</i>
-												</button>
+													onclick="detailUserInfo('${user.uid }')">详情</button>
 												<button class="btn btn-danger btn-sm" 
-													onclick="setUserStatus('${user.id }','1')" type="button">
-													<i class="fa fa-trash-o">冻结</i>
-												</button>
+													onclick="setUserStatus('${user.id }','1')">冻结</button>
 												<button class="btn btn-info btn-sm"
 													onclick="setUserStatus('${user.id }','2')">升为管理员</button>
 												<button class="btn btn-warning btn-sm"

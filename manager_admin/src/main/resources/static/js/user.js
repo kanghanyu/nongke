@@ -21,8 +21,11 @@ function addHtml(pageNum){
 	var inviterPhone = $("#inviterPhone").val();
 	var isManager = $("#isManager").val();
 	var isVip = $("#isVip").val();
+	var startDate = $("#startDate").val();
+	var endDate = $("#endDate").val();
 	var data = {
-			"pageNum":pageNum,"pageSize":pageSize,"phone":phone,"inviterPhone":inviterPhone,"isManager":isManager,"isVip":isVip
+			"pageNum":pageNum,"pageSize":pageSize,"phone":phone,"inviterPhone":inviterPhone,
+			"isManager":isManager,"isVip":isVip,"startDate":startDate,"endDate":endDate
 	}
 	
 	$.ajax({
@@ -36,10 +39,10 @@ function addHtml(pageNum){
 				$("#tbody").html("");
 				var htmlStr="";
 				$.each(data.list, function (index, item) {
-					var moneyStr = item.moneyStr!=null?item.moneyStr:"";
-					var cardMoney =item.cardMoney!=null?item.cardMoney:0
-							var commission =item.commission!=null?item.commission:0
-									var img = item.img!=null?item.img:"";
+					var moneyStr = item.moneyStr!=null?item.moneyStr:"0.00";
+					var cardMoney =(item.cardMoney!=null&&item.cardMoney!=0)?item.cardMoney:"0.00"
+					var commission =(item.commission!=null&&item.commission!=0)?item.commission:"0.00"
+					var img = item.img!=null?item.img:"";
 					var inviterUid = item.inviterUid!=null?item.inviterUid:"无";
 					var inviterPhone = item.inviterPhone!=null?item.inviterPhone:"无";
 					var isManager = item.isManager==0?"普通用户":"管理员";
@@ -51,18 +54,13 @@ function addHtml(pageNum){
 					htmlStr += '<td width="5%">'+moneyStr+'</td>';
 					htmlStr += '<td width="5%">'+cardMoney+'</td>';
 					htmlStr += '<td width="5%">'+commission+'</td>';
-					htmlStr += '<td width="10%"><img src="'+img+'" height="50px" width="50px"></td>';
-					htmlStr += '<td width="8%">'+inviterUid+'</td>';
+					htmlStr += '<td width="8%"><img src="'+img+'" height="50px" width="50px"></td>';
 					htmlStr += '<td width="9%">'+inviterPhone+'</td>';
 					htmlStr += '<td width="7%">'+isManager+'</td>';
 					htmlStr += '<td width="7%">'+isVip+'</td>';
 					htmlStr += '<td width="30%">';
-					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailUserInfo('+item.uid+')">'
-					htmlStr += '<i class="glyphicon glyphicon-edit">详情</i>'
-					htmlStr += '</button>'
-					htmlStr += '<button class="btn btn-danger btn-sm" onclick="setUserStatus('+item.id+',1)" type="button">'
-					htmlStr += '<i class="fa fa-trash-o">冻结</i>'
-					htmlStr += '</button>'
+					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailUserInfo('+item.uid+')">详情</button>'
+					htmlStr += '<button class="btn btn-danger btn-sm" onclick="setUserStatus('+item.id+',1)">冻结</button>'
 					htmlStr += '<button class="btn btn-info btn-sm" onclick="setUserStatus('+item.id+',2)">升为管理员</button>'
 					htmlStr += '<button class="btn btn-warning btn-sm" onclick="setUserStatus('+item.id+',3)">手动添加vip</button>'
 					htmlStr += '</td>'
@@ -82,8 +80,11 @@ function search(){
 	var inviterPhone = $("#inviterPhone").val();
 	var isManager = $("#isManager").val();
 	var isVip = $("#isVip").val();
+	var startDate = $("#startDate").val();
+	var endDate = $("#endDate").val();
 	var data = {
-			"pageNum":pageNum,"pageSize":pageSize,"phone":phone,"inviterPhone":inviterPhone,"isManager":isManager,"isVip":isVip
+			"pageNum":pageNum,"pageSize":pageSize,"phone":phone,"inviterPhone":inviterPhone,
+			"isManager":isManager,"isVip":isVip,"startDate":startDate,"endDate":endDate
 	}
 	
 	$.ajax({
@@ -99,10 +100,10 @@ function search(){
 				$("#tbody").html("");
 				var htmlStr="";
 				$.each(data.list, function (index, item) {
-					var moneyStr = item.moneyStr!=null?item.moneyStr:"";
-					var cardMoney =item.cardMoney!=null?item.cardMoney:0
-							var commission =item.commission!=null?item.commission:0
-									var img = item.img!=null?item.img:"";
+					var moneyStr = item.moneyStr!=null?item.moneyStr:"0.00";
+					var cardMoney =(item.cardMoney!=null&&item.cardMoney!=0)?item.cardMoney:"0.00"
+					var commission =(item.commission!=null&&item.commission!=0)?item.commission:"0.00"
+					var img = item.img!=null?item.img:"";
 					var inviterUid = item.inviterUid!=null?item.inviterUid:"无";
 					var inviterPhone = item.inviterPhone!=null?item.inviterPhone:"无";
 					var isManager = item.isManager==0?"普通用户":"管理员";
@@ -114,18 +115,13 @@ function search(){
 					htmlStr += '<td width="5%">'+moneyStr+'</td>';
 					htmlStr += '<td width="5%">'+cardMoney+'</td>';
 					htmlStr += '<td width="5%">'+commission+'</td>';
-					htmlStr += '<td width="10%"><img src="'+img+'" height="50px" width="50px"></td>';
-					htmlStr += '<td width="8%">'+inviterUid+'</td>';
+					htmlStr += '<td width="8%"><img src="'+img+'" height="50px" width="50px"></td>';
 					htmlStr += '<td width="9%">'+inviterPhone+'</td>';
 					htmlStr += '<td width="7%">'+isManager+'</td>';
 					htmlStr += '<td width="7%">'+isVip+'</td>';
 					htmlStr += '<td width="30%">';
-					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailUserInfo('+item.uid+')">'
-					htmlStr += '<i class="glyphicon glyphicon-edit">详情</i>'
-					htmlStr += '</button>'
-					htmlStr += '<button class="btn btn-danger btn-sm" onclick="setUserStatus('+item.id+',1)" type="button">'
-					htmlStr += '<i class="fa fa-trash-o">冻结</i>'
-					htmlStr += '</button>'
+					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailUserInfo('+item.uid+')">详情</button>'
+					htmlStr += '<button class="btn btn-danger btn-sm" onclick="setUserStatus('+item.id+',1)">冻结</button>'
 					htmlStr += '<button class="btn btn-info btn-sm" onclick="setUserStatus('+item.id+',2)">升为管理员</button>'
 					htmlStr += '<button class="btn btn-warning btn-sm" onclick="setUserStatus('+item.id+',3)">手动添加vip</button>'
 					htmlStr += '</td>'

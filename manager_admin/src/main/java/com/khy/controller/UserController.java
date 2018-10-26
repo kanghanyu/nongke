@@ -31,6 +31,8 @@ public class UserController {
 	
 
 	private static String msg ="手机号/密码不正确";
+	private static String msg2 ="非管理员不能登录";
+	private static String msg3 ="您的账户被冻结,请联系客服";
 	@Autowired
 	private UesrService uesrService;
 	
@@ -60,6 +62,14 @@ public class UserController {
 	public String loginForm(User user,HttpSession session) throws UnsupportedEncodingException{
 		user=uesrService.login(user);
 		if(user!=null){
+			if(user.getIsManager() == 0){
+				msg = URLEncoder.encode(msg2,"UTF-8");
+				return "redirect:/login?msg="+msg2;
+			}
+			if(user.getStatus() == 1){
+				msg = URLEncoder.encode(msg3,"UTF-8");
+				return "redirect:/login?msg="+msg3;
+			}
 			session.setAttribute("loginUser", user);
 			return "redirect:/index";
 		}else{

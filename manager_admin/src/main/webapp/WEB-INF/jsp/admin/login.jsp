@@ -10,7 +10,6 @@
 <meta
 	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
 	name="viewport">
-<jsp:include page="common.jsp" />
 </head>
 <script>
 	$(function(){
@@ -19,7 +18,7 @@
 			alert(msg);
 		}
 		
-		$(".login-box-body").hidden();
+		//$(".login-box-body").hidden();
 	})
 		function check(){
 			var phone = $("#phone").val();

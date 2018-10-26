@@ -73,7 +73,7 @@ public class ProductController {
 	
 	@RequestMapping("/uploadCoverImg")
 	@ResponseBody
-	public String batchUpload(MultipartRequest request) {
+	public String upload(MultipartRequest request) {
 		JSONObject json = new JSONObject();
 		json.put("code", "2000");
 		json.put("msg", "文件不也能为空");
@@ -86,11 +86,17 @@ public class ProductController {
 		if(null == file || file.getSize() <= 0 ){
 			return json.toString();
 		}
+		String mimetype = file.getContentType();
+		String type = mimetype.split("/")[0];
+		if(!type.equals("image")){
+			json.put("msg", "文件必须是图片类型");
+			return json.toString();
+		}
 		String originalFilename = file.getOriginalFilename();
 		String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));		
 		User user = SessionHolder.currentUser();
 		if(null == user){
-			json.put("msg", "用户未登录");
+			json.put("msg", "请刷新页面重新登录");
 			return json.toString();
 		}
 		String fileName =next+"/"+user.getUid()+"/"+Utils.getFileName()+suffix;

@@ -163,6 +163,8 @@ function imgsUpload(form,src){
 		if(null != data && data.code == 1000){
 			$("#"+src).attr("src",data.url);
 			return ;
+		}else if(data.code == 2000){ 
+			alert(data.msg);
 		}
 	}).error(function() {
 		alert("上传失败");

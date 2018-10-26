@@ -95,8 +95,9 @@ public class UesrServiceImpl implements UesrService {
 		}
 		if(StringUtils.isBlank(msg)){
 			user.setPassword(DigestUtils.md5DigestAsHex(user.getPassword().getBytes()));
-			user.setIsManager(1);
+			user.setIsManager(0);
 			user.setIsVip(0);
+			user.setStatus(0);
 			user.setUid(Utils.getUid());
 			user.setMoney(new BigDecimal("0.00"));
 			int flag = userMapper.insert(user);

@@ -46,4 +46,5 @@
 	href="/webjars/adminlte/2.3.2/plugins/iCheck/all.css">
 <script
 	src="/webjars/datetimepicker/2.4.7/build/jquery.datetimepicker.full.js"></script>
-	<script type="text/javascript" src="/js/bootstrap-paginator.min.js"></script>
+<script type="text/javascript" src="/js/bootstrap-paginator.min.js"></script>
+<script type="text/javascript" src="/js/My97DatePicker/WdatePicker.js"></script>

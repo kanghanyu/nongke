@@ -36,19 +36,25 @@
 				phone = #{phone}
 			</if>
 			<if test="null != uid and uid != '' ">
-				and uid = #{uid}
+				AND uid = #{uid}
 			</if>
 			<if test="null != inviterPhone and inviterPhone != '' ">
-				and inviter_phone = #{inviterPhone}
+				AND inviter_phone = #{inviterPhone}
 			</if>
 			<if test="null != inviterUid and inviterUid != '' ">
-				and inviter_uid = #{inviterUid}
+				AND inviter_uid = #{inviterUid}
 			</if>
 			<if test="null != isManager">
-				and is_manager = #{isManager}
+				AND is_manager = #{isManager}
 			</if>
 			<if test="null != isVip">
-				and is_vip = #{isVip}
+				AND is_vip = #{isVip}
+			</if>
+			<if test="null != startDate and startDate != '' ">
+				AND DATE_FORMAT(create_time,'%Y-%m-%d') >= #{startDate}
+			</if>
+			<if test="null != endDate and endDate != '' ">
+			   <![CDATA[AND DATE_FORMAT(create_time,'%Y-%m-%d') <= #{endDate}]]>
 			</if>
 		</where>
 	</select>
