@@ -201,7 +201,13 @@ public class RedisUtils {
 			closeJedis(jedis);
 		}
 
-
+		public Set<String> keys(String pattern) {
+			jedis = getJedis();
+			Set<String> set = jedis.keys(pattern);
+			closeJedis(jedis);
+			return set;
+		}
+		
 		/**
 		 * 设置key的过期时间，以秒为单位
 		 * 

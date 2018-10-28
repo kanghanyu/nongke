@@ -17,4 +17,7 @@ public class Constants {
     
     
     public static final String ONLINE_PARARME = "online_parame";
+    
+    public static final String USER_LOGIN = "manager.user.login:";
+    
 }

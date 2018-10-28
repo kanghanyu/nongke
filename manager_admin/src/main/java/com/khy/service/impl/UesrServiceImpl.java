@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,7 +46,6 @@ public class UesrServiceImpl implements UesrService {
 	private UserAddressMapper userAddressMapper;
 	@Autowired
 	private UserCashMapper userCashMapper;
-	
 	@Autowired
 	private RedisUtils RedisUtils;
 	@Override
@@ -186,6 +187,15 @@ public class UesrServiceImpl implements UesrService {
 		}
 		int num = userMapper.updateUser(user);
 		if(num>0){
+			if(null != user.getStatus() && user.getStatus() ==1){
+				//标识冻结用户
+				Set<String> keys = RedisUtils.KEYS.keys(Constants.USER_LOGIN.concat(user.getUid()+":*"));
+				if(null != keys && keys.size()>0){
+					for (String key : keys) {
+						RedisUtils.KEYS.del(key);
+					}
+				}
+			}
 			json.put("code",1000);
 			json.put("msg","成功");
 		}

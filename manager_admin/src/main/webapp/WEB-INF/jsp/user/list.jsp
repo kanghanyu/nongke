@@ -98,15 +98,23 @@
 											<td width="4%"><a/>我的账单</td>
 											<td width="4%"><a/>我的订单</td>
 											<td width="5%"><a/>话费充值记录</td>
-											<td width="30%">
+											<td width="20%">
 												<button class="btn btn-primary btn-sm"
 													onclick="detailUserInfo('${user.uid }')">详情</button>
-												<button class="btn btn-danger btn-sm" 
-													onclick="setUserStatus('${user.id }','1')">冻结</button>
+											<c:choose>
+												<c:when test="${user.status == 0}">
+													<button class="btn btn-danger btn-sm" 
+														onclick="setUserStatus('${user.uid }','1')">冻结</button>
+												</c:when>
+												<c:otherwise>
+													<button class="btn btn-warning btn-sm" 
+														onclick="setUserStatus('${user.uid }','4')">解冻</button>
+												</c:otherwise>
+											</c:choose>
 												<button class="btn btn-info btn-sm"
-													onclick="setUserStatus('${user.id }','2')">升为管理员</button>
+													onclick="setUserStatus('${user.uid }','2')">升为管理员</button>
 												<button class="btn btn-warning btn-sm"
-													onclick="setUserStatus('${user.id }','3')">手动添加vip</button>
+													onclick="setUserStatus('${user.uid }','3')">手动添加vip</button>
 											</td>
 										</tr>
 									</c:forEach>

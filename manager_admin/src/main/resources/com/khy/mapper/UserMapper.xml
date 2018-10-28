@@ -170,7 +170,7 @@
   		</if>
   	</set> 
 	  	WHERE
-	  		id=#{id}
+	  		uid=#{uid}
   </update>
   
   <select id="listUserInviter" parameterType="com.khy.mapper.dto.UserCommonDTO" resultType="com.khy.mapper.dto.UserInviterDTO">

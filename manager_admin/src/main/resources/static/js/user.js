@@ -60,9 +60,13 @@ function addHtml(pageNum){
 					htmlStr += '<td width="7%">'+isVip+'</td>';
 					htmlStr += '<td width="30%">';
 					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailUserInfo('+item.uid+')">详情</button>'
-					htmlStr += '<button class="btn btn-danger btn-sm" onclick="setUserStatus('+item.id+',1)">冻结</button>'
-					htmlStr += '<button class="btn btn-info btn-sm" onclick="setUserStatus('+item.id+',2)">升为管理员</button>'
-					htmlStr += '<button class="btn btn-warning btn-sm" onclick="setUserStatus('+item.id+',3)">手动添加vip</button>'
+					if(item.id ==0 ){
+						htmlStr += '<button class="btn btn-danger btn-sm" onclick="setUserStatus('+item.uid+',1)">冻结</button>'
+					}else{
+						htmlStr += '<button class="btn btn-warning btn-sm" onclick="setUserStatus('+item.uid+',4)">解冻</button>'
+					}
+					htmlStr += '<button class="btn btn-info btn-sm" onclick="setUserStatus('+item.uid+',2)">升为管理员</button>'
+					htmlStr += '<button class="btn btn-warning btn-sm" onclick="setUserStatus('+item.uid+',3)">手动添加vip</button>'
 					htmlStr += '</td>'
 					htmlStr += '</tr>';
 				});
@@ -121,9 +125,13 @@ function search(){
 					htmlStr += '<td width="7%">'+isVip+'</td>';
 					htmlStr += '<td width="30%">';
 					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailUserInfo('+item.uid+')">详情</button>'
-					htmlStr += '<button class="btn btn-danger btn-sm" onclick="setUserStatus('+item.id+',1)">冻结</button>'
-					htmlStr += '<button class="btn btn-info btn-sm" onclick="setUserStatus('+item.id+',2)">升为管理员</button>'
-					htmlStr += '<button class="btn btn-warning btn-sm" onclick="setUserStatus('+item.id+',3)">手动添加vip</button>'
+					if(item.id ==0 ){
+						htmlStr += '<button class="btn btn-danger btn-sm" onclick="setUserStatus('+item.uid+',1)">冻结</button>'
+					}else{
+						htmlStr += '<button class="btn btn-warning btn-sm" onclick="setUserStatus('+item.uid+',4)">解冻</button>'
+					}
+					htmlStr += '<button class="btn btn-info btn-sm" onclick="setUserStatus('+item.uid+',2)">升为管理员</button>'
+					htmlStr += '<button class="btn btn-warning btn-sm" onclick="setUserStatus('+item.uid+',3)">手动添加vip</button>'
 					htmlStr += '</td>'
 					htmlStr += '</tr>';
 				});
@@ -149,27 +157,31 @@ function search(){
 }
 
 
-function setUserStatus(id,type){
+function setUserStatus(uid,type){
 		var msg = "您真的确定要";
 		var s= "";
 		var data ="";
 		if(type == 1){
-			s = "冻结";
+			s = "冻结当前用户";
 			data = {
-		    		 "id":id,"status":1
+		    		 "uid":uid,"status":1
 		    	}
 		}else if(type == 2){
 			s = "升为管理员";			
 			data = {
-					"id":id,"isManager":1
+					"uid":uid,"isManager":1
 			}
 		}else if(type == 3){
-			msg = "手动添加vip";			
+			s = "手动添加vip";			
 			data = {
-					"id":id,"isVip":1
+					"uid":uid,"isVip":1
+			}
+		}else if(type == 4){
+			s = "解冻当前用户";			
+			data = {
+					"uid":uid,"status":0
 			}
 		}
-		
 		msg = msg+s+"吗？\n\n请确认！";
 		if (confirm(msg) == true) {
 			$.ajax({
@@ -181,6 +193,7 @@ function setUserStatus(id,type){
 				success : function(data) {
 					if(null != data && data.code == 1000){
 						alert(s+data.msg);
+						window.location.href = "/user/toUserList?pageSize=2&pageNum=1";
 					}
 				}
 			});
