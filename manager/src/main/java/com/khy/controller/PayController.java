@@ -1,9 +1,11 @@
 package com.khy.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.khy.common.JsonResponse;
 import com.khy.mapper.dto.PreOrderDTO;
@@ -14,12 +16,13 @@ import com.khy.mapper.dto.SubmitOrderDTO;
 import com.khy.mapper.dto.SubmitOrderResultDTO;
 import com.khy.service.PayService;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 
-//@RestController
-//@RequestMapping("/pay")
-//@Api(value="付款相关")
+@RestController
+@RequestMapping("/pay")
+@Api(value="付款相关")
 public class PayController{
 
 	@Autowired
@@ -41,7 +44,6 @@ public class PayController{
 		return jsonResponse;
 	}
 	
-	
 	@RequestMapping(value = "/recharge",method = RequestMethod.POST)
 	@ApiOperation(value = "购买vip提交的信息内容")
 	public JsonResponse<RechargeResultDTO> recharge(@RequestBody RechargeSubmitDTO dto){
@@ -50,12 +52,12 @@ public class PayController{
 	}
 	
 	
-	
-	@RequestMapping(value = "/async/notify",method = RequestMethod.POST)
+	@RequestMapping(value = "/{payType}/notify",method = RequestMethod.POST)
 	@ApiOperation(value = "在线购物支付订单内容")
-	@ApiImplicitParam(name = "dto", value = "在线购物支付订单内容", required = true, paramType = "body", dataType = "SubmitOrderDTO")
-	public JsonResponse<SubmitOrderResultDTO> async(@RequestBody SubmitOrderDTO dto){
-		JsonResponse<SubmitOrderResultDTO> jsonResponse = payService.payForProductOnline(dto);
+	@ApiImplicitParam(name = "memberId", value = "供应商的id", required = true, dataType = "Long", paramType = "path")
+	public JsonResponse<SubmitOrderResultDTO> async(@PathVariable(value = "payType", required = true)String payType){
+		System.out.println(payType);
+		JsonResponse<SubmitOrderResultDTO> jsonResponse = null;//payService.payForProductOnline(dto);
 		return jsonResponse;
 	}
 	

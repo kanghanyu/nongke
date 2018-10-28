@@ -29,11 +29,11 @@ public class Task {
 		//先查询所有的符合条件的订单内容
 		List<OrderInfo>list = orderInfoMapper.getNotPayOrder();
 		String orderId = null;
-		try {
-			if(CollectionUtils.isNotEmpty(list)){
-				logger.info("获取到过期的用户订单size={}",list.size());
-				int num = 1;
-				for (OrderInfo orderInfo : list) {
+		if(CollectionUtils.isNotEmpty(list)){
+			logger.info("获取到过期的用户订单size={}",list.size());
+			int num = 1;
+			for (OrderInfo orderInfo : list) {
+				try {
 					OrderInfo updateInfo = new OrderInfo();
 					orderId = orderInfo.getOrderId();
 					updateInfo.setPayStatus(Constants.ORDER_PAYSTATUS_YQX);
@@ -45,11 +45,12 @@ public class Task {
 					if(flag>0){
 						num++;
 					}
+				} catch (Exception e) {
+					logger.error("处理到过期的用户订单异常订单的orderId={}",orderId);
+					continue;
 				}
-				logger.info("处理到过期的用户订单num={}",num);
 			}
-		} catch (Exception e) {
-			logger.error("处理到过期的用户订单异常订单的orderId={}",orderId);
+			logger.info("处理到过期的用户订单num={}",num);
 		}
 	}
 }

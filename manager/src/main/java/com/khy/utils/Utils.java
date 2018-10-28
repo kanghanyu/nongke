@@ -9,7 +9,7 @@ import org.springframework.util.DigestUtils;
 public class Utils {
 
 //	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-	private final static SimpleDateFormat sdf = new SimpleDateFormat("MMddHHmm");
+	private final static SimpleDateFormat sdf = new SimpleDateFormat("MMddHHmmss");
 	private final static SimpleDateFormat sdf1 = new SimpleDateFormat("yyyyMMddHHmmss");
 	private final static SimpleDateFormat orderSdf = new SimpleDateFormat("yyMMddHHmmss");
 	public final static String STANDARD_DATETIME_PATTERN = "yyyy-MM-dd HH:mm:ss";

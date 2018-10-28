@@ -4,9 +4,19 @@
 	
 	
  <sql id="Base_Column_List">
-    id, uid, phone, password, create_time, money,card_money,commission,img, img_url,  inviter_uid, inviter_phone,is_manager,is_vip,status
+    id, uid, phone, password, create_time, money,card_money,commission,img, img_url,inviter_uid, inviter_phone,is_manager,is_vip,status
   </sql>
   
+	<select id="login" parameterType="java.lang.String" resultType="com.khy.entity.User">
+		SELECT 
+			<include refid="Base_Column_List"/>
+		FROM
+			t_user
+		WHERE
+			phone=#{phone}
+		and is_manager = 1
+		LIMIT 1
+	</select>
 	<select id="getUserByPhone" parameterType="java.lang.String" resultType="com.khy.entity.User">
 		SELECT 
 			<include refid="Base_Column_List"/>
@@ -14,6 +24,7 @@
 			t_user
 		WHERE
 			phone=#{phone}
+		AND status = 0
 		LIMIT 1
 	</select>
 	<select id="getUserByUid" parameterType="java.lang.String" resultType="com.khy.entity.User">
@@ -23,6 +34,7 @@
 			t_user
 		WHERE
 			uid=#{uid}
+		AND status = 0
 		LIMIT 1
 	</select>
 	

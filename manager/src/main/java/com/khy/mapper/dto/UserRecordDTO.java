@@ -18,6 +18,7 @@ public class UserRecordDTO implements Serializable {
 	@ApiModelProperty(value="金额")
 	private BigDecimal amount;
 	
+	@ApiModelProperty(value="1:收入 2支出")
     private Integer payType;
 
 	@ApiModelProperty(value="描述内容")

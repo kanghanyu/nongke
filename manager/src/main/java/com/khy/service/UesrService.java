@@ -6,7 +6,9 @@ import java.util.Map;
 
 import org.springframework.web.multipart.MultipartRequest;
 
+import com.github.pagehelper.PageInfo;
 import com.khy.common.JsonResponse;
+import com.khy.entity.BaseEntity;
 import com.khy.entity.Message;
 import com.khy.entity.OnlineParame;
 import com.khy.entity.User;
@@ -17,6 +19,8 @@ import com.khy.entity.UserInviter;
 import com.khy.mapper.dto.CartMoneyDTO;
 import com.khy.mapper.dto.UserBillDTO;
 import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserOrderInfoDTO;
+import com.khy.mapper.dto.UserPhoneRecord;
 import com.khy.mapper.dto.UserRecordDTO;
 
 public interface UesrService {
@@ -58,5 +62,9 @@ public interface UesrService {
 	JsonResponse<List<Message>> listMessage();
 
 	JsonResponse<List<UserBillDTO>> listUserBill();
+
+	JsonResponse<PageInfo<UserOrderInfoDTO>> listUserOrderInfo(BaseEntity entity);
+
+	JsonResponse<List<UserPhoneRecord>> listUserPhoneRecord();
 
 }

@@ -28,12 +28,13 @@ public class Constants {
     public static final String LOCK_USER = PREFIX.concat("lock:user:");
     public static final String LOCK_PRODUCT = PREFIX.concat("lock:product:");
     
-    public static final String USER_PHONE_RECHARGE= PREFIX.concat("user:phone:recharge");
+    public static final String USER_PHONE_RECHARGE= PREFIX.concat("user:phone:recharge:");
     
     public static final String LOCK = "lock";
     public static final int FIVE_MINUTE = 60*5;
     public static final int TWO_MINUTE = 60*2;
     public static final int ONE_DAY = 60*60*24;
+    public static final int SEVEN_DAY = 60*60*24*7;
     
     
     ///常用的变量值
@@ -45,7 +46,8 @@ public class Constants {
     public static final String CARD_DISCOUNT = "card_discount";
     /**vip的价格内容*/
     public static final String VIP_PRICE = "vip_price";
-    public static final String VIP_PRICE_FORMONEY = "vip_price_formoney";
+    /**vip转成余额 的价格*/
+    public static final String VIP_TO_USER_MONEY = "vip_to_user_money";
     
     /**vip购买商品的折扣内容*/
     public static final String VIP_DISCOUNT = "vip_discount";
@@ -56,6 +58,7 @@ public class Constants {
     public static final String VIP_PHONE_RECHARGE = "vip_phone_recharge";
     
     /**话费充值1级邀请人佣金提成 */
+    public static final String PAY_PHONE_BILL_EXTRACT = "pay_phone_bill_extract_";
     public static final String PAY_PHONE_BILL_EXTRACT_1 = "pay_phone_bill_extract_1";
     /**话费充值2级邀请人佣金提成 */
     public static final String PAY_PHONE_BILL_EXTRACT_2 = "pay_phone_bill_extract_2";
@@ -64,11 +67,15 @@ public class Constants {
     /**商品购买所有级别的佣金提成*/
     public static final String PAY_PRODUCT_BILL_EXTRACT = "pay_product_bill_extract";
     /**充值vip 1级邀请人佣金提成 单位元*/
+    public static final String PAY_VIP_BILL_EXTRACT = "pay_vip_bill_extract_";
     public static final String PAY_VIP_BILL_EXTRACT_1 = "pay_vip_bill_extract_1";
     /**充值vip 2级邀请人佣金提成5元*/
     public static final String PAY_VIP_BILL_EXTRACT_2 = "pay_vip_bill_extract_2";
     /**充值vip 3级邀请人佣金提成15元*/
     public static final String PAY_VIP_BILL_EXTRACT_3 = "pay_vip_bill_extract_3";
+    
+    /**注册之后的跳转页面*/
+    public static final String REGISTER_REDIRECT_URL = "register_redirect_url";
 	
     
     
@@ -93,6 +100,7 @@ public class Constants {
     public static final int ORDER_PAYSTATUS_WFK = 1;
     public static final int ORDER_PAYSTATUS_YFK = 2;
     public static final int ORDER_PAYSTATUS_YQX = 3;
+    public static final int ORDER_PAYSTATUS_YFF = 4;
     
     
     //product_status
@@ -102,11 +110,11 @@ public class Constants {
     
 
     //流水内容
-    //收入/支出
+    //收入/支出 payType
     public static final int RECORD_INCOME = 1;
     public static final int RECORD_PAY = 2;
     
-    //余额.点卡.佣金.人民币
+    //余额.点卡.佣金.人民币 type
     public static final int RECORD_MONEY = 1;
     public static final int RECORD_CARD_MONEY = 2;
     public static final int RECORD_COMMISSION = 3;
@@ -123,6 +131,6 @@ public class Constants {
     public static final String ALI_PUBLIC_KEY = "";
     public static final String VERSION = "1.0";
     public static final String SIGN_TYPE_RSA2 = "RSA2";
-    public static final String NOTIFY_URL = "http://www.nongke365.com:8081/pay/async/notify";
+    public static final String NOTIFY_URL = "http://www.nongke365.com:8081/pay/alipay/notify";
     public static final String TIMEOUT_EXPRESS = "5m";
 }

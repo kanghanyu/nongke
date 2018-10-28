@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class OrderInfo implements Serializable {
+public class OrderInfo extends BaseEntity implements Serializable {
 	private Long id;
 
 	private String orderId;
@@ -39,7 +39,7 @@ public class OrderInfo implements Serializable {
 	/**订单状态 1订单未完成 2:订单完成 */
 	private Integer status;
 	
-	/**付款状态 1未付款,2已付款 3:已取消 */
+	/**付款状态 1未付款,2已付款 3:已取消 4: 佣金已经返还 */
 	private Integer payStatus;
 
 	private Date createTime;

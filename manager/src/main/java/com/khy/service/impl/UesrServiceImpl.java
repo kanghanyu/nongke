@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -19,9 +20,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartRequest;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.khy.common.Constants;
 import com.khy.common.JsonResponse;
+import com.khy.entity.BaseEntity;
 import com.khy.entity.Message;
 import com.khy.entity.OnlineParame;
 import com.khy.entity.OrderInfo;
@@ -44,6 +49,9 @@ import com.khy.mapper.UserRecordMapper;
 import com.khy.mapper.dto.CartMoneyDTO;
 import com.khy.mapper.dto.UserBillDTO;
 import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserOrderInfoDTO;
+import com.khy.mapper.dto.UserOrderProductDTO;
+import com.khy.mapper.dto.UserPhoneRecord;
 import com.khy.mapper.dto.UserRecordDTO;
 import com.khy.service.UesrService;
 import com.khy.utils.BeanUtils;
@@ -87,14 +95,17 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			jsonResponse.setRetDesc("手机号不能为空");
 			return jsonResponse;
 		}
-		
 		if(StringUtils.isBlank(password)){
 			jsonResponse.setRetDesc("密码不能为空");
 			return jsonResponse;
 		}
-		User userDb = userMapper.getUserByPhone(phone);
+		User userDb = userMapper.login(phone);
 		if(null == userDb){
 			jsonResponse.setRetDesc("当前账户不存在");
+			return jsonResponse;
+		}
+		if(userDb.getStatus() == 1){
+			jsonResponse.setRetDesc("您的账户被冻结请联系客服");
 			return jsonResponse;
 		}
 		if(!userDb.getPassword().equals(DigestUtils.md5DigestAsHex(password.getBytes()))){
@@ -104,7 +115,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		userDb.hide(userDb);
 		String token = Utils.getToken();
 		userDb.setToken(token);
-		cacheService.setString(Constants.USER_LOGIN.concat(token), JSON.toJSONString(userDb));
+		cacheService.setString(Constants.USER_LOGIN.concat(userDb.getUid()+":").concat(token), JSON.toJSONString(userDb),Constants.SEVEN_DAY);
 		jsonResponse.success(userDb,"用户登录成功");
 		logger.info("登录接口响应的参数内容"+JSON.toJSONString(jsonResponse));
 		return jsonResponse;
@@ -127,7 +138,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		}
 		userDb.hide(userDb);
 		userDb.setToken(token);
-		cacheService.setString(Constants.USER_LOGIN.concat(token), JSON.toJSONString(userDb));
+		cacheService.setString(Constants.USER_LOGIN.concat(userDb.getUid()+":").concat(token), JSON.toJSONString(userDb),Constants.SEVEN_DAY);
 		jsonResponse.success(userDb);
 		return jsonResponse;
 	}
@@ -143,6 +154,13 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		MultipartFile file = request.getFile(next);
 		if(null == file || file.getSize() <= 0 ){
 			jsonResponse.setRetDesc("文件不也能为空");
+			return jsonResponse;
+		}
+		
+		String mimetype = file.getContentType();
+		String type = mimetype.split("/")[0];
+		if(!type.equals("image")){
+			jsonResponse.setRetDesc("文件必须是图片类型");
 			return jsonResponse;
 		}
 		User user = SessionHolder.currentUser();
@@ -316,7 +334,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 	public JsonResponse<Boolean> loginOut() {
 		JsonResponse<Boolean> jsonResponse = new JsonResponse<>();
 		User user = SessionHolder.currentUser();
-		cacheService.delKey(Constants.USER_LOGIN.concat(user.getToken()));
+		cacheService.delKey(Constants.USER_LOGIN.concat(user.getUid()+":").concat(user.getToken()));
 		SessionHolder.cleanUser();
 		jsonResponse.success(true);
 		logger.info("退出登录接口响应的参数内容"+JSON.toJSONString(jsonResponse));
@@ -688,7 +706,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			BigDecimal cardMoneyOther = userOther.getCardMoney()!=null ?userOther.getCardMoney():ZERO;
 			userOther.setCardMoney(cardMoneyOther.add(amount));
 			userMapper.updateUser(userOther);
-			String description ="给"+phone+"账户点卡转账"+amount+":元";
+			String description =phone+"给您账户点卡转账"+amount+":元";
 			saveUserRecord(userOther.getUid(),Constants.RECORD_INCOME,Constants.RECORD_CARD_MONEY,amount,cardMoneyOther,user.getPhone(),description,now);
 			jsonResponse.success(true);
 		} catch (Exception e) {
@@ -756,13 +774,99 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			jsonResponse.setRetDesc("请重新登录");
 			return jsonResponse;
 		}
+		//账单从订单过来---> vip订单/点卡购买订单
 		String uid = user.getUid();
-		OrderInfo info = new OrderInfo();
-		List<UserBillDTO> list = orderInfoMapper.getUserBill(info);
-		jsonResponse.success(list);
+		List<OrderInfo> list = orderInfoMapper.getUserBill(uid);
+		List<UserBillDTO>ret = new ArrayList<>();
+		if(CollectionUtils.isNotEmpty(list)){
+			ret = new ArrayList<>();
+			for (OrderInfo info : list) {
+				UserBillDTO dto = new UserBillDTO();
+				Integer orderType = info.getOrderType();
+				dto.setTime(info.getPayTime());
+				dto.setDescription(info.getProductDetail());
+				if(orderType == Constants.PAY_VIP){
+					dto.setTotalDesc(info.getDescription());
+				}else{
+					BigDecimal totalPay = info.getTotalPay();
+					dto.setTotalDesc(totalPay.toString()+":元");
+				}
+				ret.add(dto);
+			}
+		}
+		jsonResponse.success(ret);
 		return jsonResponse;
 	}
 
+	@Override
+	public JsonResponse<PageInfo<UserOrderInfoDTO>> listUserOrderInfo(BaseEntity entity) {
+		JsonResponse<PageInfo<UserOrderInfoDTO>>jsonResponse = new JsonResponse<>();
+		if(null == entity){
+			jsonResponse.setRetDesc("请求参数不为空");
+			return jsonResponse;
+		}
+		User user = SessionHolder.currentUser();
+		if(null == user){
+			jsonResponse.setRetDesc("请重新登录");
+			return jsonResponse;
+		}
+		//账单从订单过来---> vip订单/点卡购买订单
+		String uid = user.getUid();
+		OrderInfo info = new OrderInfo();
+		info.setUid(uid);
+		info.setOrderType(Constants.PAY_PRODUCT);
+		info.setPageNum(entity.getPageNum());
+		info.setPageSize(entity.getPageSize());
+		PageHelper.startPage(info.getPageNum(), info.getPageSize());
+		List<OrderInfo> list = orderInfoMapper.listOrderInfo(info);
+		List<UserOrderInfoDTO>ret = new ArrayList<>();
+		if(CollectionUtils.isNotEmpty(list)){
+			UserOrderInfoDTO dto = null;
+			for (OrderInfo orderInfo : list) {
+				dto = new UserOrderInfoDTO();
+				BeanUtils.copyProperties(orderInfo, dto);
+				String productDetail = orderInfo.getProductDetail();
+				if(StringUtils.isNotBlank(productDetail)){
+					List<UserOrderProductDTO> products = JSONArray.parseArray(productDetail, UserOrderProductDTO.class);
+					dto.setProducts(products);
+				}
+				ret.add(dto);
+			}
+		}
+		PageInfo <UserOrderInfoDTO>pageInfo = new PageInfo<UserOrderInfoDTO>(ret);
+		jsonResponse.success(pageInfo);
+		return jsonResponse;
+	}
+
+	@Override
+	public JsonResponse<List<UserPhoneRecord>> listUserPhoneRecord() {
+		JsonResponse<List<UserPhoneRecord>>jsonResponse = new JsonResponse<>();
+		User user = SessionHolder.currentUser();
+		if(null == user){
+			jsonResponse.setRetDesc("请重新登录");
+			return jsonResponse;
+		}
+		String uid = user.getUid();
+		OrderInfo info = new OrderInfo();
+		info.setUid(uid);
+		info.setOrderType(Constants.PAY_PHONE);
+		List<OrderInfo> list = orderInfoMapper.listOrderInfo(info);
+		List<UserPhoneRecord> ret = new ArrayList<>();
+		if(CollectionUtils.isNotEmpty(list)){
+			for (OrderInfo orderInfo : list) {
+				UserPhoneRecord dto = new UserPhoneRecord();
+				ret.add(dto);
+				dto.setPhone(orderInfo.getDescription());
+				dto.setCreateTime(orderInfo.getCreateTime());
+				dto.setTotalMoney(orderInfo.getTotalMoney());
+				dto.setDiscountMoney(orderInfo.getTotalPay());
+				Integer s = orderInfo.getPayStatus();
+				dto.setStatus(s==1?"未付款":(s==3?"已取消":"已付款"));
+			}
+		}
+		jsonResponse.success(ret);
+		return jsonResponse;
+	}
 }
 
 

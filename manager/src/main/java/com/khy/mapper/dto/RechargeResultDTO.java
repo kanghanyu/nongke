@@ -6,6 +6,9 @@ import io.swagger.annotations.ApiModelProperty;
 
 public class RechargeResultDTO {
 
+	@ApiModelProperty(value="订单id")
+	private String orderId;
+	
 	@ApiModelProperty(value="描述内容")
 	private String body;
 	
@@ -36,6 +39,14 @@ public class RechargeResultDTO {
 
 	public String getPaySign() {
 		return paySign;
+	}
+
+	public String getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
 	}
 
 	public void setPaySign(String paySign) {

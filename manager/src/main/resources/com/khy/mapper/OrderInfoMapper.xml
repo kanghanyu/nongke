@@ -269,15 +269,31 @@
   </update>
   
   
-  <select id="getUserBill" parameterType="com.khy.entity.OrderInfo" resultType="com.khy.mapper.dto.UserBillDTO">
-  	select	
+  <select id="getUserBill" parameterType="java.lang.String" resultType="com.khy.entity.OrderInfo">
+  	SELECT	
   		<include refid="Base_Column_List"/>
-  	from
+  	FROM
   		t_order_info
-  	where
-  		status = 1
-  	and pay_status = 1
-  	and invalid_time &lt; now();
+  	WHERE
+  		uid =#{uid}
+  	AND	status = 2
+  	AND order_type in (1,2)
+  	AND pay_status in (2,4)
+  	ORDER BY pay_time DESC
+  </select>
+  
+  
+  <select id="listOrderInfo" parameterType="com.khy.entity.OrderInfo" resultType="com.khy.entity.OrderInfo">
+  	SELECT	
+  		<include refid="Base_Column_List"/>
+  	FROM
+  		t_order_info
+  	WHERE
+  		uid =#{uid}
+  	<if test="null != orderType">
+	  	AND order_type = #{orderType}
+  	</if>
+  	ORDER BY create_time DESC
   </select>
   
 </mapper>

@@ -12,4 +12,6 @@ public interface UserMapper {
 
 	User getUserByUid(String uid);
 
+	User login(String phone);
+
 }

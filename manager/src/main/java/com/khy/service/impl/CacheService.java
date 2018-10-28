@@ -1,6 +1,7 @@
 package com.khy.service.impl;
 
 import java.util.Map;
+import java.util.Set;
 
 public interface CacheService {
 
@@ -15,4 +16,5 @@ public interface CacheService {
 	public void setHash(String key,String fieid,String value);
 	public String getHash(String key,String fieid);
 	public Map<String, String> getHash(String key);
+	public Set<String> keys(String pattern);
 }

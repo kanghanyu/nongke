@@ -78,7 +78,7 @@ public class PayUtil {
 	}
 	
 	
-	public static void setRechargeSign(OrderInfo info, RechargeResultDTO ret) throws UnsupportedEncodingException {
+	public static String setRechargeSign(OrderInfo info, RechargeResultDTO ret) throws UnsupportedEncodingException {
 		logger.info("支付宝支付验签开始");		
 		Map<String, String> param = new HashMap<>();
 		param.put("app_id", Constants.ALIPAY_APPID);
@@ -114,7 +114,7 @@ public class PayUtil {
 			result = getSignEncodeUrl(param,sign,Constants.CHARSET_UTF8);
 			logger.info("支付宝验签生成的全部信息结果ret={}",ret);		
 		}
-		ret.setPaySign(result);
+		return result;
 	}
 	
 	private static String getSign(Map<String, String> param, String charset, String signType) throws AlipayApiException {

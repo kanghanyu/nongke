@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartRequest;
 
+import com.github.pagehelper.PageInfo;
 import com.khy.common.JsonResponse;
+import com.khy.entity.BaseEntity;
 import com.khy.entity.Message;
 import com.khy.entity.Msg;
 import com.khy.entity.OnlineParame;
@@ -29,6 +31,8 @@ import com.khy.entity.UserInviter;
 import com.khy.mapper.dto.CartMoneyDTO;
 import com.khy.mapper.dto.UserBillDTO;
 import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserOrderInfoDTO;
+import com.khy.mapper.dto.UserPhoneRecord;
 import com.khy.mapper.dto.UserRecordDTO;
 import com.khy.service.UesrService;
 import com.khy.utils.SessionHolder;
@@ -217,10 +221,20 @@ public class UserController {
 		return jsonResponse;
 	}
 	
+	@RequestMapping(value = "/listUserPhoneRecord", method = RequestMethod.POST)
+	@ApiOperation(value = "获取用户-->话费充值记录")
+	public JsonResponse<List<UserPhoneRecord>> listUserPhoneRecord() {
+		JsonResponse<List<UserPhoneRecord>> jsonResponse = uesrService.listUserPhoneRecord();
+		return jsonResponse;
+	}
 	
-	
-	
-	
+	@RequestMapping(value = "/listUserOrderInfo", method = RequestMethod.POST)
+	@ApiOperation(value = "分页获取用户-->我的订单列表")
+	@ApiImplicitParam(name = "entity", value = "新增/修改银行卡信息接口参数", required = true, paramType = "body", dataType = "BaseEntity")
+	public JsonResponse<PageInfo<UserOrderInfoDTO>> listUserOrderInfo(@RequestBody BaseEntity entity) {
+		JsonResponse<PageInfo<UserOrderInfoDTO>> jsonResponse = uesrService.listUserOrderInfo(entity);
+		return jsonResponse;
+	}
 	
 	
 	@RequestMapping(value = "/validate/img",method = RequestMethod.POST)

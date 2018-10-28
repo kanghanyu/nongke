@@ -1,6 +1,7 @@
 package com.khy.service.impl;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,6 +64,11 @@ public class CacheServiceImpl implements CacheService{
 	
 	public void releaseLock(String key){
 		RedisUtils.KEYS.del(key);
+	}
+	
+	public Set<String> keys(String pattern){
+		Set<String> keys = RedisUtils.KEYS.keys(pattern);
+		return keys;
 	}
 	
 }

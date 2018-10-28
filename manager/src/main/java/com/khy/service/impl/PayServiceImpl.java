@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -48,7 +50,7 @@ import com.khy.utils.Utils;
 public class PayServiceImpl extends BaseService implements PayService {
 	public final static Logger logger = LoggerFactory.getLogger(PayServiceImpl.class);
 	private final static BigDecimal ONE_HUNDRED = new BigDecimal(100);
-	private final static BigDecimal ZERO = new BigDecimal(0);
+	private final static BigDecimal ZERO = new BigDecimal("0.00");
 	@Autowired
 	private UserMapper userMapper;
 	@Autowired
@@ -295,14 +297,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 						orderId, descr, now);
 				// 更新商品的数量内容
 				batchUpdateProduct(listProduct);
-				ret.setFlag(1);
-				
-				//根据已完成的订单内容记录进出账的账单内容--->应该可以通过定时器去跑数据内容-->余额抵扣/点卡购买的不生成账单内容;
-				
-				//如果当前用户是会员用户则还存在佣金分成的内容
-				//计算个邀请人的分佣金额
-				//setCommission(uid,orderInfo.getOrderId());
-				
+				ret.setFlag(1);		
 			} else if (payType == Constants.ALIPAY) {
 				if (dto.getRmb().compareTo(ZERO) == 0 && dto.getCornMoney().compareTo(dto.getTotalPay()) == 0) {
 					// 说明全部是余额抵扣的和点卡购买的路径一样
@@ -311,23 +306,18 @@ public class PayServiceImpl extends BaseService implements PayService {
 					orderInfo.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
 					orderInfoMapper.update(orderInfo);
 
-					//根据已完成的订单内容记录进出账的账单内容;
-					
 					// 更新用户的账户信息(余额)
 					BigDecimal money = userDb.getMoney() != userDb.getMoney() ? userDb.getMoney() : ZERO;
 					userDb.setMoney(money.subtract(dto.getCornMoney()));
 					userMapper.updateUser(userDb);
 
 					// 更新用户的账务流水
-					String descr = "购买商品花费余额" + dto.getTotalPay() + ":元";
+					String descr = "购买订单余额抵扣" + dto.getTotalPay() + ":元";
 					saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, dto.getCornMoney(), money,
 							orderId, descr, now);
-					
 					// 更新商品的数量内容
 					batchUpdateProduct(listProduct);
 					ret.setFlag(1);
-					//根据已完成的订单内容记录进出账的账单内容--->应该可以通过定时器去跑数据内容
-					
 				} else {
 					// 需要在线支付的拼装验签内容;
 					// 根据支付方式选择验签的内容;
@@ -337,7 +327,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 						sign = PayUtil.setProductSign(dto);
 					} else if (payType == Constants.WEIXIN_PAY) {
 						// 这个是微信的签名内容
-
 					}
 					if(StringUtils.isBlank(sign)){
 						jsonResponse.setRetDesc("获取APP支付验签失败");
@@ -345,8 +334,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 					}
 					ret.setPaySign(sign);
 					ret.setFlag(2);
-					
-					
 					//订单的状态不用变化-->等到支付成功之后异步回调才去操作这些内容
 //					orderInfo.setPayTime(now);
 //					orderInfo.setStatus(2);// 标识付款中-->如果真的付款完成回调中再次更新订单内容
@@ -423,8 +410,8 @@ public class PayServiceImpl extends BaseService implements PayService {
 			json.put("msg","获取运费价格异常请您联系管理员稍后再试");
 			return json;
 		}
-		String producDetail = orderInfo.getProductDetail();
-		List<PayProductDetailDTO> listDb = JSONArray.parseArray(producDetail, PayProductDetailDTO.class);
+		String productDetail = orderInfo.getProductDetail();
+		List<PayProductDetailDTO> listDb = JSONArray.parseArray(productDetail, PayProductDetailDTO.class);
 		if(dto.getList().size() != listDb.size()){
 			json.put("msg","该订单的商品种类和前置订单不一致");
 			return json;
@@ -650,22 +637,26 @@ public class PayServiceImpl extends BaseService implements PayService {
 			jsonResponse.setRetDesc("VIP购买提交订单生成失败请稍后再试");
 			return jsonResponse;
 		}
-		OrderInfo info = new OrderInfo();
 		RechargeResultDTO ret = new RechargeResultDTO();
-		JSONObject json = check(dto,user,online,info);
+		JSONObject json = check(dto,user,online);
 		if(json.getIntValue("code") == 2000){
 			logger.error("提交充值订单的校验内容的失败ret = "+json.toString());
 			jsonResponse.setRetDesc(json.getString("msg"));
 			return jsonResponse;
 		}
+		OrderInfo info = json.getObject("order", OrderInfo.class);
 		Date now = new Date();
 		//校验通过开始处理扣费
 		info.setCreateTime(now);
 		Integer payType = dto.getPayType();
 		try {
 			BeanUtils.copyProperties(info, ret);
+			// TODO 充值订单的设置内容(未完成待续)
+			String sign = null;
 			if(payType == Constants.MONEY_PAY){//等于余额抵扣的 那么余额和点卡当时更新完毕生效
-				info.setStatus(3);
+				//余额抵扣只能购买点卡
+				info.setStatus(Constants.ORDER_STATUS_WC);
+				info.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
 				info.setPayTime(now);
 				orderInfoMapper.insert(info);
 				
@@ -682,10 +673,18 @@ public class PayServiceImpl extends BaseService implements PayService {
 				desc = "点卡充值";
 				saveUserRecord(uid, Constants.RECORD_INCOME, Constants.RECORD_CARD_MONEY, totalPay, cardMoney, info.getOrderId(), desc, now);
 				ret.setFlag(1);
+				//充值点卡 这个订单就算完事了;
 			}else if(payType == Constants.ALIPAY){
-				PayUtil.setRechargeSign(info,ret);
+				sign = PayUtil.setRechargeSign(info,ret);
+			}else if(payType == Constants.WEIXIN_PAY){
+				//微信支付的sign
 			}
-			
+			if(StringUtils.isBlank(sign)){
+				jsonResponse.setRetDesc("获取APP支付验签失败");
+				return jsonResponse;
+			}
+			ret.setPaySign(sign);
+			ret.setFlag(2);
 		} catch (Exception e) {
 			jsonResponse.setRetDesc("充值订单异常");
 			logger.error("充值订单异常"+e.getMessage());
@@ -696,17 +695,13 @@ public class PayServiceImpl extends BaseService implements PayService {
 			// 清除用户锁和商品锁
 			cacheService.releaseLock(Constants.LOCK_USER + uid);
 		}
-		
-		
-		
-		return null;
+		jsonResponse.success(ret);
+		return jsonResponse;
 	}
 
 	
-	
-	
 
-	private JSONObject check(RechargeSubmitDTO dto, User user, Map<String, String> online, OrderInfo info) {
+	private JSONObject check(RechargeSubmitDTO dto, User user, Map<String, String> online) {
 		JSONObject json = new JSONObject();
 		json.put("code",2000);
 		Integer orderType = dto.getOrderType();
@@ -729,6 +724,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 			json.put("msg","当前充值金额不为空");
 			return json;
 		}
+		OrderInfo info = new OrderInfo();
 		if(orderType == Constants.PAY_VIP){
 			if(payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
 				json.put("msg","VIP只能支付宝/微信支付");
@@ -744,18 +740,23 @@ public class PayServiceImpl extends BaseService implements PayService {
 				return json;
 			}
 			BigDecimal vipPrice = new BigDecimal(online.get(Constants.VIP_PRICE));
-			String forMoney = online.get(Constants.VIP_PRICE_FORMONEY);
-			if(StringUtils.isBlank(forMoney)){
-				json.put("msg","购买vip送的余额数值异常,请联系管理员");
-				return json;
-			}
 			if(totalPay.compareTo(vipPrice) != 0){
 				json.put("msg","VIP价格和应付金额不一致请重新下单");
 				return json;
 			}
-			info.setProductDetail("用户购买成为VIP用户,花费"+totalPay+":元");
-			info.setDescription("升级VIP");
+			String toMoney = online.get(Constants.VIP_TO_USER_MONEY);
+			if(StringUtils.isBlank(toMoney)){
+				json.put("msg","购买vip送的余额数值异常,请联系管理员");
+				return json;
+			}
+			info.setProductDetail("VIP升级");
+			info.setDescription(totalPay+":元(充到余额"+toMoney+":元)");
+			info.setDiscountMoney(new BigDecimal(toMoney));
 		}else if(orderType == Constants.PAY_CARD){
+			if(totalPay.intValue() %100 != 0 ){
+				json.put("msg","点卡充值金额必须是100的整倍数");
+				return json;
+			}
 			if(payType != Constants.MONEY_PAY || payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
 				json.put("msg","点卡只支持支付宝/微信/余额购买");
 				return json;
@@ -765,6 +766,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				json.put("msg","用户余额不足");
 				return json;
 			}
+			info.setProductDetail("点卡购买");
 			info.setProductDetail("用户购买"+totalPay+":元的点卡");
 		}else if(orderType == Constants.PAY_PHONE){//话费充值
 			if(payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
@@ -779,40 +781,39 @@ public class PayServiceImpl extends BaseService implements PayService {
 			if(totalMoney.compareTo(totalPay) != 0){
 				//标识会员折扣充值
 				Integer isVip = user.getIsVip();
-				if(isVip == Constants.VIP_USER){
-					String vipDiscount = online.get(Constants.VIP_DISCOUNT);
-					if (StringUtils.isBlank(vipDiscount)) {
-						json.put("msg", "获取vip充值话费折扣异常请您联系管理员稍后再试");
-						return json;
-					}
-					BigDecimal dicountMoney = totalMoney.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
-					if(dicountMoney.compareTo(totalPay) == 0){ 
-						//查询当月vip用户已经充值了多少钱的
-						String key = getKey(user.getUid());
-						String accumulate = cacheService.getString(key);//已经充值的额度incr自增内容
-						BigDecimal accumulatePrice = StringUtils.isNotBlank(accumulate)? new BigDecimal(accumulate):ZERO;
-						String phoneRecharge = online.get(Constants.VIP_PHONE_RECHARGE);
-						if (StringUtils.isBlank(phoneRecharge)) {
-							json.put("msg", "获取vip充值话费每月优惠额度数据折扣异常请您联系管理员稍后再试");
-							return json;
-						}
-						if((accumulatePrice.add(totalMoney)).compareTo(new BigDecimal(phoneRecharge)) > 0){
-							json.put("msg", "您当月VIP已经优惠充值了"+accumulate+":元,现在充值"+totalMoney+":元,已超出优惠额度");
-							return json;
-						}
-						info.setDiscount(Float.valueOf(vipDiscount)/100);
-						info.setDiscountDetail("会员话费充值折扣优惠内容");
-						info.setDiscountMoney(dicountMoney);
-					}else{
-						json.put("msg","VIP充值话费应付金额不等于折扣后价格");
-						return json;
-					}
-				}else{
+				if(isVip == Constants.GENERAL_UER){
 					json.put("msg","您不是会员不享受话费充值优惠");
 					return json;
 				}
+				String vipDiscount = online.get(Constants.VIP_DISCOUNT);
+				if (StringUtils.isBlank(vipDiscount)) {
+					json.put("msg", "获取vip充值话费折扣异常请您联系管理员稍后再试");
+					return json;
+				}
+				BigDecimal dicountMoney = totalMoney.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
+				if(dicountMoney.compareTo(totalPay) != 0){ 
+					json.put("msg","VIP充值话费应付金额不等于折扣后价格");
+					return json;
+				}
+				//查询当月vip用户已经充值了多少钱的
+				String key = getKey(user.getUid());
+				String accumulate = cacheService.getString(key);//已经充值的额度incr自增内容
+				BigDecimal accumulatePrice = StringUtils.isNotBlank(accumulate)? new BigDecimal(accumulate):ZERO;
+				String phoneRecharge = online.get(Constants.VIP_PHONE_RECHARGE);
+				if (StringUtils.isBlank(phoneRecharge)) {
+					json.put("msg", "获取vip充值话费每月优惠额度数据折扣异常请您联系管理员稍后再试");
+					return json;
+				}
+				if((accumulatePrice.add(totalMoney)).compareTo(new BigDecimal(phoneRecharge)) > 0){
+					json.put("msg", "您当月VIP已经优惠充值了"+accumulate+":元,现在充值"+totalMoney+":元,已超出优惠额度");
+					return json;
+				}
+				info.setDiscount(Float.valueOf(vipDiscount)/100);
+				info.setDiscountDetail("会员话费充值折扣优惠内容");
+				info.setDiscountMoney(totalPay);
 			}
-			info.setProductDetail("用户手机充值话费"+totalMoney+":元");
+			info.setProductDetail("手机话费充值");
+			info.setDescription(user.getPhone());
 		}else{
 			json.put("msg","当前充值类型不匹配,充值失败");
 			return json;
@@ -829,13 +830,19 @@ public class PayServiceImpl extends BaseService implements PayService {
 			info.setRmb(totalPay);
 		}
 		json.put("code",1000);
+		json.put("order",info);
 		return json;
 	}
 	private String getKey(String uid) {
 		String key = Constants.USER_PHONE_RECHARGE;
 		Calendar calendar = Calendar.getInstance();
 		int month = calendar.get(Calendar.MONTH) + 1;
-		key = key.concat(month+"").concat(uid);
+		key = key.concat(month+":").concat(uid);
 		return key;
+	}
+	public static boolean isPhone(String phone) {
+		Pattern p = Pattern.compile("^[1][3,4,5,7,8][0-9]{9}$");
+		Matcher m = p.matcher(phone);
+		return m.matches();
 	}
 }

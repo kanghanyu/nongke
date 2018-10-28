@@ -22,15 +22,17 @@
   	from
   		t_user_record
   	<where>
-  		target_id is null
   		<if test="null != uid and uid != '' ">
-  			and	uid = #{uid}
+  			uid = #{uid}
   		</if>
   		<if test="null != pay_type">
   			and pay_type = #{payType}
   		</if>
   		<if test="null != type">
   			and type = #{type}
+  		</if>
+  		<if test="null != type and type == 2">
+	  		and target_id is null
   		</if>
   	</where>
   	order by create_time desc

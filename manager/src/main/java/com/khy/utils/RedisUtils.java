@@ -199,6 +199,13 @@ public class RedisUtils {
 			jedis.bgsave();
 			closeJedis(jedis);
 		}
+		
+		public Set<String> keys(String pattern) {
+			jedis = getJedis();
+			Set<String> set = jedis.keys(pattern);
+			closeJedis(jedis);
+			return set;
+		}
 
 
 		/**
