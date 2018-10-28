@@ -1,10 +1,16 @@
 package com.khy.service;
 
+import java.util.List;
+
 import javax.servlet.http.HttpSession;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.khy.entity.User;
+import com.khy.entity.UserCash;
+import com.khy.mapper.dto.UserCommonDTO;
+import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserRecordDTO;
 
 public interface UesrService {
 
@@ -19,6 +25,16 @@ public interface UesrService {
 	JSONObject setUserStatus(User user);
 
 	String getUserInfo(User user);
+
+	PageInfo<UserCash> pageUserCash(UserCommonDTO dto);
+
+	JSONObject auditUserCash(UserCommonDTO dto);
+
+	List<UserCash> listUserCash(UserCommonDTO dto);
+
+	List<UserInviterDTO> listUserInviter(UserCommonDTO dto);
+
+	List<UserRecordDTO> listUserRecord(UserCommonDTO dto);
 
 
 }

@@ -2,7 +2,11 @@ package com.khy.mapper;
 
 import java.util.List;
 
+import com.alibaba.fastjson.JSONObject;
 import com.khy.entity.User;
+import com.khy.mapper.dto.UserCommonDTO;
+import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserRecordDTO;
 
 public interface UserMapper {
 
@@ -15,5 +19,9 @@ public interface UserMapper {
 	int updateUser(User userDb);
 
 	User getUserByUid(String uid);
+
+	List<UserInviterDTO> listUserInviter(UserCommonDTO dto);
+
+	List<UserRecordDTO> listUserRecord(JSONObject param);
 
 }

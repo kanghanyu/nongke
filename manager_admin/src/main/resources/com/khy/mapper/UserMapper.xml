@@ -173,4 +173,47 @@
 	  		id=#{id}
   </update>
   
+  <select id="listUserInviter" parameterType="com.khy.mapper.dto.UserCommonDTO" resultType="com.khy.mapper.dto.UserInviterDTO">
+	  SELECT
+			tui.uid,
+			tui.invited_uid,
+			tui.create_time,
+			tu.phone,
+			tu.commission,
+			tu.img,
+			CASE 
+			WHEN(tu.is_vip=0) 
+			THEN '普通会员' 
+			WHEN(tu.is_vip=1) 
+			THEN "VIP会员" 
+			END AS isVip		
+		FROM
+			t_user_inviter tui,
+			t_user tu
+		WHERE
+			tui.invited_uid = tu.uid
+		AND tui.uid = #{uid}
+		ORDER BY
+			tui.create_time DESC
+  </select>
+  
+  	<select id="listUserRecord" parameterType="com.alibaba.fastjson.JSONObject" resultType="com.khy.mapper.dto.UserRecordDTO">
+  		select
+  			uid, 
+  			pay_type, 
+  			type, 
+  			amount, 
+  			description, 
+  			create_time
+  		from
+  			t_user_record
+  		where
+  			uid=#{uid}
+  		and
+  			type=#{type}	
+  		<if test="type == 2">
+	  		and target_id is null
+  		</if>
+  	</select>
+  
  </mapper>

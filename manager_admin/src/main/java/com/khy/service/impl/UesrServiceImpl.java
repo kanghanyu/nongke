@@ -1,7 +1,9 @@
 package com.khy.service.impl;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
@@ -18,9 +20,14 @@ import com.khy.config.RedisUtils;
 import com.khy.entity.User;
 import com.khy.entity.UserAddress;
 import com.khy.entity.UserBank;
+import com.khy.entity.UserCash;
 import com.khy.mapper.UserAddressMapper;
 import com.khy.mapper.UserBankMapper;
+import com.khy.mapper.UserCashMapper;
 import com.khy.mapper.UserMapper;
+import com.khy.mapper.dto.UserCommonDTO;
+import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserRecordDTO;
 import com.khy.service.UesrService;
 import com.khy.utils.Constants;
 import com.khy.utils.SessionHolder;
@@ -35,6 +42,8 @@ public class UesrServiceImpl implements UesrService {
 	private UserBankMapper userBankMapper;
 	@Autowired
 	private UserAddressMapper userAddressMapper;
+	@Autowired
+	private UserCashMapper userCashMapper;
 	
 	@Autowired
 	private RedisUtils RedisUtils;
@@ -205,6 +214,74 @@ public class UesrServiceImpl implements UesrService {
 		json.put("address", address);
 		json.put("code",1000);
 		return json.toJSONString();
+	}
+
+	@Override
+	public PageInfo<UserCash> pageUserCash(UserCommonDTO dto) {
+		PageHelper.startPage(dto.getPageNum(), dto.getPageSize());
+		List<UserCash> list = userCashMapper.listUserCash(dto);
+		PageInfo <UserCash>pageInfo = new PageInfo<UserCash>(list);
+		return pageInfo;
+	}
+
+	@Override
+	public JSONObject auditUserCash(UserCommonDTO dto) {
+		JSONObject json = new JSONObject();
+		json.put("code", 2000);
+		if(null == dto){
+			json.put("msg","参数不为空");
+			return json;
+		}
+		UserCash cash = userCashMapper.get(dto);
+		if(null == cash){
+			json.put("msg","当前记录不存在/已提现");
+			return json;
+		}
+		cash.setStatus(1);
+		cash.setUpdateTime(new Date());
+		int flag = userCashMapper.update(cash);
+		if(flag > 0){
+			json.put("code", 2000);
+			json.put("msg","体现审核通过");
+			return json;
+		}else{
+			json.put("msg","体现审核失败");
+		}
+		return json;
+	}
+
+	@Override
+	public List<UserCash> listUserCash(UserCommonDTO dto) {
+		if(null == dto){
+			return null;
+		}
+		List<UserCash> list = userCashMapper.listUserCash(dto);
+		return list;
+	}
+
+	@Override
+	public List<UserInviterDTO> listUserInviter(UserCommonDTO dto) {
+		if(null == dto){
+			return null;
+		}
+		List<UserInviterDTO> list = userMapper.listUserInviter(dto);
+		return list;
+	}
+
+	@Override
+	public List<UserRecordDTO> listUserRecord(UserCommonDTO dto) {
+		if(null == dto){
+			return null;
+		}
+		JSONObject param = new JSONObject();
+		param.put("uid",dto.getUid());
+		Integer type = dto.getType();
+		param.put("type",type);
+		if(type == 2){
+			param.put("payType", 2);
+		}
+		List<UserRecordDTO> list = userMapper.listUserRecord(param);
+		return list;
 	}
 
 }
