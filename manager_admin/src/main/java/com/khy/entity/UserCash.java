@@ -4,12 +4,16 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.khy.utils.Utils;
+
 public class UserCash implements Serializable {
     private Long id;
 
     private String uid;
 
     private BigDecimal amount;
+    
+    private String accountPhone;
 
     //手续费
     private BigDecimal feeAmount;
@@ -28,6 +32,7 @@ public class UserCash implements Serializable {
     private String phone;
 	
     private Date applyTime;
+    private String applyTimeStr;
 
     /**0 申请体现  1提现完成*/
     private Integer status;
@@ -43,7 +48,13 @@ public class UserCash implements Serializable {
         this.id = id;
     }
 
-    public String getUid() {
+    public String getAccountPhone() {
+		return accountPhone;
+	}
+	public void setAccountPhone(String accountPhone) {
+		this.accountPhone = accountPhone;
+	}
+	public String getUid() {
         return uid;
     }
 
@@ -51,7 +62,13 @@ public class UserCash implements Serializable {
         this.uid = uid == null ? null : uid.trim();
     }
 
-    public BigDecimal getAmount() {
+    public String getApplyTimeStr() {
+		return applyTimeStr;
+	}
+	public void setApplyTimeStr(String applyTimeStr) {
+		this.applyTimeStr = applyTimeStr;
+	}
+	public BigDecimal getAmount() {
         return amount;
     }
 
@@ -121,6 +138,7 @@ public class UserCash implements Serializable {
 
     public void setApplyTime(Date applyTime) {
         this.applyTime = applyTime;
+        this.applyTimeStr=Utils.formatDate(applyTime);
     }
 
     public Integer getStatus() {

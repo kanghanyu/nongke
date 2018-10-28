@@ -241,8 +241,8 @@ public class UesrServiceImpl implements UesrService {
 		cash.setUpdateTime(new Date());
 		int flag = userCashMapper.update(cash);
 		if(flag > 0){
-			json.put("code", 2000);
-			json.put("msg","体现审核通过");
+			json.put("code", 1000);
+			json.put("msg","体现已完成");
 			return json;
 		}else{
 			json.put("msg","体现审核失败");

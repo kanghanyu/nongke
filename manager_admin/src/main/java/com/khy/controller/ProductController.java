@@ -63,6 +63,12 @@ public class ProductController {
 		JSONObject json = productService.updateProduct(product);
 		return json.toString();
 	}
+	@RequestMapping("/delProduct")
+	@ResponseBody
+	public String delProduct(@RequestBody Product product){
+		JSONObject json = productService.delProduct(product);
+		return json.toString();
+	}
 	
 	@RequestMapping("/findByProductId")
 	@ResponseBody
@@ -94,12 +100,7 @@ public class ProductController {
 		}
 		String originalFilename = file.getOriginalFilename();
 		String suffix = originalFilename.substring(originalFilename.lastIndexOf("."));		
-		User user = SessionHolder.currentUser();
-		if(null == user){
-			json.put("msg", "请刷新页面重新登录");
-			return json.toString();
-		}
-		String fileName =next+"/"+user.getUid()+"/"+Utils.getFileName()+suffix;
+		String fileName =next+"/"+Utils.getFileName()+suffix;
 		FileUtils.uploadImg(file,fileName);
 		json.put("code", "1000");
 		json.put("url", BASE_URL+fileName);

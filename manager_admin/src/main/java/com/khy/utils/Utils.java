@@ -19,6 +19,11 @@ public class Utils {
 		String ret = dateFormat.format(date);
 		return ret;
 	}
+	public static String formatDate(Date date){
+		dateFormat.applyPattern("yyyy-MM-dd HH:mm:ss");
+		String ret = dateFormat.format(date);
+		return ret;
+	}
 	
 	public static String getFileName(){
 		String fileName = sdf1.format(new Date());

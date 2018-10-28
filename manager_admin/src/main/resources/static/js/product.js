@@ -19,8 +19,9 @@ $(function(){
 		var pageSize = $("#pageSize").val();
 		var productName = $("#productName").val();
     	var status = $("#status").val();
+    	var banner = $("#banner").val();
     	var data = {
-    		 "pageNum":pageNum,"pageSize":pageSize,"productName":productName,"status":status
+    		 "pageNum":pageNum,"pageSize":pageSize,"productName":productName,"status":status,"isHot":banner
     	}
 		$.ajax({
     		type : "post",
@@ -45,7 +46,7 @@ $(function(){
     					 
     					 var costPrice = item.costPrice!=null?item.costPrice:"0.00";
     					 var isHot = item.isHot==0?"不是":"是";
-    					 var status = item.status==0?"未上架":(item.status==1?"已上架":"已下架");
+    					 var status = item.status==0?"未上架":"上架";
     					 htmlStr += "<tr>";
     					 htmlStr += '<td width="5%">'+item.productId+'</td>';
     					 htmlStr += '<td width="10%">'+productName+'</td>';
@@ -58,10 +59,14 @@ $(function(){
     				     htmlStr += '<td width="7%">'+isHot+'</td>';
     				     htmlStr += '<td width="7%">'+item.createTimeStr+'</td>';
     					 htmlStr += '<td width="40%">';
-    					 htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailProduct('+item.productId+')"> <i class="glyphicon glyphicon-edit">详情</i></button> '
-    					 htmlStr += '<button class="btn btn-primary btn-sm" onclick="editProduct('+item.productId+')"> <i class="glyphicon glyphicon-edit">修改</i></button> '
-    					 htmlStr += '<button class="btn btn-info btn-sm" onclick="setProductStatus('+item.productId+',1)">商品上架</button>'
-    					 htmlStr += '<button class="btn btn-warning btn-sm" onclick="setProductStatus('+item.productId+',2)">商品下架</button>'
+    					 htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailProduct('+item.productId+')">详情</button> '
+    					 htmlStr += '<button class="btn btn-primary btn-sm" onclick="editProduct('+item.productId+')">修改</button> '
+    					 if(item.status==0){
+    						 htmlStr += '<button class="btn btn-primary btn-sm" onclick="setProductStatus('+item.productId+',1)">商品上架</button>'
+    					 }else{
+    						 htmlStr += '<button class="btn btn-primary btn-sm" onclick="setProductStatus('+item.productId+',2)">商品下架</button>'
+    					 }
+    					 htmlStr += '<button class="btn btn-warning btn-sm" onclick="delProduct('+item.productId+')">删除</button> '
     					 htmlStr += '</td>';
     					 htmlStr += '</tr>';
     				 });
@@ -78,8 +83,9 @@ function search(){
 	var pageSize = $("#pageSize").val();
 	var productName = $("#productName").val();
 	var status = $("#status").val();
+	var banner = $("#banner").val();
 	var data = {
-		 "pageNum":pageNum,"pageSize":pageSize,"productName":productName,"status":status
+		 "pageNum":pageNum,"pageSize":pageSize,"productName":productName,"status":status,"isHot":banner
 	}
 	$.ajax({
 		type : "post",
@@ -105,7 +111,7 @@ function search(){
 					 }
 					 var costPrice = item.costPrice!=null?item.costPrice:"0.00";
 					 var isHot = item.isHot==0?"不是":"是";
-					 var status = item.status==0?"未上架":(item.status==1?"已上架":"已下架");
+					 var status = item.status==0?"未上架":"上架";
 					 htmlStr += "<tr>";
 					 htmlStr += '<td width="5%">'+item.productId+'</td>';
 					 htmlStr += '<td width="10%">'+productName+'</td>';
@@ -118,10 +124,14 @@ function search(){
 				     htmlStr += '<td width="7%">'+isHot+'</td>';
 				     htmlStr += '<td width="7%">'+item.createTimeStr+'</td>';
 					 htmlStr += '<td width="30%">';
-					 htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailProduct('+item.productId+')"> <i class="glyphicon glyphicon-edit">详情</i></button> '
-					 htmlStr += '<button class="btn btn-primary btn-sm" onclick="editProduct('+item.productId+')"> <i class="glyphicon glyphicon-edit">修改</i></button> '
-					 htmlStr += '<button class="btn btn-info btn-sm" onclick="setProductStatus('+item.productId+',1)">商品上架</button>'
-					 htmlStr += '<button class="btn btn-warning btn-sm" onclick="setProductStatus('+item.productId+',2)">商品下架</button>'
+					 htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailProduct('+item.productId+')">详情</button> '
+					 htmlStr += '<button class="btn btn-primary btn-sm" onclick="editProduct('+item.productId+')">修改</button> '
+					 if(item.status==0){
+						 htmlStr += '<button class="btn btn-primary btn-sm" onclick="setProductStatus('+item.productId+',1)">商品上架</button>'
+					 }else{
+						 htmlStr += '<button class="btn btn-primary btn-sm" onclick="setProductStatus('+item.productId+',2)">商品下架</button>'
+					 }
+					 htmlStr += '<button class="btn btn-warning btn-sm" onclick="delProduct('+item.productId+')">删除</button> '
 					 htmlStr += '</td>';
 					 htmlStr += '</tr>';
 				 });
@@ -188,6 +198,8 @@ function coverImgsUpload(num){
 		if(null != data && data.code == 1000){
 			$("#coverImgSrc"+num).attr("src",data.url);
 			return ;
+		}else if(data.code == 2000){ 
+			alert(data.msg);
 		}
 	}).error(function() {
 		alert("上传失败");
@@ -268,6 +280,8 @@ function detailImgsUpload(num){
 		if(null != data && data.code == 1000){
 			$("#detailImgSrc"+num).attr("src",data.url);
 			return ;
+		}else if(data.code == 2000){ 
+			alert(data.msg);
 		}
 	}).error(function(data) {
 		alert("上传失败");
@@ -406,19 +420,21 @@ function detailProduct(id) {
 
 
 function setProductStatus(productId,type){
-	var msg = "";
+	var msg = "您真的确定要";
 	var data ="";
+	var ret = ""
 	if(type == 1){
-		msg = "您真的确定要上架该商品吗？\n\n请确认！";
+		ret = "上架";
 		data = {
 	    		 "productId":productId,"status":1
 	    	}
-	}else if(type == 2){
-		msg = "您真的确定要下架该商品吗？\n\n请确认！";			
+	}else if(type == 0){
+		ret = "下架";
 		data = {
-				"productId":productId,"status":2
+				"productId":productId,"status":0
 		}
 	}
+	msg = msg+ret+"该商品吗？\n\n请确认！";
 	if (confirm(msg) == true) {
 		$.ajax({
 			type : "post",
@@ -428,7 +444,8 @@ function setProductStatus(productId,type){
 			contentType : 'application/json',
 			success : function(data) {
 				if(null != data && data.code == 1000){
-					alert(data.msg);
+					alert(ret+data.msg);
+					 window.location.href = "/product/toProductList?pageSize=2&pageNum=1"; 
 				}
 			}
 		});
@@ -697,6 +714,29 @@ function editDbProduct(){
 			}
 		}
 	});
-	
+}
+function delProduct(productId){
+	var msg = "您真的确定要删除当前商品吗?\n\n请确认！";
+	var data ={
+			"productId":productId
+	}
+	if (confirm(msg) == true) {
+		$.ajax({
+			type : "post",
+			data : JSON.stringify(data),
+			url : "/product/delProduct",
+			dataType : "json",
+			contentType : 'application/json',
+			success : function(data) {
+				if(null != data && data.code == 1000){
+					alert(data.msg);
+					window.location.href = "/product/toProductList?pageSize=2&pageNum=1"; 
+				}
+			}
+		});
+		return true;
+	} else {
+		return false;
+	}
 }
 

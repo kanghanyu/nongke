@@ -21,6 +21,9 @@
   			<if test="null != status">
   				status = #{status}
   			</if>
+  			<if test="null != isHot">
+  				is_hot = #{isHot}
+  			</if>
   		</where>
   		ORDER BY create_time DESC
   	</select>
@@ -36,6 +39,14 @@
   		ORDER BY create_time DESC
   		LIMIT 1;
   	</select>
+
+	 <delete id="delProduct" parameterType="java.lang.Long">
+	    delete from 
+	    	t_product
+	    where 
+			product_id = #{productId}
+	  </delete>
+	
   
   <update id="updateProduct" parameterType="com.khy.entity.Product">
   	update
@@ -158,5 +169,5 @@
       </if>
     </trim>
   </insert>
-   
+  
 </mapper>

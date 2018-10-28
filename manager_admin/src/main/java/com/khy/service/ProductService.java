@@ -16,4 +16,6 @@ public interface ProductService {
 
 	JSONObject updateProduct(Product product);
 
+	JSONObject delProduct(Product product);
+
 }

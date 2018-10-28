@@ -7,7 +7,7 @@
 <html>
 <head>
 <jsp:include page="../admin/common.jsp" />
-<script type="text/javascript" src="/js/user.js"></script>
+<script type="text/javascript" src="/js/cash.js"></script>
 </head>
 <body>
 
@@ -17,10 +17,10 @@
 		<!-- Content Header (Page header) -->
 		<section class="content-header">
 			<h1>
-				用户列表 
+				体现管理 
 			</h1>
 			<ol class="breadcrumb">
-				<li><a href="#">用户列表 </a></li>
+				<li><a href="#">体现列表 </a></li>
 			</ol>
 		</section>
 
@@ -31,21 +31,14 @@
 					<div class="box">
 						<div class="box-body">
 							<div class="row">
-									手机号: <input type="text" maxlength="11"  id="phone">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-									邀请人手机号: <input type="text" maxlength="11" id="inviterPhone">&nbsp;&nbsp;
-									开始时间:<input id="startDate" style="width: 100px;height: 26px" class="Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd',readOnly:true,maxDate:'#F{$dp.$D(\'endDate\');}'})" />&nbsp;&nbsp;
-									结束时间:<input id="endDate" style="width: 100px;height: 26px" class="Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd',readOnly:true,minDate:'#F{$dp.$D(\'startDate\');}'})" />
-									角色:
-									<select id="isManager">
+									账户手机号: <input type="text" maxlength="11"  id="phone">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<!-- 开始时间:<input id="startDate" style="width: 100px;height: 26px" class="Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd',readOnly:true,maxDate:'#F{$dp.$D(\'endDate\');}'})" />&nbsp;&nbsp;
+									结束时间:<input id="endDate" style="width: 100px;height: 26px" class="Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd',readOnly:true,minDate:'#F{$dp.$D(\'startDate\');}'})" /> -->
+									体现状态:
+									<select id="status">
 										<option value="">-请选择-</option>
-										<option value=0>普通用户</option>
-										<option value="1">管理员</option>
-									</select>
-									用户类型:
-									<select id="isVip">
-										<option value="">-请选择-</option>
-										<option value=0>普通用户</option>
-										<option value="1">VIP用户</option>
+										<option value=0>未审核</option>
+										<option value="1">体现完成</option>
 									</select>
 									<button type="button" name="search" onclick="search()" class="btn btn-primary">查询</button>
 							</div>
@@ -55,58 +48,46 @@
 							<input type="hidden" id="pageNum" value="${page.pageNum}">
 							<input type="hidden" id="pageSize" value="${page.pageSize}">
 							<input type="hidden" id="pages" value="${page.pages}">
-							<table id="table1" class="table table-bordered  table-striped table-hover" style="min-width:2500px;">
+							<table id="table1" class="table table-bordered  table-striped table-hover" style="min-width:1500px;">
 								<thead>
 									<tr>
 										<th>id</th>
 										<th>uid</th>
-										<th>手机号</th>
-										<th>余额</th>
-										<th>稻粒</th>
-										<th>佣金</th>
-										<th>头像</th>
-										<th>邀请人</th>
-										<th>角色</th>
-										<th>用户类型</th>
-										<th>转账记录</th>
-										<th>佣金记录</th>
-										<th>提现记录</th>
-										<th>通讯录</th>
-										<th>我的账单</th>
-										<th>我的订单</th>
-										<th>话费充值记录</th>
+										<th>注册账户</th>
+										<th>体现金额</th>
+										<th>手续费</th>
+										<th>实际金额</th>
+										<th>银行名称</th>
+										<th>银行卡号</th>
+										<th>开户姓名</th>
+										<th>户主手机号</th>
+										<th>银行所在地址</th>
+										<th>状态</th>
+										<th>申请时间</th>
 										<th>其他操作</th>
 									</tr>
 								</thead>
 								<tbody id="tbody">
-									<c:forEach var="user" items="${page.list}">
+									<c:forEach var="cash" items="${page.list}">
 										<tr>
-											<td width="2.5%">${user.id}</td>
-											<td width="4.5%">${user.uid}</td>
-											<td width="5%">${user.phone}</td>
-											<td width="3.5%">${user.money==null?0:user.money}</td>
-											<td width="3.5%">${user.cardMoney==null?0:user.cardMoney}</td>
-											<td width="3.5%">${user.commission==null?0:user.commission}</td>
-											<td width="4%"><img src='${user.img==null?"":user.img}' height="50px" width="50px"></td>
-											<td width="5%">${user.inviterPhone==null?"无":user.inviterPhone}</td>
-											<td width="3.5%">${user.isManager==0?"普通用户":"管理员"}</td>
-											<td width="4%">${user.isVip==0?"普通用户":"VIP用户"}</td>
-											<td width="4%" class="info" ><a/>转账记录</td>
-											<td width="4%"><a/>佣金记录</td>
-											<td width="4%"><a/>提现记录</td>
-											<td width="4%"><a/>通讯录</td>
-											<td width="4%"><a/>我的账单</td>
-											<td width="4%"><a/>我的订单</td>
-											<td width="5%"><a/>话费充值记录</td>
-											<td width="30%">
+											<td width="2%">${cash.id}</td>
+											<td width="4%">${cash.uid}</td>
+											<td width="4%">${cash.accountPhone}</td>
+											<td width="4%">${cash.amount==null?0:cash.amount}</td>
+											<td width="4%">${cash.feeAmount==null?0:cash.feeAmount}</td>
+											<td width="4%">${cash.realAmount==null?0:cash.realAmount}</td>
+											<td width="4%">${cash.bankName}</td>
+											<td width="4%">${cash.bankNum}</td>
+											<td width="4%">${cash.userName}</td>
+											<td width="4%">${cash.phone}</td>
+											<td width="8%">${cash.bankAdress}</td>
+											<td width="4%">${cash.status==0?"未审核":"体现完成"}</td>
+											<td width="5%">${cash.applyTimeStr}</td>
+											<td width="10%">
+											<c:if test="${cash.status==0}">
 												<button class="btn btn-primary btn-sm"
-													onclick="detailUserInfo('${user.uid }')">详情</button>
-												<button class="btn btn-danger btn-sm" 
-													onclick="setUserStatus('${user.id }','1')">冻结</button>
-												<button class="btn btn-info btn-sm"
-													onclick="setUserStatus('${user.id }','2')">升为管理员</button>
-												<button class="btn btn-warning btn-sm"
-													onclick="setUserStatus('${user.id }','3')">手动添加vip</button>
+													onclick="audit('${cash.id}')">体现</button>
+											</c:if>
 											</td>
 										</tr>
 									</c:forEach>

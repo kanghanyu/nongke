@@ -29,12 +29,17 @@
 						<div class="box-body">
 							<div class="row">
 									商品名称: <input placeholder="商品名称" type="text" maxlength="50"  id="productName">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-									状态:
+									商品状态:
 									<select id="status">
 										<option value="">-请选择-</option>
 										<option value=0>未上架</option>
-										<option value="1">已上架</option>
-										<option value="2">已下架</option>
+										<option value="1">上架</option>
+									</select>
+									是否banner:
+									<select id="banner">
+										<option value="">-请选择-</option>
+										<option value=0>否</option>
+										<option value="1">是</option>
 									</select>
 									<button type="button" name="search" onclick="search()" class="btn btn-primary">查询</button>
 									<button type="button" id="add" onclick="addProduct()"
@@ -87,22 +92,29 @@
 												    ${entity.detail }                   
 												</c:if>
 											</td>
-											<td width="7%">${entity.status==0?"未上架":(entity.status==1?"已上架":"已下架")}</td>
+											<td width="7%">${entity.status==0?"未上架":"上架"}</td>
 											<td width="7%">${entity.isHot==0?"不是":"是"}</td>
 											<td width="7%">${entity.createTimeStr}</td>
 											<td width="40%">
 												<button class="btn btn-primary btn-sm"
-													onclick="detailProduct('${entity.productId }')">
-													<i class="glyphicon glyphicon-edit">详情</i>
+													onclick="detailProduct('${entity.productId }')">详情
 												</button> 
 												<button class="btn btn-primary btn-sm"
-													onclick="editProduct('${entity.productId }')">
-													<i class="glyphicon glyphicon-edit">修改</i>
+													onclick="editProduct('${entity.productId }')">修改
 												</button> 
-												<button class="btn btn-info btn-sm"
-													onclick='setProductStatus("${entity.productId}","1")'>商品上架</button>
+												<c:choose>
+													<c:when test="${entity.status==0}">
+														<button class="btn btn-primary btn-sm"
+															onclick='setProductStatus("${entity.productId}","1")'>商品上架</button>
+													</c:when>
+													<c:otherwise>
+														<button class="btn btn-primary btn-sm"
+															onclick='setProductStatus("${entity.productId}","0")'>商品下架</button>
+													</c:otherwise>
+												</c:choose>
 												<button class="btn btn-warning btn-sm"
-													onclick='setProductStatus("${entity.productId}","2")'>商品下架</button>
+													onclick="delProduct('${entity.productId }')">删除
+												</button> 
 											</td>
 										</tr>
 									</c:forEach>

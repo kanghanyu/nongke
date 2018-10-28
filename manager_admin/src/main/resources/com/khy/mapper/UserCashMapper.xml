@@ -12,6 +12,7 @@
     <result column="user_name" jdbcType="VARCHAR" property="userName" />
     <result column="bank_adress" jdbcType="VARCHAR" property="bankAdress" />
     <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="account_phone" jdbcType="VARCHAR" property="accountPhone" />
     <result column="apply_time" jdbcType="TIMESTAMP" property="applyTime" />
     <result column="status" jdbcType="INTEGER" property="status" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
@@ -29,8 +30,6 @@
   	where
   		id = #{id}
   	and	
-  		uid = #{uid}
-  	and
   		status = 0
   </select>
   
@@ -45,8 +44,10 @@
 		tuc.bank_num,
 		tuc.user_name,
 		tuc.bank_adress,
+		tuc.phone,
 		tuc.apply_time,
-		tuc.status
+		tuc.status,
+		tu.phone as account_phone
 	FROM
 		t_user_cash tuc,
 		t_user tu

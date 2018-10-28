@@ -56,7 +56,7 @@ public class Product extends BaseEntity implements Serializable {
 	private String detail;
 
 	/**
-	 * 0:未上架 ;1:上架,2已下架
+	 * 0:未上架/已下架 ;1:上架,
 	 */
 	private Integer status;
 

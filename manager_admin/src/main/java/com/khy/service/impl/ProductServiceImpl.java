@@ -100,7 +100,24 @@ public class ProductServiceImpl implements ProductService {
 		int num = productMapper.updateProduct(product);
 		if(num>0){
 			json.put("code",1000);
-			json.put("msg","更新成功");
+			json.put("msg","操作成功");
+		}
+		return json;
+	}
+
+
+	@Override
+	public JSONObject delProduct(Product product) {
+		JSONObject json = new JSONObject();
+		json.put("code",2000);
+		if(null == product || null ==product.getProductId()){
+			json.put("msg","参数不能为空");
+			return json;
+		}
+		int num = productMapper.delProduct(product.getProductId());
+		if(num>0){
+			json.put("code",1000);
+			json.put("msg","删除成功");
 		}
 		return json;
 	}
