@@ -18,5 +18,7 @@ public interface OrderInfoMapper {
 	List<OrderInfo> listOrderInfo(OrderInfo info);
 
 	List<OrderInfo> getNotConfirmOrder();
+
+	List<OrderInfo> listNotBillOrder();
 	
 }

@@ -61,6 +61,7 @@ public class OrderInfo extends BaseEntity implements Serializable {
 	private String phone;
 	private String description;
 	private String tradeNo;
+	private Integer isBill;
 	private static final long serialVersionUID = 1L;
 
 	public Long getId() {
@@ -69,6 +70,14 @@ public class OrderInfo extends BaseEntity implements Serializable {
 
 	public BigDecimal getTotalCost() {
 		return totalCost;
+	}
+
+	public Integer getIsBill() {
+		return isBill;
+	}
+
+	public void setIsBill(Integer isBill) {
+		this.isBill = isBill;
 	}
 
 	public void setTotalCost(BigDecimal totalCost) {

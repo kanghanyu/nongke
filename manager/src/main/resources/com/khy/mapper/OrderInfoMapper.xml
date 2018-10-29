@@ -5,7 +5,7 @@
   <sql id="Base_Column_List">
     id, order_id, order_type, pay_type, uid, total_money, discount, discount_detail, 
     discount_money,total_pay,rmb,corn_money,total_cost, product_detail,status, pay_status,create_time, 
-   invalid_time,pay_time,postage,user_name,address,post_code,phone,description,trade_no
+   invalid_time,pay_time,postage,user_name,address,post_code,phone,description,trade_no,is_bill
   </sql>
   
   <insert id="insert" parameterType="com.khy.entity.OrderInfo">
@@ -58,6 +58,9 @@
       </if>
       <if test="payStatus != null">
         pay_status,
+      </if>
+      <if test="isBill != null">
+        is_bill,
       </if>
       <if test="createTime != null">
         create_time,
@@ -132,6 +135,9 @@
       </if>
       <if test="payStatus != null">
         #{payStatus,jdbcType=INTEGER},
+      </if>
+      <if test="isBill != null">
+        #{isBill,jdbcType=INTEGER},
       </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},
@@ -213,7 +219,7 @@
   	and
   		order_type = 4
   	and
-  		AND DATE_FORMAT(NOW(),'%Y-%m-%d %H:%i:%s') > DATE_FORMAT(ADDDATE(pay_time,INTERVAL 7 DAY),'%Y-%m-%d %H:%i:%s')
+  		AND DATE_FORMAT(NOW(),'%Y-%m-%d %H:%i:%s') >= DATE_FORMAT(ADDDATE(pay_time,INTERVAL 7 DAY),'%Y-%m-%d %H:%i:%s')
   </select>
   
   
@@ -256,6 +262,9 @@
       </if>
       <if test="payStatus != null">
         pay_status = #{payStatus,jdbcType=INTEGER},
+      </if>
+      <if test="isBill != null">
+        is_bill = #{isBill,jdbcType=INTEGER},
       </if>
       <if test="payTime != null">
         pay_time = #{payTime,jdbcType=TIMESTAMP},
@@ -319,5 +328,17 @@
   	</if>
   	ORDER BY create_time DESC
   </select>
+
+	
+	<select id="listNotBillOrder" resultType="com.khy.entity.OrderInfo">
+		SELECT	
+	  		<include refid="Base_Column_List"/>
+	  	FROM
+	  		t_order_info
+		WHERE
+			is_bill = 1	
+		AND
+			pay_status in (2,4)
+	</select>
   
 </mapper>

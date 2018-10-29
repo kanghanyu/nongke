@@ -108,6 +108,10 @@ public class Constants {
     public static final int ORDER_PAYSTATUS_YQX = 3;
     public static final int ORDER_PAYSTATUS_YFF = 4;
     
+    //isBill
+    public static final int ORDER_ISBILL_WCZ = 1;
+    public static final int ORDER_ISBILL_YCZ = 2;
+    
     
     //product_status
     public static final int PRODUCT_STATUS_WSJ = 0;

@@ -168,6 +168,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 			BeanUtils.copyProperties(ret, info);
 			info.setStatus(Constants.ORDER_STATUS_WWC);
 			info.setPayStatus(Constants.ORDER_PAYSTATUS_WFK);
+			info.setIsBill(Constants.ORDER_ISBILL_WCZ);
 			info.setInvalidTime(invalidTime);
 			/**生成订单信息*/
 			logger.info("插入订单信息内容orderInfo="+JSON.toJSON(info));
@@ -658,8 +659,9 @@ public class PayServiceImpl extends BaseService implements PayService {
 				info.setStatus(Constants.ORDER_STATUS_WC);
 				info.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
 				info.setPayTime(now);
+				info.setIsBill(Constants.ORDER_ISBILL_WCZ);
 				orderInfoMapper.insert(info);
-				
+
 				//更新用户的余额内容
 				BigDecimal totalPay = dto.getTotalPay();
 				BigDecimal money = user.getMoney();
@@ -684,6 +686,10 @@ public class PayServiceImpl extends BaseService implements PayService {
 				jsonResponse.setRetDesc("获取APP支付验签失败");
 				return jsonResponse;
 			}
+			
+			//保存订单内容
+			
+			
 			ret.setPaySign(sign);
 			ret.setFlag(2);
 		} catch (Exception e) {
