@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartRequest;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.khy.common.JsonResponse;
 import com.khy.entity.BaseEntity;
@@ -35,6 +36,7 @@ import com.khy.mapper.dto.UserOrderInfoDTO;
 import com.khy.mapper.dto.UserPhoneRecord;
 import com.khy.mapper.dto.UserRecordDTO;
 import com.khy.service.UesrService;
+import com.khy.utils.PhoneUtils;
 import com.khy.utils.SessionHolder;
 import com.khy.utils.SmsUtils;
 import com.khy.utils.ValidateCode;
@@ -51,6 +53,8 @@ public class UserController {
 	private UesrService uesrService;
 	@Autowired
 	private SmsUtils SmsUtils;
+	@Autowired
+	private PhoneUtils PhoneUtils;
 	
 	@RequestMapping(value = "getMessageCode", method = RequestMethod.POST)
 	@ApiOperation(notes = "获取手机短信验证码的接口",value = "获取手机短信验证码的接口")
@@ -228,12 +232,36 @@ public class UserController {
 		return jsonResponse;
 	}
 	
-	@RequestMapping(value = "/listUserOrderInfo", method = RequestMethod.POST)
+	@RequestMapping(value = "/pageUserOrderInfo", method = RequestMethod.POST)
 	@ApiOperation(value = "分页获取用户-->我的订单列表")
 	@ApiImplicitParam(name = "entity", value = "新增/修改银行卡信息接口参数", required = true, paramType = "body", dataType = "BaseEntity")
 	public JsonResponse<PageInfo<UserOrderInfoDTO>> listUserOrderInfo(@RequestBody BaseEntity entity) {
 		JsonResponse<PageInfo<UserOrderInfoDTO>> jsonResponse = uesrService.listUserOrderInfo(entity);
 		return jsonResponse;
+	}
+	
+	@RequestMapping(value = "/cancelUserOrderInfo", method = RequestMethod.POST)
+	@ApiOperation(value = "用户主动-->取消订单内容")
+	@ApiImplicitParam(paramType = "query", dataType = "String", name = "orderId", value = "订单的id", required = true)
+	public JsonResponse<Boolean> cancelUserOrderInfo(String orderId) {
+		JsonResponse<Boolean> jsonResponse = uesrService.cancelUserOrderInfo(orderId);
+		return jsonResponse;
+	}
+	
+	@RequestMapping(value = "/confirmUserOrderInfo", method = RequestMethod.POST)
+	@ApiOperation(value = "已付款的购物订单用户确认收货")
+	@ApiImplicitParam(paramType = "query", dataType = "String", name = "orderId", value = "订单的id", required = true)
+	public JsonResponse<Boolean> confirmUserOrderInfo(String orderId) {
+		JsonResponse<Boolean> jsonResponse = uesrService.confirmUserOrderInfo(orderId);
+		return jsonResponse;
+	}
+	
+	
+	@RequestMapping(value = "/test")
+	public String test(String phone,Integer cardnum) {
+		JSONObject jsonObject = PhoneUtils.checkPhoneNum(phone, cardnum);
+		JSONObject yuE = PhoneUtils.yuE();
+		return jsonObject.toJSONString();
 	}
 	
 	

@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alipay.api.internal.util.AlipaySignature;
 import com.khy.common.Constants;
 import com.khy.common.JsonResponse;
 import com.khy.entity.OrderInfo;
@@ -43,6 +47,7 @@ import com.khy.mapper.dto.SubmitOrderResultDTO;
 import com.khy.service.PayService;
 import com.khy.utils.BeanUtils;
 import com.khy.utils.PayUtil;
+import com.khy.utils.PhoneUtils;
 import com.khy.utils.SessionHolder;
 import com.khy.utils.Utils;
 @Transactional
@@ -61,6 +66,8 @@ public class PayServiceImpl extends BaseService implements PayService {
 	private OrderInfoMapper orderInfoMapper;
 	@Autowired
 	private CacheService cacheService;
+	@Autowired
+	private PhoneUtils PhoneUtils;
 	
 	@Override
 	public JsonResponse<PreOrderResultDTO> createPreOrder(PreOrderDTO dto) {
@@ -298,7 +305,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				// 更新商品的数量内容
 				batchUpdateProduct(listProduct);
 				ret.setFlag(1);		
-			} else if (payType == Constants.ALIPAY) {
+			} else if (payType == Constants.ALIPAY || payType == Constants.WEIXIN_PAY) {
 				if (dto.getRmb().compareTo(ZERO) == 0 && dto.getCornMoney().compareTo(dto.getTotalPay()) == 0) {
 					// 说明全部是余额抵扣的和点卡购买的路径一样
 					// 包含更新订单状态内容
@@ -334,22 +341,15 @@ public class PayServiceImpl extends BaseService implements PayService {
 					}
 					ret.setPaySign(sign);
 					ret.setFlag(2);
-					//订单的状态不用变化-->等到支付成功之后异步回调才去操作这些内容
-//					orderInfo.setPayTime(now);
-//					orderInfo.setStatus(2);// 标识付款中-->如果真的付款完成回调中再次更新订单内容
-//					orderInfoMapper.update(orderInfo);
 					
-					// 扣除余额抵扣的部分内容;
-					//如果不是回调里面余额抵扣和商品数量不应该去更新使用-->都放到回调里面去支付
-					// 更新用户的账户信息(余额)
-//					BigDecimal money = userDb.getMoney() != userDb.getMoney() ? userDb.getMoney() : ZERO;
-//					userDb.setMoney(money.subtract(dto.getCornMoney()));
-//					userMapper.updateUser(userDb);
-//
+					// 扣除余额抵扣的部分内容;先进行扣除/如果过时不支付/或者取消订单在退回给用户
+					BigDecimal money = userDb.getMoney() != userDb.getMoney() ? userDb.getMoney() : ZERO;
+					userDb.setMoney(money.subtract(dto.getCornMoney()));
+					userMapper.updateUser(userDb);
 //					// 更新用户的账务流水
-//					String descr = "购买商品花费余额" + dto.getTotalPay() + ":元";
-//					saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, dto.getCornMoney(), money,
-//							orderId, descr, now);
+					String descr = "购买商品花费余额" + dto.getTotalPay() + ":元";
+					saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, dto.getCornMoney(), money,
+							orderId, descr, now);
 					
 				}
 			}
@@ -678,6 +678,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				sign = PayUtil.setRechargeSign(info,ret);
 			}else if(payType == Constants.WEIXIN_PAY){
 				//微信支付的sign
+				
 			}
 			if(StringUtils.isBlank(sign)){
 				jsonResponse.setRetDesc("获取APP支付验签失败");
@@ -777,6 +778,17 @@ public class PayServiceImpl extends BaseService implements PayService {
 				json.put("msg","当前充值金额必须是50的整倍数");
 				return json;
 			}
+			String phone = user.getPhone();
+			JSONObject checkRet = PhoneUtils.checkPhoneNum(phone, totalMoney.intValue());
+			if(null == checkRet){
+				json.put("msg","手机号校验失败,当前手机号充值异常");
+				return json;
+			}
+			
+			if(checkRet.getIntValue("error_code")!= 0){
+				json.put("msg",checkRet.getString("reason"));
+				return json;
+			}
 			//充值话费总金额和付款总金额是否相同正常充值
 			if(totalMoney.compareTo(totalPay) != 0){
 				//标识会员折扣充值
@@ -785,7 +797,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 					json.put("msg","您不是会员不享受话费充值优惠");
 					return json;
 				}
-				String vipDiscount = online.get(Constants.VIP_DISCOUNT);
+				String vipDiscount = online.get(Constants.VIP_PHONE_DISCOUNT);
 				if (StringUtils.isBlank(vipDiscount)) {
 					json.put("msg", "获取vip充值话费折扣异常请您联系管理员稍后再试");
 					return json;
@@ -844,5 +856,157 @@ public class PayServiceImpl extends BaseService implements PayService {
 		Pattern p = Pattern.compile("^[1][3,4,5,7,8][0-9]{9}$");
 		Matcher m = p.matcher(phone);
 		return m.matches();
+	}
+
+	/***
+	 * 状态TRADE_SUCCESS的通知触发条件是商户签约的产品支持退款功能的前提下，买家付款成功；
+	 * 交易状态TRADE_FINISHED的通知触发条件是商户签约的产品不支持退款功能的前提下，买家付款成功；
+	 * 或者，商户签约的产品支持退款功能的前提下，交易已经成功并且已经超过可退款期限。
+	 */
+	//异步回调
+	@Override
+	public JsonResponse<Boolean> payNotify(String payType, HttpServletRequest request) {
+		JsonResponse<Boolean>jsonResponse = new JsonResponse<>();
+		OrderInfo orderInfo = null;
+		String orderId = null;
+		String trade_no = null;
+		try {
+			Date now = new Date();
+			if(payType.equals("alipay")){
+				if (!"TRADE_SUCCESS".equals(request.getParameter("trade_status"))) {
+					jsonResponse.setRetDesc("异步回调接口验签失败--->付款状态trade_statu="+request.getParameter("trade_status"));
+					return jsonResponse;
+				}
+					orderId = request.getParameter("out_trade_no");
+					if(StringUtils.isBlank(orderId)){
+						jsonResponse.setRetDesc("订单号为空");
+						return jsonResponse;
+					}
+					//标识支付宝的验签
+					Map<String,String> param = getParam(request);
+					logger.info("订支付宝验签获取的响应参数内容param={}" + JSON.toJSONString(param)); 
+					boolean signVerified = AlipaySignature.rsaCheckV1(param, Constants.ALI_PUBLIC_KEY,Constants.CHARSET_UTF8); // 校验签名是否正确
+					if (!signVerified) {
+						jsonResponse.setRetDesc("异步回调接口验签失败");
+						return jsonResponse;
+					} 
+					// TODO 验签成功后
+					logger.info("订单支付宝验签成功signVerified = "+signVerified);
+					//先查询该订单是否已付款--->如果已付款说明已经更新过了
+					OrderInfo info = new OrderInfo();
+					info.setOrderId(orderId);
+					orderInfo = orderInfoMapper.getPayOrder(info);
+					if(null == orderInfo){
+						jsonResponse.setRetDesc("未查询到当前订单信息");
+						return jsonResponse;
+					}
+					String total_amount = request.getParameter("total_amount");
+					if(new BigDecimal(total_amount).compareTo(orderInfo.getRmb())!=0){
+						//说明前后的钱不一致
+						jsonResponse.setRetDesc("付款金额不对");
+						return jsonResponse;
+					}
+					if(orderInfo.getPayStatus() != Constants.ORDER_PAYSTATUS_WFK){
+						jsonResponse.success(true);
+						return jsonResponse;
+					}
+					trade_no = request.getParameter("trade_no");
+			}else{
+				//微信的回调内容;
+				
+			}
+			
+			//针对该内容加锁处理--->防止多次回调都会执行内容
+			boolean lock = cacheService.lock(Constants.LOCK_NOTIFY_ORDER.concat(orderId), Constants.LOCK, Constants.FIVE_MINUTE);
+			if(lock){
+				jsonResponse.setRetDesc("异步回调加锁失败");//可以直接返回成功;
+				return jsonResponse;
+			};
+			Integer orderType = orderInfo.getOrderType();
+			if(orderType == Constants.PAY_PRODUCT){
+				//更新订单的状态
+				OrderInfo updateOrder = new OrderInfo();
+				updateOrder.setOrderId(orderId);
+				updateOrder.setStatus(Constants.ORDER_STATUS_WWC);
+				updateOrder.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
+				updateOrder.setUid(orderInfo.getUid());
+				updateOrder.setPayTime(now);
+				updateOrder.setTradeNo(trade_no);
+				orderInfoMapper.update(orderInfo);
+				//更新商品的库存/销量
+				String productDetail = orderInfo.getProductDetail();
+				batchUpdateProduct(productDetail);
+				//如果含有余额抵扣的扣除余额-->生成订单已经更新
+				//设置账单内容-->定时处理
+				//设置分佣内容-->定时/用户确认收款设置
+			}else { //充值订单内容
+				//更新订单内容;
+				OrderInfo updateOrder = new OrderInfo();
+				updateOrder.setOrderId(orderId);
+				updateOrder.setStatus(Constants.ORDER_STATUS_WC);
+				updateOrder.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
+				updateOrder.setUid(orderInfo.getUid());
+				updateOrder.setPayTime(now);
+				updateOrder.setTradeNo(trade_no);
+				orderInfoMapper.update(orderInfo);
+				//订单更新之后全部开始定时器配置内容;
+			}
+			jsonResponse.success(true);
+		} catch (Exception e) {
+			logger.error("支付回调接口异常订单orderId={},e={}",orderId,e.getMessage());
+			throw new BusinessException("支付回调接口异常");
+		}finally {
+			cacheService.releaseLock(Constants.LOCK_NOTIFY_ORDER.concat(orderId));
+		}
+		return jsonResponse;
+	}
+
+
+	private void batchUpdateProduct(String productDetail) {
+		if(StringUtils.isNotBlank(productDetail)){
+			List<PayProductDetailDTO> productList = JSONArray.parseArray(productDetail, PayProductDetailDTO.class);
+			if(CollectionUtils.isNotEmpty(productList)){
+				for (PayProductDetailDTO dto : productList) {
+					Long productId = dto.getProductId();
+					Integer amount = dto.getAmount();
+					JSONObject json = getProductByProductIdAndLock(productId);
+					if(json.getIntValue("code")==1000){
+						logger.error("异步回调更新商品失败内容商品productId="+productId);
+						throw new BusinessException("更新商品状态异常product = "+productId);
+					}
+					try {
+						Product findProduct = json.getObject("product",Product.class);
+						findProduct.setSalesAmount(findProduct.getSalesAmount()+amount);
+						findProduct.setStockAmount(findProduct.getStockAmount()-amount);
+					} catch (Exception e) {
+						logger.error("异步回调更新商品失败内容");
+						throw new BusinessException(e.getMessage());
+					}finally {
+						cacheService.releaseLock(Constants.LOCK_PRODUCT+productId);
+					}
+					
+				}
+			}
+			
+		}
+		
+	}
+
+
+	private Map<String, String> getParam(HttpServletRequest request) {
+		 Map<String,String> params = new HashMap<String,String>();
+		 Map requestParams = request.getParameterMap();
+		 for (Iterator iter = requestParams.keySet().iterator(); iter.hasNext();) {
+			 String name = (String) iter.next();
+			 String[] values = (String[]) requestParams.get(name);
+			 String valueStr = "";
+			 for (int i = 0; i < values.length; i++) {
+				 valueStr = (i == values.length - 1) ? valueStr + values[i]:valueStr + values[i] + ",";
+			 }
+			 //乱码解决，这段代码在出现乱码时使用。如果mysign和sign不相等也可以使用这段代码转化//
+//			 valueStr = new String(valueStr.getBytes("ISO-8859-1"), "gbk");
+			 params.put(name, valueStr);
+		}
+		return null;
 	}
 }

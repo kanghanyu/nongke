@@ -867,6 +867,86 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		jsonResponse.success(ret);
 		return jsonResponse;
 	}
+
+	
+	@Override
+	public JsonResponse<Boolean> cancelUserOrderInfo(String orderId) {
+		JsonResponse<Boolean>jsonResponse = new JsonResponse<>();
+		if(StringUtils.isBlank(orderId)){
+			jsonResponse.setRetDesc("orderId不为空");
+			return jsonResponse;
+		}
+		User user = SessionHolder.currentUser();
+		if(null == user){
+			jsonResponse.setRetDesc("请重新登录");
+			return jsonResponse;
+		}
+		String uid = user.getUid();
+		try {
+			OrderInfo info = new OrderInfo();
+			info.setUid(uid);
+			info.setOrderId(orderId);
+			info.setStatus(Constants.ORDER_STATUS_WWC);
+			info.setPayStatus(Constants.ORDER_PAYSTATUS_WFK);
+			info.setOrderType(Constants.PAY_PRODUCT);
+			OrderInfo orderInfo = orderInfoMapper.getPayOrder(info);
+			if(null == orderInfo){
+				jsonResponse.setRetDesc("当前记录不存在");
+				return jsonResponse;
+			}
+			//更新订单状态
+			info.setPayStatus(Constants.ORDER_PAYSTATUS_YQX);
+			info.setStatus(Constants.ORDER_STATUS_WC);
+			orderInfoMapper.update(info);
+			setUserMoney(orderInfo);
+			jsonResponse.success(true);
+		} catch (Exception e) {
+			throw new BusinessException(e.getMessage());
+		}
+		return jsonResponse;
+	}
+
+	
+	@Override
+	public JsonResponse<Boolean> confirmUserOrderInfo(String orderId) {
+		JsonResponse<Boolean>jsonResponse = new JsonResponse<>();
+		if(StringUtils.isBlank(orderId)){
+			jsonResponse.setRetDesc("orderId不为空");
+			return jsonResponse;
+		}
+		User user = SessionHolder.currentUser();
+		if(null == user){
+			jsonResponse.setRetDesc("请重新登录");
+			return jsonResponse;
+		}
+		String uid = user.getUid();
+		logger.info("用户确认收货orderId={}",orderId);
+		try {
+			OrderInfo info = new OrderInfo();
+			info.setUid(uid);
+			info.setOrderId(orderId);
+			info.setStatus(Constants.ORDER_STATUS_WWC);
+			info.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
+			info.setOrderType(Constants.PAY_PRODUCT);
+			OrderInfo orderInfo = orderInfoMapper.getPayOrder(info);
+			if(null == orderInfo){
+				jsonResponse.setRetDesc("当前记录不存在");
+				return jsonResponse;
+			}
+			logger.info("用户确认收货获取的订单信息orderInfo={}",JSON.toJSON(orderInfo));
+			//更新订单状态
+			info.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
+			info.setStatus(Constants.ORDER_STATUS_WC);
+			orderInfoMapper.update(info);
+			//设置分佣的内容;
+			logger.info("用户确认收货orderId={}",orderId);
+			setCommission(orderId);//可以通过定时器去处理该内容
+			jsonResponse.success(true);
+		} catch (Exception e) {
+			throw new BusinessException("用户确认收款失败");
+		}
+		return jsonResponse;
+	}
 }
 
 

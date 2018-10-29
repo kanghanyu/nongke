@@ -71,9 +71,31 @@ public class BaseService {
 	}
 	
 	public JSONObject getUserByUidAndLock(String uid){
+		return getUserByUidAndLock(uid, null);
+	}
+	public JSONObject getUserByUidAndLock(String uid,Integer num){
 		JSONObject json = new JSONObject();
 		json.put("code",1000);
-		boolean lock = cacheService.lock(Constants.LOCK_USER+uid, Constants.LOCK, Constants.FIVE_MINUTE);
+		boolean lock = false;
+		if(null != num){
+			while(num > 0){
+				lock = cacheService.lock(Constants.LOCK_USER+uid, Constants.LOCK, Constants.FIVE_MINUTE);
+				num--;
+				if(num == 0){
+					break;
+				}else{
+					if(lock){
+						try {
+							Thread.sleep(3000L);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}else{
+			lock = cacheService.lock(Constants.LOCK_USER+uid, Constants.LOCK, Constants.FIVE_MINUTE);
+		}
 		if(lock){
 			json.put("msg","当前用户操作繁忙,请稍后再试");
 			return json;
@@ -89,13 +111,13 @@ public class BaseService {
 		json.put("code",1000);
 		User user = userMapper.getUserByPhone(phone);
 		if(null == user){
-			json.put("msg","对方账户不存在");
+			json.put("msg","当前账户不存在");
 			return json;
 		}
 		String uid = user.getUid();
 		boolean lock = cacheService.lock(Constants.LOCK_USER+uid, Constants.LOCK, Constants.FIVE_MINUTE);
 		if(lock){
-			json.put("msg","对方用户操作繁忙,请稍后再试");
+			json.put("msg","当前用户操作繁忙,请稍后再试");
 			return json;
 		}
 		json.put("code",2000);
@@ -143,20 +165,20 @@ public class BaseService {
 	 * @param uid
 	 * @param orderId
 	 */
-	public void setCommission(String uid, String orderId) {
-		if (StringUtils.isNoneBlank(uid, orderId)) {
-			User user = userMapper.getUserByUid(uid);
-			if (null == user || user.getIsVip() == Constants.GENERAL_UER) {
-				return;
-			}
+	public void setCommission(String orderId) {
+		if (StringUtils.isNotBlank(orderId)) {
 			OrderInfo info = new OrderInfo();
 			info.setOrderId(orderId);
-			info.setUid(uid);
 			info.setStatus(Constants.ORDER_STATUS_WC);
 			info.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
 			OrderInfo order = orderInfoMapper.getPayOrder(info);
 			// 充值点卡是没有分佣的
 			if (null == order && order.getOrderType() == Constants.PAY_CARD) {
+				return;
+			}
+			String uid = order.getUid();
+			User user = userMapper.getUserByUid(uid);
+			if (null == user || user.getIsVip() == Constants.GENERAL_UER) {
 				return;
 			}
 			Integer orderType = order.getOrderType();
@@ -255,5 +277,30 @@ public class BaseService {
 			cacheService.releaseLock(Constants.LOCK_USER + uid);
 		}
 		return inviterUid;
+	}
+	
+	
+	public void setUserMoney(OrderInfo orderInfo) {
+		String uid = orderInfo.getUid();
+		BigDecimal cornMoney = orderInfo.getCornMoney()!=null ?orderInfo.getCornMoney():ZERO;
+		JSONObject json = getUserByUidAndLock(uid,2);
+		if(json.getIntValue("code") == 1000){
+			throw new BusinessException("uid={"+uid+"},当前状态繁忙操作失败");
+		}
+		try {
+			User userDb = json.getObject("user",User.class);
+			userDb.setCardMoney(cornMoney.add(userDb.getCardMoney()));
+			userMapper.updateUser(userDb);
+			//删除已经添加的余额消费记录
+			UserRecord record = new UserRecord();
+			record.setTargetId(orderInfo.getOrderId());
+			record.setPayType(Constants.RECORD_PAY);
+			record.setType(Constants.RECORD_MONEY);
+			userRecordMapper.delete(record);
+		} catch (Exception e) {
+			throw new BusinessException("用户取消订单占用余额释放异常e={"+e.getMessage()+"}");
+		}finally {
+			cacheService.releaseLock(Constants.LOCK_USER+uid);
+		}
 	}
 }

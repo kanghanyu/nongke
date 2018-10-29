@@ -28,6 +28,8 @@ public class Constants {
     public static final String LOCK_USER = PREFIX.concat("lock:user:");
     public static final String LOCK_PRODUCT = PREFIX.concat("lock:product:");
     
+    public static final String LOCK_NOTIFY_ORDER = PREFIX.concat("lock:notify:order:");
+    
     public static final String USER_PHONE_RECHARGE= PREFIX.concat("user:phone:recharge:");
     
     public static final String LOCK = "lock";
@@ -51,6 +53,10 @@ public class Constants {
     
     /**vip购买商品的折扣内容*/
     public static final String VIP_DISCOUNT = "vip_discount";
+    
+    /**vip充值话费的折扣内容*/
+    public static final String VIP_PHONE_DISCOUNT = "vip_phone_discount";
+    
 	/**邮费*/
     public static final String POSTAGE = "postage";
     
@@ -123,14 +129,17 @@ public class Constants {
     
     
     //alipay
-    public static final String ALIPAY_APPID = "2018071960718514"; 
-    public static final String PRIVATE_KEY = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCATYHeBHKiq07iELm6viJazjVRdIqZrxtlWkTUupxsM+4NtFfHP7zRHk2E28zjRgx+fG5bTX/Hp6VT/oeh7UpmJ5uYRpNfsfFjP5mmcR66T2D4fkRjXJWpa70Aj0TGJ4CJhFhbKhud+WEeUK/H+hiRTOTKJ+w6L4LtxLmeHbRhGwxBY61zwlnqjccjpaVY+5SsYoaHP0mucyuXhiRpgctwV5QVvzEr3GnBsGXAkf1lfuVWu2HxWuJ9YZBUT93zgVGPxLE42g1a6bkocSGvaxsfO5zKj8/qGOd4CEZ6i3LEYOc2ZaNskmGqmafty5Bki5xcPlG8y9bcBTfbU96b7MR3AgMBAAECggEAW39quvsvCWTjt4I4Ab3wYBOooHNdGGZxQiFS7uY6AUwzW2CeLMD+lZ9npvTdM8NTy6xPQxuMocSjubfN4COKKDnc04aZOOh8fcvwdms7f6B2RiA+AyIWtSDZQ5nocOvg1bElFbZ8xXb/1I+0HAf2F0Df9G7uHzycwZXGzcTfS1PnsAhwWSu1vm6DQlN+8AC9bhXBlIwmOX3VgW1wSbDmpOAj5w5/qKGFsBfKbm1XoY8xwWJCEI1UoGWPwIac384kLpnrjlvvGw90z6nhwmtqpial/ODZT9hhJVm3pMQVKHStEZMc1jvDmTfFvuy+8DPUJC1gYdQ+SypXHsIlXOaJkQKBgQDexoTo+yU51kryJmrREK/CANk5FnpSa8ylEvn4GXYmAeyKc57uRl0kwRyqiKhKTqFgNgApGOYms+WlSusYQPeG1GeKmmvsstHBk93AQF+NJmthCuKFIVh/QrfEzeytzExGnymcEfysuGNwQasJXuzPQeGyVKLudJWLo9YLh/VT+QKBgQCTcA6WzV8kkeQCBpYuS9YdjalIIC5Xq8ukB2S1pfbA27HRjdMJQw5/dE7EafNiJkIHmQb3pfwJaNxTeC3BJLMJibAwMom51toDJIOZBHKE/Fx2CA/743eDWb2GQZvLqkCUv0NEhjLRVJckLJ1Wak7pGoz5gSUAcT+UPctq5BgX7wKBgCBGlMUIdek+Qdd5d2pYx44M/2vE9O3yDlEwQaUPU03IY5PfknwlF6OWkuemKvOxFrJQwI8zu0yKLdBX3V3DM9mF9oZfPxmpArjQCoWrDezuTwpdQFpXbXHqoaNSzmKTwc1NjAK/nGMNx+JgsT4HUbnpaqCioIR5wZzcnMtI5GNJAoGAWUpB655RAorANWHbzgnrkFZcsOucZUgLujkoCsKKH95tYGWt6ywLObEsitNHrKdS0dshVxXU/7XbyUk9HH2nWB1k8KuKsVunCMQyVpdU66kSLgFP/NKTbJ8KoqZVPhDLr8ntaTCE0jWSmzvRxaX4SD/mJKzLxerQAG00JnYhCU0CgYA9uesU//XD5/H18ScI8oaOdB0iQycZB1oI0BB9l6VsnScdG9IyECWJuO+IEY9p43UtahIq/DImjh4yPJR1NzD2DLPrty0TodV3wOL6ubc3obIOJclpAsaulmDLB9/804nLKBwDiiu+jgT9oxfILTVjFCijoNjt32BtfQJq63qyUQ==";
+    public static final String ALIPAY_APPID = "2018100161603116"; 
+    public static final String PRIVATE_KEY = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCzzHc4ZvnteUpvJ5xx8x1ZwmytGnAQeP24ujsUWZqcdV0d3yRDWruMtw18Ka3YZpXZwyMz1RG4MeZICkHqnKmY3seKdMqD5Tu9s10IGyvRRg7d6kx+lofxnuTumlY36lR8dwbMv3mOTtqdZf7LkWcI9Bn85Kp+gpGZ9H7ciHjjjsp1OsVoUASE33b2wx3EvtkyPOusZA7IsxgGyf7w8Rum7qJ8S7dUsy4nolnV2PEsf28ZsVLgkQ3WEh/HC9Msp86zZvBnNl5E3O0TSu4JzRWtRHoFZEHxWJxbS6ePH2akreOjaDNXwZfhdP8wtz/ewRvsA+UyBUV+wqegr6SJYAddAgMBAAECggEARRKCpodg8msLPmKQRnJoTyhTCblDXgCtMD9THQFDVWH9ENG9o6aCsI9OPenhIGZgoRTHPE1ZjlKVLg3Kvu/Kc7D6JWWyuzLgXYM/dTLDBZWNdpFhK6x2s0sglc1y2+5I4Lv1P8k7UIFYmOkrFldYpubn6PCL0ygj+WolJmHDV1/IylYQFdIMVMFHlhOPabYwCYH+e/nqKUfEv1Vv9BA0yISiRYpQzTVfze1BiCGPHe+YXgt8yx8ojUPMwWc+t+1vV9FZpb/nIp3h3YnXnJqwpmAxqJzIz5v2c4QlMtzCZy6foKe+lfotlPDbjlgzfEsa5iBYvwq1w9gHL/12O7Ai/QKBgQDxSsc1f8ML8rk6KvEX3huLue82sabxe+yZ7EkhOjcDoo29uowCKQ0lZY4Vjth4NBnH/443ChVQEeGpeGQNQ8NXlHkSnX14PNECxpi4ckc1gPacP7pkKqGB0cowea3Mce++5socgE0p0Rx1P9TLMqTQPQx2pFifdJfQBXTIBzgJZwKBgQC+wh5znKz1P3orwtnJU8upeSMSk4eEeQRf9E96JL5BDD6JuyTTOMiqlDXtpvI+tnXgt7uMmElAEKtkp0zRqYYaej2zareJhxsXVvAzwdGdVost1kYIUK/x3DdnfwIrHQDWYRdr8MaKhdz+EVfl41jqVSPL0hSES++nZk8ahYc6mwKBgD9Sn4rzt404KtIQGOtpl5MIvbV909EF86bFcr+slml2zHnhLgMXIOMSjsIrlbWd/rIU6A6br9Iujyk5dhBhGy+twERZXmcilruCwOuO2g85g/6nXtQQuAfotYYZOLoxoHhZ+uqV5So3PZ+rm72j0crwaofsQ3G9WGX4OJiSBGu7AoGAa0JXQQaNsfCZT1Xmg2+cipRUhjNx9ajeLt3+el2CpKyv1V3nHOVG37Mqh5BhkaWirlJhIHLYbS9yT8xKQ3Ggt+6YFvQgczIGp574vQF0TZXF+GYNRsunwsTiWk1t+LP8Lo61Tro5yNXwJuO1msu0yT5KPGbJpoHUJTo/rFf8a5UCgYAafe3qUQ9O18R6jQosYy2j6yb3ZMqCu/RFHwKUccYstaOt2mPoXlnfOFTvEhK4zuCONuqJYt0BPnU1hLJwG2QEQSWo+4Eld38lGkPP+ihk2fI+laJ0714l0FXoxbublV3rX4ozgIul4aezKR3LhZhLajaXsJpSCceFjbEPFEJKvg==";
     public static final String METHOD = "alipay.trade.app.pay";
     public static final String FORMAT_JSON = "json";
     public static final String CHARSET_UTF8 = "UTF-8";
-    public static final String ALI_PUBLIC_KEY = "";
+    public static final String ALI_PUBLIC_KEY = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiuJuogLsSCok2NVCvqhmqlrNbYLbGtJngeJ4pKS7EYxsXFbXGtl3QMWTWLFsdFkZCJ9rU9beQsJi/e8rjVojjSxX7Mq4CYZVu+/soXFde3MEguSlk32bAjVCgr2fBGL0ivY/qOW0DzRYJBa/b72z/8ZYCX+Idw0H5DOqDoAwzpqxvWc9M16VI9T26nOfzYsmt/KkOCoDJnCvpVJPf3so1iVK/rqANLMBU/lJbIVN1lJpC8f3S0H8eKhAicVcWMinWTYkbH65jtoARzP/CWvh40CKpHrEVfbOQatrKIW8uTHnozGsBguQh1dg0w00FDsOW+mn3qc227bvMd2JUJ27IQIDAQAB";
     public static final String VERSION = "1.0";
     public static final String SIGN_TYPE_RSA2 = "RSA2";
-    public static final String NOTIFY_URL = "http://www.nongke365.com:8081/pay/alipay/notify";
-    public static final String TIMEOUT_EXPRESS = "5m";
+    public static final String NOTIFY_URL = "https://www.nongke365.com:8081/pay/alipay/notify";
+    public static final String TIMEOUT_EXPRESS = "20m";
+    public static final String AES_KEY = "qNbuDK656ziShag3287ujA==";
+    public static final String AES_FULLALG = "AES/CBC/PKCS5Padding";
+    
 }

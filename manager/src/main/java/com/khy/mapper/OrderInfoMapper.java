@@ -16,5 +16,7 @@ public interface OrderInfoMapper {
 	List<OrderInfo> getUserBill(String uid);
 
 	List<OrderInfo> listOrderInfo(OrderInfo info);
+
+	List<OrderInfo> getNotConfirmOrder();
 	
 }

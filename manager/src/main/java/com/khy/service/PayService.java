@@ -1,5 +1,7 @@
 package com.khy.service;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.khy.common.JsonResponse;
 import com.khy.mapper.dto.PreOrderDTO;
 import com.khy.mapper.dto.PreOrderResultDTO;
@@ -15,5 +17,7 @@ public interface PayService {
 	JsonResponse<SubmitOrderResultDTO> payForProductOnline(SubmitOrderDTO dto);
 
 	JsonResponse<RechargeResultDTO> recharge(RechargeSubmitDTO dto);
+
+	JsonResponse<Boolean> payNotify(String payType, HttpServletRequest request);
 
 }

@@ -71,4 +71,5 @@
 		AND 
 	    	status = 0
 	</select>
+	
 </mapper>

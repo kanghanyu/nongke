@@ -59,8 +59,8 @@ public class OrderInfo extends BaseEntity implements Serializable {
 	private String postCode;
 
 	private String phone;
-
 	private String description;
+	private String tradeNo;
 	private static final long serialVersionUID = 1L;
 
 	public Long getId() {
@@ -261,6 +261,14 @@ public class OrderInfo extends BaseEntity implements Serializable {
 
 	public void setPayStatus(Integer payStatus) {
 		this.payStatus = payStatus;
+	}
+
+	public String getTradeNo() {
+		return tradeNo;
+	}
+
+	public void setTradeNo(String tradeNo) {
+		this.tradeNo = tradeNo;
 	}
 
 }

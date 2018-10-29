@@ -67,4 +67,8 @@ public interface UesrService {
 
 	JsonResponse<List<UserPhoneRecord>> listUserPhoneRecord();
 
+	JsonResponse<Boolean> cancelUserOrderInfo(String orderId);
+
+	JsonResponse<Boolean> confirmUserOrderInfo(String orderId);
+
 }

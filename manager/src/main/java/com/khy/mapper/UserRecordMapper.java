@@ -8,5 +8,7 @@ public interface UserRecordMapper {
 	int insert(UserRecord record);
 
 	List<UserRecord> listUserRecord(UserRecord record);
+
+	void delete(UserRecord record);
 	
 }

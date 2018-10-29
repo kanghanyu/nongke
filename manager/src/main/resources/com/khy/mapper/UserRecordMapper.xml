@@ -96,4 +96,15 @@
       </if>
     </trim>
   </insert>
+  
+  <delete id="delete" parameterType="com.khy.entity.UserRecord">
+	    delete from 
+	    	t_user_record
+	    where 
+	    	pay_type =#{payType}
+	    and
+	    	type =#{type}
+	    and
+	    	target_id=#{targetId}
+	  </delete>
 </mapper>

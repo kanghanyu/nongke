@@ -47,15 +47,15 @@ public class PayUtil {
 		orderDescr.put("total_amount", dto.getRmb());
 		orderDescr.put("product_code","QUICK_MSECURITY_PAY");
 		orderDescr.put("goods_type",orderType == 4 ? "1" : "0");
-		
-		//测试生成sign 的内容
-//		orderDescr.put("body","我是测试数据");
-//		orderDescr.put("subject", "App支付测试Java");
-//		orderDescr.put("out_trade_no", "1111");
-//		orderDescr.put("timeout_express", "30m");
-//		orderDescr.put("total_amount", "0.01");
-//		orderDescr.put("product_code","QUICK_MSECURITY_PAY");
-		param.put("biz_content", JSON.toJSONString(orderDescr));
+		//先进行aes加密使用
+		String bizContent = null;
+		try {
+			bizContent = AesUtils.encrypt(Constants.AES_KEY, JSON.toJSONString(orderDescr), Constants.CHARSET_UTF8);
+		} catch (Exception e) {
+			logger.error("生成验签使用AES加密失败"+e.getMessage());
+			throw new BusinessException("生成验签使用AES加密失败"+e.getMessage());
+		}
+		param.put("biz_content", bizContent);
 		String sign = null;
 		try {
 			sign = 	getSign(param,Constants.CHARSET_UTF8, Constants.SIGN_TYPE_RSA2);
@@ -100,7 +100,16 @@ public class PayUtil {
 		orderDescr.put("total_amount", info.getRmb());
 		orderDescr.put("product_code","QUICK_MSECURITY_PAY");
 		orderDescr.put("goods_type",orderType == 4 ? "1" : "0");
-		param.put("biz_content", JSON.toJSONString(orderDescr));
+		
+		// 先进行aes加密使用
+		String bizContent = null;
+		try {
+			bizContent = AesUtils.encrypt(Constants.AES_KEY, JSON.toJSONString(orderDescr), Constants.CHARSET_UTF8);
+		} catch (Exception e) {
+			logger.error("生成验签使用AES加密失败" + e.getMessage());
+			throw new BusinessException("生成验签使用AES加密失败" + e.getMessage());
+		}
+		param.put("biz_content", bizContent);
 		String sign = null;
 		try {
 			sign = 	getSign(param,Constants.CHARSET_UTF8, Constants.SIGN_TYPE_RSA2);
