@@ -11,7 +11,7 @@ public interface OrderInfoMapper {
 	
 	int update(OrderInfo info);
 
-	List<OrderInfo> getNotPayOrder();
+	List<String> getNotPayOrder();
 
 	List<OrderInfo> getUserBill(String uid);
 
@@ -20,5 +20,17 @@ public interface OrderInfoMapper {
 	List<OrderInfo> getNotConfirmOrder();
 
 	List<OrderInfo> listNotBillOrder();
+
+	List<String> noRechargeOrder();
+
+	OrderInfo getNotPayOrderById(String orderId);
+
+	OrderInfo noRechargeOrderById(String orderId);
+
+	List<String> notCommissionOrder();
+
+	OrderInfo notCommissionOrderById(String orderId);
+
+	OrderInfo notSaveBillOrderById(String orderId);
 	
 }

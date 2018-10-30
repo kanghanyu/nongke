@@ -8,16 +8,22 @@ public interface OrderService {
 
 	List<OrderInfo> listNotBillOrder();
 
-	void insert(int i);
+	int saveBill(OrderInfo orderInfo);
 
-	void saveBill(OrderInfo orderInfo);
+	List<String> getNotPayOrder();
 
-	List<OrderInfo> getNotPayOrder();
-
-	int setNotPayOrder(OrderInfo orderInfo);
+	int setNotPayOrder(String orderId);
 
 	List<OrderInfo> getNotConfirmOrder();
 
 	int setConfirmOrder(OrderInfo orderInfo);
+
+	List<String> noRechargeOrder();
+
+	int recharge(String orderId);
+
+	List<String> getNotCommission();
+
+	int setOrderCommission(String orderId);
 
 }

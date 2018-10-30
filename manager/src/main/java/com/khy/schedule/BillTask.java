@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.khy.common.Constants;
 import com.khy.entity.OrderInfo;
@@ -29,17 +30,15 @@ public class BillTask extends BaseService{
 	public void setBill(){
 		//先查询所有的符合条件的订单内容
 		List<OrderInfo>list = orderService.listNotBillOrder();
-		String orderId = null;
 		if(CollectionUtils.isNotEmpty(list)){
 			logger.info("设置后台出账内容size={}",list.size());
 			int num = 1;
-			for (OrderInfo orderInfo : list) {
+			for (OrderInfo info : list) {
 				try {
-					orderId = orderInfo.getOrderId();
-					orderService.saveBill(orderInfo);
+					orderService.saveBill(info);
 					num ++;
 				} catch (Exception e) {
-					logger.error("处理出账的订单内容异常订单的orderId={}",orderId);
+					logger.error("处理出账的订单内容异常订单的orderInfo={}",JSON.toJSON(info));
 					continue;
 				}
 			}

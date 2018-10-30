@@ -261,6 +261,7 @@ public class UserController {
 //	public String test(String phone,Integer cardnum) {
 //		JSONObject jsonObject = PhoneUtils.checkPhoneNum(phone, cardnum);
 //		JSONObject yuE = PhoneUtils.yuE();
+//		JSONObject json = PhoneUtils.onlineOrder("156520097051", 1, "1111111111");
 //		return jsonObject.toJSONString();
 //	}
 //	

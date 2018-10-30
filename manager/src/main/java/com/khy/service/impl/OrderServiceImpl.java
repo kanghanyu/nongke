@@ -1,11 +1,11 @@
 package com.khy.service.impl;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.khy.common.Constants;
 import com.khy.entity.OrderInfo;
 import com.khy.entity.UserBill;
@@ -22,6 +23,7 @@ import com.khy.mapper.UserBillMapper;
 import com.khy.mapper.dto.BillInfoDTO;
 import com.khy.schedule.BillTask;
 import com.khy.service.OrderService;
+import com.khy.utils.PhoneUtils;
 @Service
 @Transactional
 public class OrderServiceImpl extends BaseService implements OrderService {
@@ -30,6 +32,8 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 	private OrderInfoMapper orderInfoMapper;
 	@Autowired
 	private UserBillMapper userBillMapper;
+	@Autowired
+	private PhoneUtils PhoneUtils;
 	
 	@Override
 	public List<OrderInfo> listNotBillOrder() {
@@ -37,7 +41,7 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 	}
 
 	@Override
-	public List<OrderInfo> getNotPayOrder() {
+	public List<String> getNotPayOrder() {
 		return orderInfoMapper.getNotPayOrder();
 	}
 	
@@ -45,14 +49,28 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 	public List<OrderInfo> getNotConfirmOrder() {
 		return orderInfoMapper.getNotConfirmOrder();
 	}
+	@Override
+	public List<String> noRechargeOrder() {
+		return orderInfoMapper.noRechargeOrder();
+	}
+	
+	@Override
+	public List<String> getNotCommission() {
+		return orderInfoMapper.notCommissionOrder();
+	}
 	
 	
 	@Override
-	public synchronized  void saveBill(OrderInfo orderInfo) {
+	public synchronized int saveBill(OrderInfo orderInfo) {
 		logger.info("订单出账账单的设置开始--->orderInfo={}",JSON.toJSON(orderInfo));
+		int i =0;
+		
+//		OrderInfo orderInfo = orderInfoMapper.notSaveBillOrderById(orderId);
+		
+		
 		Integer isBill = orderInfo.getIsBill();
 		if(isBill == Constants.ORDER_ISBILL_YCZ){
-			return;
+			return i;
 		}
 		String orderId = orderInfo.getOrderId();
 		Integer orderType = orderInfo.getOrderType();
@@ -77,6 +95,7 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 			list = getBills(orderInfo);
 		} 
 		
+		return 0;
 	}
 	
 	
@@ -171,44 +190,33 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 			bills.add(bill);
 		}else if(orderType == Constants.PAY_PRODUCT){
 			
-			
-			
 		}
-		
-		
-		
 		return null;
 	}
 	
-	public void insert(int i) {
-		UserBill bill = new UserBill();
-		bill.setUid("测试uid"+i);;
-		userBillMapper.insert(bill);
-		if(i == 5){
-			throw new BusinessException("测试异常内容");
-		}
-	}
 
 	@Override
-	public int setNotPayOrder(OrderInfo orderInfo) {
+	public synchronized int setNotPayOrder(String orderId) {
 		int i = 0;
+		if(StringUtils.isNotBlank(orderId)){
+			return i;
+		}
+		OrderInfo orderInfo = orderInfoMapper.getNotPayOrderById(orderId);
 		if(null == orderInfo){
 			return i;
 		}
-		
-		//如果是商品订单未支付-->还需要将用户已经扣除的余额抵扣加回来;
 		Integer orderType = orderInfo.getOrderType();
+		if(orderType == Constants.PAY_PRODUCT){
+			//需要还原用户购物下单时扣除的余额抵扣内容
+			setUserMoney(orderInfo);
+		}
+		//如果是商品订单未支付-->还需要将用户已经扣除的余额抵扣加回来;
 		OrderInfo updateInfo = new OrderInfo();
-		String orderId = orderInfo.getOrderId();
 		updateInfo.setPayStatus(Constants.ORDER_PAYSTATUS_YQX);
 		updateInfo.setStatus(Constants.ORDER_STATUS_WC);
 		updateInfo.setUid(orderInfo.getUid());
 		updateInfo.setOrderId(orderId);
 		int flag = orderInfoMapper.update(updateInfo);
-		if(orderType == Constants.PAY_PRODUCT){
-			//需要还原用户购物下单时扣除的余额抵扣内容
-			setUserMoney(orderInfo);
-		}
 		return flag;
 	}
 
@@ -227,4 +235,57 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 		int flag = orderInfoMapper.update(updateInfo);
 		return flag;
 	}
+
+	@Override
+	public synchronized int recharge(String orderId) {
+		int i = 0;
+		if(StringUtils.isNotBlank(orderId)){
+			return i;
+		}
+		OrderInfo info = orderInfoMapper.noRechargeOrderById(orderId);
+		if(null == info){
+			return i;
+		}
+		try {
+			//先给用户手机充值话费内容
+			int cardnum = info.getTotalMoney().intValue();
+			String phone = info.getDescription();
+			logger.info("给用户phone={},的手机号码充值money={},订单的orderId={}",phone,cardnum,orderId);
+			JSONObject json = PhoneUtils.onlineOrder(phone, cardnum, orderId);
+			Integer error_code = json.getInteger("error_code");
+			if(null != error_code || error_code.intValue() == 0){
+				//如果手机话费充值正常更新订单的状态
+				OrderInfo updateInfo = new OrderInfo();
+				updateInfo.setUid(info.getUid());
+				updateInfo.setOrderId(orderId);
+				updateInfo.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
+				updateInfo.setStatus(Constants.ORDER_STATUS_WC);
+				i = orderInfoMapper.update(updateInfo);
+			}else{
+				//表示话费充值异常
+				logger.error("定时给用户代充异常e={}",json.toString());
+				throw new BusinessException("话费充值异常"+json.getString("reason"));
+			}
+		} catch (Exception e) {
+			logger.error("定时给用户代充异常"+e.getMessage());
+			throw new BusinessException("定时给用户代充异常"+e.getMessage());
+		}
+		return i;
+	}
+
+	@Override
+	public synchronized int setOrderCommission(String orderId) {
+		int i = 0;
+		if(StringUtils.isNotBlank(orderId)){
+			return i;
+		}
+		OrderInfo info = orderInfoMapper.notCommissionOrderById(orderId);
+		if(null == info){
+			return i;
+		}
+		//
+		setCommission(orderId);
+		return 0;
+	}
+
 }
