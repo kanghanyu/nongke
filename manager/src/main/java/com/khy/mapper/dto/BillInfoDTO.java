@@ -14,6 +14,14 @@ public class BillInfoDTO {
 	private Integer amount;
 	/**商品的总价*/
 	private BigDecimal total;
+	/**描述信息*/
+	private String description;
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
 	public String getProductName() {
 		return productName;
 	}

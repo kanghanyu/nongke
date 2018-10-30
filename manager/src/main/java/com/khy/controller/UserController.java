@@ -256,14 +256,14 @@ public class UserController {
 		return jsonResponse;
 	}
 	
-	
-	@RequestMapping(value = "/test")
-	public String test(String phone,Integer cardnum) {
-		JSONObject jsonObject = PhoneUtils.checkPhoneNum(phone, cardnum);
-		JSONObject yuE = PhoneUtils.yuE();
-		return jsonObject.toJSONString();
-	}
-	
+//	
+//	@RequestMapping(value = "/test")
+//	public String test(String phone,Integer cardnum) {
+//		JSONObject jsonObject = PhoneUtils.checkPhoneNum(phone, cardnum);
+//		JSONObject yuE = PhoneUtils.yuE();
+//		return jsonObject.toJSONString();
+//	}
+//	
 	
 	@RequestMapping(value = "/validate/img",method = RequestMethod.POST)
 	public void img(HttpServletRequest request, HttpServletResponse response) throws IOException {

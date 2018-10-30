@@ -760,8 +760,12 @@ public class PayServiceImpl extends BaseService implements PayService {
 			info.setDescription(totalPay+":元(充到余额"+toMoney+":元)");
 			info.setDiscountMoney(new BigDecimal(toMoney));
 		}else if(orderType == Constants.PAY_CARD){
-			if(totalPay.intValue() %100 != 0 ){
+			if(totalMoney.intValue() %100 != 0 ){
 				json.put("msg","点卡充值金额必须是100的整倍数");
+				return json;
+			}
+			if(totalMoney.compareTo(totalPay)!=0){
+				json.put("msg","点卡充值金额金和点卡总价不一致");
 				return json;
 			}
 			if(payType != Constants.MONEY_PAY || payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){

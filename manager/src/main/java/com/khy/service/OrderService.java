@@ -12,4 +12,12 @@ public interface OrderService {
 
 	void saveBill(OrderInfo orderInfo);
 
+	List<OrderInfo> getNotPayOrder();
+
+	int setNotPayOrder(OrderInfo orderInfo);
+
+	List<OrderInfo> getNotConfirmOrder();
+
+	int setConfirmOrder(OrderInfo orderInfo);
+
 }

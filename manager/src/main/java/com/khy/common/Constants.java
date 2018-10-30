@@ -10,7 +10,7 @@ public class Constants {
     public static String accessKeySecret = "00cd2etgTUe6rD4bQXGQv3uZzUJzAA";
     public static String bucketName = "nongke";
     public static final String BASE_URL = "http://nongke.oss-cn-beijing.aliyuncs.com/";
-    public static final String INVITE_USER_REGISTER="http://www.nongke365.com:8081/register.html?uid=";
+    public static final String INVITE_USER_REGISTER="https://www.nongke365.com:8081/register.html?uid=";
 
  // 初始化ascClient需要的几个参数
     public static final String product = "Dysmsapi";// 短信API产品名称（短信产品名固定，无需修改）
@@ -130,6 +130,17 @@ public class Constants {
     public static final int RECORD_COMMISSION = 3;
     public static final int RECORD_RMB = 4;
     
+    
+    //user_bill -->type
+    public static final int BILL_INCOME = 1;
+    public static final int BILL_PAY = 2;
+    
+    
+    //user_bill -->billType
+    public static final int BILL_VIP = 1;
+    public static final int BILL_CARD = 2;
+    public static final int BILL_PHONE = 3;
+    public static final int BILL_PRODUCT = 4;
     
     
     //alipay

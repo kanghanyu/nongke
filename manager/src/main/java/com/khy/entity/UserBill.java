@@ -23,19 +23,35 @@ public class UserBill implements Serializable {
 
     private BigDecimal amount;
 
-    private Date createTime;
-
+    private Float discount;
+    
+    private BigDecimal postage;
+    
     private String description;
 
     private String info;
 
+    private Date createTime;
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
         return id;
     }
+    public Float getDiscount() {
+		return discount;
+	}
 
-    public void setId(Long id) {
+	public BigDecimal getPostage() {
+		return postage;
+	}
+	public void setPostage(BigDecimal postage) {
+		this.postage = postage;
+	}
+	public void setDiscount(Float discount) {
+		this.discount = discount;
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
 
