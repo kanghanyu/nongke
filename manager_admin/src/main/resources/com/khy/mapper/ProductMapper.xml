@@ -19,10 +19,10 @@
   				and product_name like concat('%',#{productName},'%')
   			</if>
   			<if test="null != status">
-  				status = #{status}
+  				and status = #{status}
   			</if>
   			<if test="null != isHot">
-  				is_hot = #{isHot}
+  				and is_hot = #{isHot}
   			</if>
   		</where>
   		ORDER BY create_time DESC
