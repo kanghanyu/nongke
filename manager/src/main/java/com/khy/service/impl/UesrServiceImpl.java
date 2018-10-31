@@ -114,7 +114,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		}
 		userDb.hide(userDb);
 		String token = Utils.getToken();
-		userDb.setToken(token);
+		userDb.setToken(userDb.getUid()+":"+token);
 		cacheService.setString(Constants.USER_LOGIN.concat(userDb.getUid()+":").concat(token), JSON.toJSONString(userDb),Constants.SEVEN_DAY);
 		jsonResponse.success(userDb,"用户登录成功");
 		logger.info("登录接口响应的参数内容"+JSON.toJSONString(jsonResponse));
@@ -138,7 +138,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		}
 		userDb.hide(userDb);
 		userDb.setToken(token);
-		cacheService.setString(Constants.USER_LOGIN.concat(userDb.getUid()+":").concat(token), JSON.toJSONString(userDb),Constants.SEVEN_DAY);
+		cacheService.setString(Constants.USER_LOGIN.concat(token), JSON.toJSONString(userDb),Constants.SEVEN_DAY);
 		jsonResponse.success(userDb);
 		return jsonResponse;
 	}
