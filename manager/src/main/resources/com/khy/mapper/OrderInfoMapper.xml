@@ -410,4 +410,24 @@
 		AND pay_status IN (2, 4)
 	</select>
   
-</mapper>
+  
+  
+  <select id="notSaveBillOrder" resultType="com.khy.entity.OrderInfo" parameterType="com.khy.entity.OrderInfo">
+  	select
+  		<include refid="Base_Column_List"/>
+  	from
+  		t_order_info
+  	where
+  		order_id = #{orderId}
+  	and is_bill = 1
+  	<choose>
+  		<when test="null != orderType and orderType == 4">
+  			AND pay_status IN (2, 4)
+  		</when>
+  		<otherwise>
+	  		AND status=2
+			AND pay_status= 4
+  		</otherwise>
+  	</choose>
+  </select>
+</mapper> 

@@ -31,6 +31,6 @@ public interface OrderInfoMapper {
 
 	OrderInfo notCommissionOrderById(String orderId);
 
-	OrderInfo notSaveBillOrderById(String orderId);
-	
+	OrderInfo notSaveBillOrder(OrderInfo orderInfo);
+
 }

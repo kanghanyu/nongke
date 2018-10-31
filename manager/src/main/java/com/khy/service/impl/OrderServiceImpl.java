@@ -1,5 +1,6 @@
 package com.khy.service.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.khy.common.Constants;
 import com.khy.entity.OrderInfo;
@@ -21,6 +23,7 @@ import com.khy.exception.BusinessException;
 import com.khy.mapper.OrderInfoMapper;
 import com.khy.mapper.UserBillMapper;
 import com.khy.mapper.dto.BillInfoDTO;
+import com.khy.mapper.dto.PayProductDetailDTO;
 import com.khy.schedule.BillTask;
 import com.khy.service.OrderService;
 import com.khy.utils.PhoneUtils;
@@ -64,40 +67,37 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 	public synchronized int saveBill(OrderInfo orderInfo) {
 		logger.info("订单出账账单的设置开始--->orderInfo={}",JSON.toJSON(orderInfo));
 		int i =0;
-		
-//		OrderInfo orderInfo = orderInfoMapper.notSaveBillOrderById(orderId);
-		
-		
-		Integer isBill = orderInfo.getIsBill();
-		if(isBill == Constants.ORDER_ISBILL_YCZ){
+		if(null == orderInfo){
+			return i;
+		}
+		orderInfo = orderInfoMapper.notSaveBillOrder(orderInfo);
+		if(null == orderInfo){
 			return i;
 		}
 		String orderId = orderInfo.getOrderId();
-		Integer orderType = orderInfo.getOrderType();
 		String uid = orderInfo.getUid();
-		
 		OrderInfo info = new OrderInfo();
 		info.setOrderId(orderId);
 		info.setUid(uid);
 		info.setIsBill(Constants.ORDER_ISBILL_YCZ);
-		info.setOrderType(orderType);
+		orderInfoMapper.update(info); 
+
+		//设置订单对应的账单内容
+		Integer orderType = orderInfo.getOrderType();
 		if(orderType == Constants.PAY_VIP){
 			info.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
 		}
-		
-		List<UserBill>list = userBillMapper.list(orderId,uid);
-//		OrderInfo info = new OrderInfo();
-//		info.setOrderId(orderId);
-//		info.setUid(uid);
-//		info.setIsBill(Constants.ORDER_ISBILL_YCZ);
-		orderInfoMapper.update(info);//先更新订单的状态内容;
-		if(CollectionUtils.isEmpty(list)){
-			list = getBills(orderInfo);
-		} 
-		
-		return 0;
+		List<UserBill>list = getBills(orderInfo);
+		if(CollectionUtils.isNotEmpty(list)){
+			//保存账单内容
+			for (UserBill userBill : list) {
+				i = userBillMapper.insert(userBill);
+			}
+		} else{
+			return i;
+		}
+		return i;
 	}
-	
 	
 	private List<UserBill> getBills(OrderInfo orderInfo) {
 		Integer orderType = orderInfo.getOrderType();
@@ -189,11 +189,80 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 			bill.setInfo(JSON.toJSONString(dtos));
 			bills.add(bill);
 		}else if(orderType == Constants.PAY_PRODUCT){
+			//点卡/余额抵扣/rmb 
+			//商品订单都有一个进价的支出账单内容
+			String productDetail = orderInfo.getProductDetail();
+			if(StringUtils.isBlank(productDetail)){
+				return bills;
+			}
+			UserBill bill = new UserBill();
+			bill.setUid(uid);
+			bill.setType(Constants.BILL_PAY);
+			bill.setBillType(Constants.BILL_PRODUCT);
+			bill.setOrderId(orderId);
+			bill.setDescription("商品进价账单");
+			bill.setCreateTime(now);
+			BigDecimal amount = setProductBillInfo(dtos,productDetail,Constants.BILL_PAY);//设置商品出账
+			bill.setAmount(amount);
+			if(CollectionUtils.isEmpty(dtos)){
+				return  bills;
+			}
+			bill.setInfo(JSON.toJSONString(dtos));
+			bills.add(bill);
 			
+			if(payType == Constants.CARD_PAY){//付款方式等于点卡的只有出账的内容;
+				return  bills;
+			}
+			if(null == orderInfo.getRmb() || orderInfo.getRmb().compareTo(new BigDecimal("0.00")) == 0){
+				//表示全部余额抵扣的
+				return  bills;
+			}
+			bill = new UserBill();
+			bill.setUid(uid);
+			bill.setType(Constants.BILL_INCOME);
+			bill.setBillType(Constants.BILL_PRODUCT);
+			bill.setOrderId(orderId);
+			bill.setAmount(orderInfo.getRmb());
+			bill.setDiscount(orderInfo.getDiscount());
+			bill.setPostage(orderInfo.getPostage());
+			bill.setDescription("RMB购买商品");
+			bill.setCreateTime(now);
+			dtos = new ArrayList<>();
+			setProductBillInfo(dtos,productDetail,Constants.BILL_INCOME);//设置商品出账
+			if(CollectionUtils.isEmpty(dtos)){
+				return  bills;
+			}
+			bill.setInfo(JSON.toJSONString(dtos));
+			bills.add(bill);
 		}
-		return null;
+		return bills;
 	}
 	
+	private BigDecimal setProductBillInfo(List<BillInfoDTO> dtos, String productDetail, int type) {
+		List<PayProductDetailDTO> productList = JSONArray.parseArray(productDetail, PayProductDetailDTO.class);
+		BigDecimal amount = new BigDecimal("0.00");
+		if(CollectionUtils.isNotEmpty(productList)){
+			for (PayProductDetailDTO product : productList) {
+				BillInfoDTO dto = new BillInfoDTO();
+				dto.setProductName(product.getProductName());
+				dto.setProductType("商品");
+				dto.setAmount(product.getAmount());
+				if(type == Constants.BILL_PAY){//标识支出的
+					dto.setPrice(product.getCostPrice());
+					BigDecimal cost = new BigDecimal(product.getCost().toString());
+					dto.setTotal(cost);
+					dto.setDescription("商品的进价成本");
+					amount = amount.add(cost);
+				}else{
+					dto.setPrice(product.getProductPrice());
+					dto.setTotal(new BigDecimal(product.getTotal().toString()));
+					dto.setDescription("商品销售");
+				}
+				dtos.add(dto);
+			}
+		}
+		return amount;
+	}
 
 	@Override
 	public synchronized int setNotPayOrder(String orderId) {
@@ -288,4 +357,20 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 		return 0;
 	}
 
+	public static void main(String[] args) {
+		BigDecimal b1 = new  BigDecimal("0.00");
+		UserBill bill = new UserBill();
+		bill.setAmount(b1);
+		System.out.println(JSON.toJSON(bill));
+		int num =1;
+		while(true){
+			if(num >10){
+				break;
+			}
+			b1 = b1.add(new BigDecimal("1.22"));
+			num++;
+		}
+		bill.setAmount(b1);
+		System.out.println(JSON.toJSON(bill));
+	}
 }

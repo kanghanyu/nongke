@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.alibaba.fastjson.JSON;
+
 public class UserBill implements Serializable {
     private Long id;
 
