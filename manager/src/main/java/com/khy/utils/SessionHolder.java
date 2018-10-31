@@ -16,11 +16,11 @@ public class SessionHolder {
   }
 
   public static User currentUser() {
-	  User user = new User();
-	  user.setUid("10180943");
-	  user.setPhone("15501271310");
-	  return user;
-//    return userStore.get ();
+//	  User user = new User();
+//	  user.setUid("10180943");
+//	  user.setPhone("15501271310");
+//	  return user;
+    return userStore.get ();
   }
 
   public static void cleanUser() {

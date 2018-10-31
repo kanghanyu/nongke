@@ -26,7 +26,7 @@ import com.khy.common.JsonResponse;
 import com.khy.entity.User;
 import com.khy.service.impl.CacheService;
 import com.khy.utils.SessionHolder;
-//@Configuration
+@Configuration
 public class LoginInterceptor extends WebMvcConfigurerAdapter{
 	public final static Logger logger = LoggerFactory.getLogger(LoginInterceptor.class);
 
