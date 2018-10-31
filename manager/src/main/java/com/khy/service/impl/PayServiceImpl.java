@@ -216,16 +216,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 			return jsonResponse;
 		}
 		String uid = user.getUid();
-		JSONObject userRet = getUserByUidAndLock(uid);
-		if(userRet.getIntValue("code") == 1000){
-			jsonResponse.setRetDesc(userRet.getString("msg"));
-			return jsonResponse;
-		}
-		User userDb = userRet.getObject("user",User.class);
-		if(null == userDb){
-			jsonResponse.setRetDesc("当前用户状态异常");
-			return jsonResponse;
-		}
 		Date now = new Date();
 		String orderId = dto.getOrderId();
 		OrderInfo info  = new OrderInfo();
@@ -249,6 +239,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 			updateInfo.setOrderId(orderId);
 			logger.info("用户提交支付的订单orderId={},当前订单已经失效,去更新数据库该订单的信息内容updateInfo={}",orderId,JSON.toJSON(updateInfo));
 			orderInfoMapper.update(orderInfo);
+			setUserMoney(orderInfo);
 			jsonResponse.setRetDesc("当前订单30分钟内未付款,已失效");
 			return jsonResponse;
 		}
@@ -262,32 +253,43 @@ public class PayServiceImpl extends BaseService implements PayService {
 			jsonResponse.setRetDesc("获取在线参数异常,请联系管理员");
 			return jsonResponse;
 		}
-		//为了防止重复付款 先对用户的付款订单进行加锁
-		String key = Constants.USER_ONLINE_PAY_LOCK.concat(uid).concat(orderId);
-		boolean lock = cacheService.lock(key,Constants.LOCK ,Constants.FIVE_MINUTE);
-		logger.info("用户在线支付订单的加锁操作key = {},结果 = {}",key,lock);
-		if(lock){
-			jsonResponse.setRetDesc("订单支付中,请勿重复支付");
-			return jsonResponse;
-		}
-		List<Product>listProduct = new ArrayList<>();
-		JSONObject json = checkProductOrderInfo(orderInfo,dto,userDb,online,listProduct);
-		logger.info("在线支付校验订单内容结果json={}",json.toString());
-		
-		if(json.getIntValue("code") == 2000){
-			logger.error("在线支付校验订单内容结果失败json={}",json.toString());
-			jsonResponse.setRetDesc(json.getString("msg"));
-			return jsonResponse;
-		}
-		Integer payType = dto.getPayType();
-		orderInfo.setPayType(payType);
-		SubmitOrderResultDTO ret = new SubmitOrderResultDTO();
-		BeanUtils.copyProperties(orderInfo, ret);
+		String key = null;
 		List<Long> productIds = null;
-		if(CollectionUtils.isNotEmpty(listProduct)){
-			productIds = listProduct.stream().map(Product::getProductId).collect(Collectors.toList());
-		}
+		SubmitOrderResultDTO ret = new SubmitOrderResultDTO();
 		try {
+			JSONObject userRet = getUserByUidAndLock(uid);
+			if(userRet.getIntValue("code") == 1000){
+				jsonResponse.setRetDesc(userRet.getString("msg"));
+				return jsonResponse;
+			}
+			User userDb = userRet.getObject("user",User.class);
+			if(null == userDb){
+				jsonResponse.setRetDesc("当前用户状态异常");
+				return jsonResponse;
+			}
+			//为了防止重复付款 先对用户的付款订单进行加锁
+			key = Constants.USER_ONLINE_PAY_LOCK.concat(uid).concat(orderId);
+			boolean lock = cacheService.lock(key,Constants.LOCK ,Constants.FIVE_MINUTE);
+			logger.info("用户在线支付订单的加锁操作key = {},结果 = {}",key,lock);
+			if(lock){
+				jsonResponse.setRetDesc("订单支付中,请勿重复支付");
+				return jsonResponse;
+			}
+			List<Product>listProduct = new ArrayList<>();
+			JSONObject json = checkProductOrderInfo(orderInfo,dto,userDb,online,listProduct);
+			if(CollectionUtils.isNotEmpty(listProduct)){
+				productIds = listProduct.stream().map(Product::getProductId).collect(Collectors.toList());
+			}
+			logger.info("在线支付校验订单内容结果json={}",json.toString());
+			
+			if(json.getIntValue("code") == 2000){
+				logger.error("在线支付校验订单内容结果失败json={}",json.toString());
+				jsonResponse.setRetDesc(json.getString("msg"));
+				return jsonResponse;
+			}
+			Integer payType = dto.getPayType();
+			orderInfo.setPayType(payType);
+			BeanUtils.copyProperties(orderInfo, ret);
 			if (payType == Constants.CARD_PAY) {
 				// 包含更新订单状态内容
 				orderInfo.setPayTime(now);
@@ -315,12 +317,12 @@ public class PayServiceImpl extends BaseService implements PayService {
 					orderInfoMapper.update(orderInfo);
 
 					// 更新用户的账户信息(余额)
-					BigDecimal money = userDb.getMoney() != userDb.getMoney() ? userDb.getMoney() : ZERO;
+					BigDecimal money = userDb.getMoney() != null ? userDb.getMoney() : ZERO;
 					userDb.setMoney(money.subtract(dto.getCornMoney()));
 					userMapper.updateUser(userDb);
 
 					// 更新用户的账务流水
-					String descr = "购买订单余额抵扣" + dto.getTotalPay() + ":元";
+					String descr = "购买订单余额抵扣" + dto.getCornMoney() + ":元";
 					saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, dto.getCornMoney(), money,
 							orderId, descr, now);
 					// 更新商品的数量内容
@@ -344,21 +346,23 @@ public class PayServiceImpl extends BaseService implements PayService {
 					ret.setFlag(2);
 					
 					// 扣除余额抵扣的部分内容;先进行扣除/如果过时不支付/或者取消订单在退回给用户
-					BigDecimal money = userDb.getMoney() != userDb.getMoney() ? userDb.getMoney() : ZERO;
+					BigDecimal money = userDb.getMoney() != null ? userDb.getMoney() : ZERO;
 					userDb.setMoney(money.subtract(dto.getCornMoney()));
 					userMapper.updateUser(userDb);
 //					// 更新用户的账务流水
-					String descr = "购买商品花费余额" + dto.getTotalPay() + ":元";
+					String descr = "购买商品花费余额" + dto.getCornMoney() + ":元";
 					saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, dto.getCornMoney(), money,
 							orderId, descr, now);
-					
+					orderInfoMapper.update(orderInfo);
 				}
 			}
 		} catch (Exception e) {
 			logger.error("用户在线支付商品订单--->接口异常" + e.getMessage());
 			throw new BusinessException("用户在线支付商品订单--->接口异常" + e.getMessage());
 		} finally {
-			cacheService.releaseLock(key);
+			if(StringUtils.isNotBlank(key)){
+				cacheService.releaseLock(key);
+			}
 			// 清除用户锁和商品锁
 			cacheService.releaseLock(Constants.LOCK_USER + uid);
 			// 批量清除商品锁内容
@@ -445,12 +449,18 @@ public class PayServiceImpl extends BaseService implements PayService {
 			JSONObject ret = getProductByProductIdAndLock(productId);
 			if(ret.getIntValue("code")==1000){
 				json.put("msg",ret.getString("msg"));
+				return json;
 			}
 			Product findProduct = ret.getObject("product",Product.class);
+			if(dto1.getProductPrice().compareTo(findProduct.getProductPrice())!=0){
+				json.put("msg","商品id为"+dto1.getProductId()+"的商品价格发生变化请重新下单");
+				return json;
+			}
 			if(findProduct.getStockAmount().compareTo(dto1.getAmount())< 0){
 				json.put("msg","商品id为"+dto1.getProductId()+"的商品不存在/库存不足");
 				return json;
 			}
+			
 			
 			//设置更新数量的商品列表
 			updateProduct = new Product();
@@ -458,7 +468,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 			updateProduct.setSalesAmount(findProduct.getSalesAmount()+dto1.getAmount());
 			updateProduct.setStockAmount(findProduct.getStockAmount()-dto1.getAmount());
 			if(updateProduct.getStockAmount().intValue() == 0){
-				updateProduct.setStatus(Constants.PRODUCT_STATUS_YXJ);
+				updateProduct.setStatus(Constants.PRODUCT_STATUS_WSJ);
 			}
 			listProduct.add(updateProduct);
 			
@@ -467,7 +477,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 			BigDecimal cost = dto1.getCostPrice().multiply(new BigDecimal(dto1.getAmount()));
 			dto1.setCost(cost.doubleValue());
 			totalCost = totalCost.add(cost);
-			total = total.add(new BigDecimal(dto1.getTotal()));
+			total = total.add(new BigDecimal(dto1.getTotal().toString()));
 		}
 		
 		Integer isVip = user.getIsVip();
@@ -614,16 +624,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 			return jsonResponse;
 		}
 		String uid = user.getUid();
-		JSONObject userRet = getUserByUidAndLock(uid);
-		if(userRet.getIntValue("code") == 1000){
-			jsonResponse.setRetDesc(userRet.getString("msg"));
-			return jsonResponse;
-		}
-		user = userRet.getObject("user",User.class);
-		if(null == user){
-			jsonResponse.setRetDesc("当前用户状态异常");
-			return jsonResponse;
-		}
 		Map<String, String> online = getOnline();
 		logger.info("获取在线参数的map={}",JSON.toJSON(online));
 		if(null ==online || online.size() == 0){
@@ -631,26 +631,36 @@ public class PayServiceImpl extends BaseService implements PayService {
 			return jsonResponse;
 		}
 		Integer orderType = dto.getOrderType();
-		//针对生成前置订单的用户加锁防止生成多个前置订单;
-		boolean lock = cacheService.lock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),Constants.LOCK ,Constants.FIVE_MINUTE);
-		logger.info("充值加锁操作key = {},结果 = {}",Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),lock);
-		if(lock){
-			jsonResponse.setRetDesc("VIP购买提交订单生成失败请稍后再试");
-			return jsonResponse;
-		}
 		RechargeResultDTO ret = new RechargeResultDTO();
-		JSONObject json = check(dto,user,online);
-		if(json.getIntValue("code") == 2000){
-			logger.error("提交充值订单的校验内容的失败ret = "+json.toString());
-			jsonResponse.setRetDesc(json.getString("msg"));
-			return jsonResponse;
-		}
-		OrderInfo info = json.getObject("order", OrderInfo.class);
-		Date now = new Date();
-		//校验通过开始处理扣费
-		info.setCreateTime(now);
-		Integer payType = dto.getPayType();
 		try {
+			JSONObject userRet = getUserByUidAndLock(uid);
+			if(userRet.getIntValue("code") == 1000){
+				jsonResponse.setRetDesc(userRet.getString("msg"));
+				return jsonResponse;
+			}
+			user = userRet.getObject("user",User.class);
+			if(null == user){
+				jsonResponse.setRetDesc("当前用户状态异常");
+				return jsonResponse;
+			}
+			//针对生成前置订单的用户加锁防止生成多个前置订单;
+			boolean lock = cacheService.lock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),Constants.LOCK ,Constants.FIVE_MINUTE);
+			logger.info("充值加锁操作key = {},结果 = {}",Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),lock);
+			if(lock){
+				jsonResponse.setRetDesc("VIP购买提交订单生成失败请稍后再试");
+				return jsonResponse;
+			}
+			JSONObject json = check(dto,user,online);
+			if(json.getIntValue("code") == 2000){
+				logger.error("提交充值订单的校验内容的失败ret = "+json.toString());
+				jsonResponse.setRetDesc(json.getString("msg"));
+				return jsonResponse;
+			}
+			OrderInfo info = json.getObject("order", OrderInfo.class);
+			Date now = new Date();
+			//校验通过开始处理扣费
+			info.setCreateTime(now);
+			Integer payType = dto.getPayType();
 			BeanUtils.copyProperties(info, ret);
 			// TODO 充值订单的设置内容(未完成待续)
 			String sign = null;

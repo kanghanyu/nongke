@@ -202,8 +202,8 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 			bill.setOrderId(orderId);
 			bill.setDescription("商品进价账单");
 			bill.setCreateTime(now);
-			BigDecimal amount = setProductBillInfo(dtos,productDetail,Constants.BILL_PAY);//设置商品出账
-			bill.setAmount(amount);
+			dtos = setProductBillInfo(productDetail,Constants.BILL_PAY);//设置商品出账
+			bill.setAmount(orderInfo.getTotalCost());
 			if(CollectionUtils.isEmpty(dtos)){
 				return  bills;
 			}
@@ -227,8 +227,7 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 			bill.setPostage(orderInfo.getPostage());
 			bill.setDescription("RMB购买商品");
 			bill.setCreateTime(now);
-			dtos = new ArrayList<>();
-			setProductBillInfo(dtos,productDetail,Constants.BILL_INCOME);//设置商品出账
+			dtos = setProductBillInfo(productDetail,Constants.BILL_INCOME);//设置商品出账
 			if(CollectionUtils.isEmpty(dtos)){
 				return  bills;
 			}
@@ -238,7 +237,8 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 		return bills;
 	}
 	
-	private BigDecimal setProductBillInfo(List<BillInfoDTO> dtos, String productDetail, int type) {
+	private List<BillInfoDTO> setProductBillInfo(String productDetail, int type) {
+		List<BillInfoDTO> dtos = new ArrayList<>();
 		List<PayProductDetailDTO> productList = JSONArray.parseArray(productDetail, PayProductDetailDTO.class);
 		BigDecimal amount = new BigDecimal("0.00");
 		if(CollectionUtils.isNotEmpty(productList)){
@@ -261,7 +261,7 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 				dtos.add(dto);
 			}
 		}
-		return amount;
+		return dtos;
 	}
 
 	@Override

@@ -282,7 +282,10 @@ public class BaseService {
 	
 	public void setUserMoney(OrderInfo orderInfo) {
 		String uid = orderInfo.getUid();
-		BigDecimal cornMoney = orderInfo.getCornMoney()!=null ?orderInfo.getCornMoney():ZERO;
+		if(null == orderInfo.getCornMoney() || orderInfo.getCornMoney().compareTo(ZERO)==0){
+			return;
+		}
+		BigDecimal cornMoney = orderInfo.getCornMoney();
 		JSONObject json = getUserByUidAndLock(uid,2);
 		if(json.getIntValue("code") == 1000){
 			throw new BusinessException("uid={"+uid+"},当前状态繁忙操作失败");

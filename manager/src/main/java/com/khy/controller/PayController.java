@@ -22,9 +22,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 
-//@RestController
-//@RequestMapping("/pay")
-//@Api(value="付款相关")
+@RestController
+@RequestMapping("/pay")
+@Api(value="付款相关")
 public class PayController{
 
 	@Autowired

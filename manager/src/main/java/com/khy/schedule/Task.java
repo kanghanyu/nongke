@@ -59,6 +59,7 @@ public class Task extends BaseService{
 			logger.info("获取到的用户付款时间超过7天的商品订单size={}",list.size());
 			int num = 1;
 			for (OrderInfo orderInfo : list) {
+				orderId = orderInfo.getOrderId();
 				try {
 					logger.info("定时更新用户付款时间超过7天的订单orderInfo={}",JSONObject.toJSON(orderInfo));
 					int flag = orderService.setConfirmOrder(orderInfo);

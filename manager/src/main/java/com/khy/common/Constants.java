@@ -116,7 +116,6 @@ public class Constants {
     //product_status
     public static final int PRODUCT_STATUS_WSJ = 0;
     public static final int PRODUCT_STATUS_SJ = 1;
-    public static final int PRODUCT_STATUS_YXJ = 2;
     
 
     //流水内容
