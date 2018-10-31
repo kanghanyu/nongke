@@ -267,7 +267,7 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 	@Override
 	public synchronized int setNotPayOrder(String orderId) {
 		int i = 0;
-		if(StringUtils.isNotBlank(orderId)){
+		if(StringUtils.isBlank(orderId)){
 			return i;
 		}
 		OrderInfo orderInfo = orderInfoMapper.getNotPayOrderById(orderId);
@@ -308,7 +308,7 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 	@Override
 	public synchronized int recharge(String orderId) {
 		int i = 0;
-		if(StringUtils.isNotBlank(orderId)){
+		if(StringUtils.isBlank(orderId)){
 			return i;
 		}
 		OrderInfo info = orderInfoMapper.noRechargeOrderById(orderId);
@@ -345,7 +345,7 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 	@Override
 	public synchronized int setOrderCommission(String orderId) {
 		int i = 0;
-		if(StringUtils.isNotBlank(orderId)){
+		if(StringUtils.isBlank(orderId)){
 			return i;
 		}
 		OrderInfo info = orderInfoMapper.notCommissionOrderById(orderId);

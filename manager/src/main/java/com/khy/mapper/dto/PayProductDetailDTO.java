@@ -142,15 +142,20 @@ public class PayProductDetailDTO {
 	
 	public static void main(String[] args) {
 		PayProductDetailDTO dto = new PayProductDetailDTO();
-		dto.setAmount(10);
-		dto.setImg("1111");
+		dto.setAmount(2);
+		dto.setImg("http://nongke.oss-cn-beijing.aliyuncs.com/img/10101611/20181012151658.png");
 		dto.setProductId(10L);
-		dto.setProductName("测试");
-		dto.setProductPrice(new BigDecimal(100));
-		dto.setTotal(100D);
+		dto.setProductName("洗发水");
+		dto.setProductPrice(new BigDecimal("21.00"));
+		dto.setTotal(24.0);
+		
 		PayProductDetailDTO dto2 = new PayProductDetailDTO();
-		BeanUtils.copyProperties(dto, dto2);
-		dto2.setCost(2.22D);
+		dto2.setAmount(10);
+		dto2.setImg("1111");
+		dto2.setProductId(10L);
+		dto2.setProductName("测试");
+		dto2.setProductPrice(new BigDecimal(100));
+		dto2.setTotal(100D);
 		System.out.println(dto.equals(dto2));
 	}
 }

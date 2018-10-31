@@ -51,6 +51,7 @@ public class LoginInterceptor extends WebMvcConfigurerAdapter{
 		add("/user/validate/img");
 		add("/product/pageProduct");
 		add("/product/getProduct");
+		add("/product/getBannerProduct");
 		add("/pay/alipay/notify");
 		add("/pay/weixin/notify");
 	}};

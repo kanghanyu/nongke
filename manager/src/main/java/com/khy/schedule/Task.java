@@ -9,21 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONObject;
-import com.khy.common.Constants;
 import com.khy.entity.OrderInfo;
-import com.khy.entity.User;
-import com.khy.entity.UserRecord;
-import com.khy.exception.BusinessException;
-import com.khy.mapper.OrderInfoMapper;
-import com.khy.mapper.UserMapper;
-import com.khy.mapper.UserRecordMapper;
 import com.khy.service.OrderService;
 import com.khy.service.impl.BaseService;
-import com.khy.service.impl.CacheService;
-
-import scala.collection.immutable.Stream.Cons;
 
 //@Component
 public class Task extends BaseService{
@@ -34,7 +25,7 @@ public class Task extends BaseService{
 	private OrderService orderService;
 	
 	
-	@Scheduled(cron = "*/5 * * * * ?")
+	@Scheduled(cron = "* */1 * * * ?")
 	public void updateNotPayOrder(){
 		List<String>list = orderService.getNotPayOrder();
 		if(CollectionUtils.isNotEmpty(list)){
