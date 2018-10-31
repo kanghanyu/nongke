@@ -25,7 +25,7 @@ public class Task extends BaseService{
 	private OrderService orderService;
 	
 	
-	@Scheduled(cron = "* */1 * * * ?")
+	@Scheduled(cron = "0 */3 * * * ?")
 	public void updateNotPayOrder(){
 		List<String>list = orderService.getNotPayOrder();
 		if(CollectionUtils.isNotEmpty(list)){
@@ -41,7 +41,7 @@ public class Task extends BaseService{
 						logger.error("定时更新用户已过期的订单orderId={}",orderId);
 					}
 				} catch (Exception e) {
-					logger.error("处理到过期的用户订单异常订单的orderId={}",orderId);
+					logger.error("处理到过期的用户订单异常订单的orderId={},e={}",orderId,e.getMessage());
 					continue;
 				}
 			}
@@ -51,7 +51,7 @@ public class Task extends BaseService{
 
 	
 	//更新付款完7天未确认收款的
-	@Scheduled(cron = "*/5 * * * * ?")
+	@Scheduled(cron = "0 */10 * * * ?")
 	public void updateProductOrder(){
 		List<OrderInfo>list = orderService.getNotConfirmOrder();
 		if(CollectionUtils.isNotEmpty(list)){
@@ -69,7 +69,7 @@ public class Task extends BaseService{
 						logger.error("定时更新用户付款时间超过7天的订单orderInfo={}",JSONObject.toJSON(orderInfo));
 					}
 				} catch (Exception e) {
-					logger.error("定时更新用户付款时间超过7天的订单orderId={}",orderId);
+					logger.error("定时更新用户付款时间超过7天的订单orderId={},e={}",orderId,e.getMessage());
 					continue;
 				}
 			}
@@ -78,7 +78,7 @@ public class Task extends BaseService{
 	}
 	
 	//已付款的充值订单开始充值
-	@Scheduled(cron = "*/5 * * * * ?")
+	@Scheduled(cron = "0 */2 * * * ?")
 	public void noRechargeUserPhone(){
 		List<String>list = orderService.noRechargeOrder();
 		if(CollectionUtils.isNotEmpty(list)){
@@ -94,7 +94,7 @@ public class Task extends BaseService{
 						logger.error("还未充值的订单充值失败orderId={}",orderId);
 					}
 				} catch (Exception e) {
-					logger.error("还未充值的话费订单-->充值异常orderId={}",orderId);
+					logger.error("还未充值的话费订单-->充值异常orderId={},e={}",orderId,e.getMessage());
 					continue;
 				}
 			}
@@ -103,7 +103,7 @@ public class Task extends BaseService{
 	}
 	
 	
-	@Scheduled(cron = "*/5 * * * * ?")
+	@Scheduled(cron = "0 */2 * * * ?")
 	public void setOrderCommission(){
 		List<String>list = orderService.getNotCommission();
 		if(CollectionUtils.isNotEmpty(list)){

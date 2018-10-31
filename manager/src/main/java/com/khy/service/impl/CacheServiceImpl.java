@@ -20,9 +20,17 @@ public class CacheServiceImpl implements CacheService{
 		return ret;
 	}
 	
-	public void setString(String key,String value,Integer seconds){
-		RedisUtils.STRINGS.set(key, value);
+	public void setString(String key,String number,Integer seconds){
+		RedisUtils.STRINGS.set(key, number);
 		RedisUtils.KEYS.expire(key, seconds);
+	}
+	public void incr(String key,Long value,Integer seconds){
+		RedisUtils.STRINGS.incrBy(key, value);
+		RedisUtils.KEYS.expire(key, seconds);
+	}
+	
+	public void decr(String key,Long number){
+		RedisUtils.STRINGS.decrBy(key,number);
 	}
 	
 	public void setString(String key,String value){

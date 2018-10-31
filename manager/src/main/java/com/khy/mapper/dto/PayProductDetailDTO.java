@@ -86,6 +86,8 @@ public class PayProductDetailDTO {
 	public void setTotal(Double total) {
 		this.total = total;
 	}
+	
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -94,8 +96,6 @@ public class PayProductDetailDTO {
 		result = prime * result + ((img == null) ? 0 : img.hashCode());
 		result = prime * result + ((productId == null) ? 0 : productId.hashCode());
 		result = prime * result + ((productName == null) ? 0 : productName.hashCode());
-		result = prime * result + ((productPrice == null) ? 0 : productPrice.hashCode());
-		result = prime * result + ((total == null) ? 0 : total.hashCode());
 		return result;
 	}
 	@Override
@@ -127,19 +127,8 @@ public class PayProductDetailDTO {
 				return false;
 		} else if (!productName.equals(other.productName))
 			return false;
-		if (productPrice == null) {
-			if (other.productPrice != null)
-				return false;
-		} else if (!productPrice.equals(other.productPrice))
-			return false;
-		if (total == null) {
-			if (other.total != null)
-				return false;
-		} else if (!total.equals(other.total))
-			return false;
 		return true;
 	}
-	
 	public static void main(String[] args) {
 		PayProductDetailDTO dto = new PayProductDetailDTO();
 		dto.setAmount(2);

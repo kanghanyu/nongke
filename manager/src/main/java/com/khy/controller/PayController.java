@@ -60,7 +60,10 @@ public class PayController{
 	public String async(@PathVariable(value = "payType", required = true)String payType,HttpServletRequest request){
 		System.out.println(payType);
 		JsonResponse<Boolean> jsonResponse = payService.payNotify(payType,request);
-		return null;
+		if(jsonResponse.getRspBody()){
+			return "success";
+		}
+		return "failure";
 	}
 	
 }

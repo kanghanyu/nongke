@@ -234,7 +234,7 @@
   		DATE_FORMAT(NOW(),'%Y-%m-%d %H:%i:%s') >= DATE_FORMAT(ADDDATE(pay_time,INTERVAL 7 DAY),'%Y-%m-%d %H:%i:%s')
   </select>
   
-  <select id="noRechargeOrder" resultType="com.khy.entity.OrderInfo">
+  <select id="noRechargeOrder" resultType="java.lang.String">
   	select	
   		order_id
   	from

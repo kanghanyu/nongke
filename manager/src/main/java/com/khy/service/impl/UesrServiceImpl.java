@@ -940,7 +940,6 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			orderInfoMapper.update(info);
 			//设置分佣的内容;
 			logger.info("用户确认收货orderId={}",orderId);
-			setCommission(orderId);//可以通过定时器去处理该内容
 			jsonResponse.success(true);
 		} catch (Exception e) {
 			throw new BusinessException("用户确认收款失败");

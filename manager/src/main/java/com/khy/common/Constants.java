@@ -38,6 +38,8 @@ public class Constants {
     public static final int ONE_DAY = 60*60*24;
     public static final int SEVEN_DAY = 60*60*24*7;
     
+    public static final int ONE_MONTH = 60*60*24*32;
+    
     
     ///常用的变量值
     /**vip用户内容*/

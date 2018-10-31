@@ -344,16 +344,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 					}
 					ret.setPaySign(sign);
 					ret.setFlag(2);
-					
-					// 扣除余额抵扣的部分内容;先进行扣除/如果过时不支付/或者取消订单在退回给用户
-					BigDecimal money = userDb.getMoney() != null ? userDb.getMoney() : ZERO;
-					userDb.setMoney(money.subtract(dto.getCornMoney()));
-					userMapper.updateUser(userDb);
-//					// 更新用户的账务流水
-					String descr = "购买商品花费余额" + dto.getCornMoney() + ":元";
-					saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, dto.getCornMoney(), money,
-							orderId, descr, now);
-					orderInfoMapper.update(orderInfo);
 				}
 			}
 		} catch (Exception e) {
@@ -376,21 +366,469 @@ public class PayServiceImpl extends BaseService implements PayService {
 		return jsonResponse;
 	}
 
-	/**
-	 * 批量更新商品的库存和销售数量
-	 * @Description
-	 * @author khy
-	 * @date  2018年10月17日下午6:47:28
-	 * @param listProduct
-	 */
-	private void batchUpdateProduct(List<Product> listProduct) {
-		if(CollectionUtils.isNotEmpty(listProduct)){
-			for (Product product : listProduct) {
-				productMapper.updateProduct(product);	
-			}
+	@Override
+	public JsonResponse<RechargeResultDTO> recharge(RechargeSubmitDTO dto) {
+		JsonResponse<RechargeResultDTO>jsonResponse = new JsonResponse<>();
+		if(null == dto){
+			jsonResponse.setRetDesc("请求参数不能为空");
+			return jsonResponse;
 		}
+		User user = SessionHolder.currentUser();
+		if(null == user){
+			jsonResponse.setRetDesc("请重新登录");
+			return jsonResponse;
+		}
+		String uid = user.getUid();
+		Map<String, String> online = getOnline();
+		logger.info("获取在线参数的map={}",JSON.toJSON(online));
+		if(null ==online || online.size() == 0){
+			jsonResponse.setRetDesc("获取在线参数异常,请联系管理员");
+			return jsonResponse;
+		}
+		Integer orderType = dto.getOrderType();
+		RechargeResultDTO ret = new RechargeResultDTO();
+		try {
+			JSONObject userRet = getUserByUidAndLock(uid);
+			if(userRet.getIntValue("code") == 1000){
+				jsonResponse.setRetDesc(userRet.getString("msg"));
+				return jsonResponse;
+			}
+			user = userRet.getObject("user",User.class);
+			if(null == user){
+				jsonResponse.setRetDesc("当前用户状态异常");
+				return jsonResponse;
+			}
+			//针对生成前置订单的用户加锁防止生成多个前置订单;
+			boolean lock = cacheService.lock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),Constants.LOCK ,Constants.FIVE_MINUTE);
+			logger.info("充值加锁操作key = {},结果 = {}",Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),lock);
+			if(lock){
+				jsonResponse.setRetDesc("VIP购买提交订单生成失败请稍后再试");
+				return jsonResponse;
+			}
+			JSONObject json = check(dto,user,online);
+			if(json.getIntValue("code") == 2000){
+				logger.error("提交充值订单的校验内容的失败ret = "+json.toString());
+				jsonResponse.setRetDesc(json.getString("msg"));
+				return jsonResponse;
+			}
+			OrderInfo info = json.getObject("order", OrderInfo.class);
+			Date now = new Date();
+			//校验通过开始处理扣费
+			info.setCreateTime(now);
+			Integer payType = dto.getPayType();
+			BeanUtils.copyProperties(info, ret);
+			// TODO 充值订单的设置内容(未完成待续)
+			String sign = null;
+			if(payType == Constants.MONEY_PAY){//等于余额抵扣的 那么余额和点卡当时更新完毕生效
+				//余额抵扣只能购买点卡
+				info.setStatus(Constants.ORDER_STATUS_WC);
+				info.setPayStatus(Constants.ORDER_PAYSTATUS_YFF);
+				info.setPayTime(now);
+				info.setIsBill(Constants.ORDER_ISBILL_YCZ);
+				orderInfoMapper.insert(info);
+
+				//更新用户的余额内容
+				BigDecimal totalPay = dto.getTotalPay();
+				BigDecimal money = user.getMoney();
+				BigDecimal cardMoney = user.getCardMoney();
+				user.setMoney(money.subtract(totalPay));
+				user.setCardMoney(cardMoney.add(totalPay));
+				userMapper.updateUser(user);
+				//余额 流水
+				String desc ="余额充值点卡";
+				saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, totalPay, money, info.getOrderId(), desc, now);
+				desc = "点卡充值";
+				saveUserRecord(uid, Constants.RECORD_INCOME, Constants.RECORD_CARD_MONEY, totalPay, cardMoney, info.getOrderId(), desc, now);
+				ret.setFlag(1);
+				//充值点卡 这个订单就算完事了;
+			}else if(payType == Constants.ALIPAY || payType == Constants.WEIXIN_PAY){
+				if(payType == Constants.ALIPAY){
+					sign = PayUtil.setRechargeSign(info,ret);
+				}else if(payType == Constants.WEIXIN_PAY){
+					
+				}
+				//微信支付的sign
+				if(StringUtils.isBlank(sign)){
+					jsonResponse.setRetDesc("获取APP支付验签失败");
+					return jsonResponse;
+				}
+				//保存订单内容
+				info.setStatus(Constants.ORDER_STATUS_WWC);
+				info.setPayStatus(Constants.ORDER_PAYSTATUS_WFK);
+				info.setIsBill(Constants.ORDER_ISBILL_WCZ);
+				orderInfoMapper.insert(info);
+				ret.setPaySign(sign);
+				ret.setFlag(2);
+			}
+		} catch (Exception e) {
+			jsonResponse.setRetDesc("充值订单异常");
+			logger.error("充值订单异常"+e.getMessage());
+			throw new BusinessException("充值订单异常"+e.getMessage());
+		}finally {
+			//释放加锁内容;
+			cacheService.releaseLock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)));
+			// 清除用户锁和商品锁
+			cacheService.releaseLock(Constants.LOCK_USER + uid);
+		}
+		jsonResponse.success(ret);
+		return jsonResponse;
 	}
 
+	
+
+	private JSONObject check(RechargeSubmitDTO dto, User user, Map<String, String> online) {
+		JSONObject json = new JSONObject();
+		json.put("code",2000);
+		Integer orderType = dto.getOrderType();
+		Integer payType = dto.getPayType();
+		BigDecimal totalPay = dto.getTotalPay();
+		BigDecimal totalMoney = dto.getTotalMoney();
+		if(null == orderType){
+			json.put("msg","充值类型不能为空");
+			return json;
+		}
+		if(null == payType){
+			json.put("msg","付款方式不能为空");
+			return json;
+		}
+		if(null == totalPay){
+			json.put("msg","付款总额不能为空");
+			return json;
+		}
+		if(null == totalMoney){
+			json.put("msg","当前充值金额不为空");
+			return json;
+		}
+		OrderInfo info = new OrderInfo();
+		if(orderType == Constants.PAY_VIP){
+			if(payType != Constants.ALIPAY && payType != Constants.WEIXIN_PAY ){
+				json.put("msg","VIP只能支付宝/微信支付");
+				return json;
+			}
+			Integer isVip = user.getIsVip();
+			if(null != isVip && isVip.intValue()==Constants.VIP_USER){
+				json.put("msg","您已经是会员请勿重复购买");
+				return json;
+			}
+			if(totalMoney.compareTo(totalPay)!=0){
+				json.put("msg","VIP购买的总付不等于总金额");
+				return json;
+			}
+			if(StringUtils.isBlank(online.get(Constants.VIP_PRICE))){
+				json.put("msg","获取会员价格请您联系管理员稍后再试");
+				return json;
+			}
+			BigDecimal vipPrice = new BigDecimal(online.get(Constants.VIP_PRICE));
+			if(totalPay.compareTo(vipPrice) != 0){
+				json.put("msg","VIP价格和应付金额不一致请重新下单");
+				return json;
+			}
+			String toMoney = online.get(Constants.VIP_TO_USER_MONEY);
+			if(StringUtils.isBlank(toMoney)){
+				json.put("msg","购买vip送的余额数值异常,请联系管理员");
+				return json;
+			}
+			info.setProductDetail("VIP升级");
+			info.setDescription(totalPay+":元(充到余额"+toMoney+":元)");
+			info.setDiscountMoney(new BigDecimal(toMoney));
+		}else if(orderType == Constants.PAY_CARD){
+			if(totalMoney.intValue() %100 != 0 ){
+				json.put("msg","点卡充值金额必须是100的整倍数");
+				return json;
+			}
+			if(totalMoney.compareTo(totalPay)!=0){
+				json.put("msg","点卡充值金额金和点卡总价不一致");
+				return json;
+			}
+			if(payType != Constants.MONEY_PAY && payType != Constants.ALIPAY && payType != Constants.WEIXIN_PAY ){
+				json.put("msg","点卡只支持支付宝/微信/余额购买");
+				return json;
+			}
+			BigDecimal money = user.getMoney() != null ?user.getMoney() :ZERO;
+			if(payType == Constants.MONEY_PAY && money.compareTo(totalPay) < 0){
+				json.put("msg","用户余额不足");
+				return json;
+			}
+			info.setProductDetail("点卡购买");
+			info.setProductDetail("用户购买"+totalPay+":元的点卡");
+		}else if(orderType == Constants.PAY_PHONE){//话费充值
+			if(payType != Constants.ALIPAY && payType != Constants.WEIXIN_PAY ){
+				json.put("msg","话充值只能支付宝/微信支付");
+				return json;
+			}
+			if(totalMoney.intValue() %50 != 0 ){
+				json.put("msg","当前充值金额必须是50的整倍数");
+				return json;
+			}
+			String phone = user.getPhone();
+			JSONObject checkRet = PhoneUtils.checkPhoneNum(phone, totalMoney.intValue());
+			if(null == checkRet){
+				json.put("msg","手机号校验失败,当前手机号充值异常");
+				return json;
+			}
+			
+			if(checkRet.getIntValue("error_code")!= 0){
+				json.put("msg",checkRet.getString("reason"));
+				return json;
+			}
+			//充值话费总金额和付款总金额是否相同正常充值
+			if(totalMoney.compareTo(totalPay) != 0){
+				//标识会员折扣充值
+				Integer isVip = user.getIsVip();
+				if(isVip == Constants.GENERAL_UER){
+					json.put("msg","您不是会员不享受话费充值优惠");
+					return json;
+				}
+				String vipDiscount = online.get(Constants.VIP_PHONE_DISCOUNT);
+				if (StringUtils.isBlank(vipDiscount)) {
+					json.put("msg", "获取vip充值话费折扣异常请您联系管理员稍后再试");
+					return json;
+				}
+				BigDecimal dicountMoney = totalMoney.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
+				if(dicountMoney.compareTo(totalPay) != 0){ 
+					json.put("msg","VIP充值话费应付金额不等于折扣后价格");
+					return json;
+				}
+				//查询当月vip用户已经充值了多少钱的
+				String key = getKey(user.getUid());
+				String accumulate = cacheService.getString(key);//已经充值的额度incr自增内容
+				BigDecimal accumulatePrice = StringUtils.isNotBlank(accumulate)? new BigDecimal(accumulate):ZERO;
+				String phoneRecharge = online.get(Constants.VIP_PHONE_RECHARGE);
+				if (StringUtils.isBlank(phoneRecharge)) {
+					json.put("msg", "获取vip充值话费每月优惠额度数据折扣异常请您联系管理员稍后再试");
+					return json;
+				}
+				if((accumulatePrice.add(totalMoney)).compareTo(new BigDecimal(phoneRecharge)) > 0){
+					json.put("msg", "您当月VIP已经优惠充值了"+accumulate+":元,现在充值"+totalMoney+":元,已超出优惠额度");
+					return json;
+				}
+				info.setDiscount(Float.valueOf(vipDiscount)/100);
+				info.setDiscountDetail("会员话费充值折扣优惠内容");
+				info.setDiscountMoney(totalPay);
+			}
+			info.setProductDetail("手机话费充值");
+			info.setDescription(user.getPhone());
+		}else{
+			json.put("msg","当前充值类型不匹配,充值失败");
+			return json;
+		}
+		info.setOrderId(Utils.getOrderId());
+		info.setOrderType(orderType);
+		info.setPayType(payType);
+		info.setUid(user.getUid());
+		info.setTotalMoney(totalMoney);;
+		info.setTotalPay(totalPay);
+		if(payType == Constants.MONEY_PAY){
+			info.setCornMoney(totalPay);
+		}else{
+			info.setRmb(totalPay);
+		}
+		json.put("code",1000);
+		json.put("order",info);
+		return json;
+	}
+	
+	/***
+	 * 状态TRADE_SUCCESS的通知触发条件是商户签约的产品支持退款功能的前提下，买家付款成功；
+	 * 交易状态TRADE_FINISHED的通知触发条件是商户签约的产品不支持退款功能的前提下，买家付款成功；
+	 * 或者，商户签约的产品支持退款功能的前提下，交易已经成功并且已经超过可退款期限。
+	 */
+	//异步回调
+	@Override
+	public JsonResponse<Boolean> payNotify(String payType, HttpServletRequest request) {
+		JsonResponse<Boolean>jsonResponse = new JsonResponse<>();
+		OrderInfo orderInfo = null;
+		String orderId = null;
+		String trade_no = null;
+		String key = null;
+		String total_amount = null;
+		long amount = 0;
+		try {
+			Date now = new Date();
+			//针对该内容加锁处理--->防止多次回调都会执行内容
+			boolean lock = cacheService.lock(Constants.LOCK_NOTIFY_ORDER.concat(orderId), Constants.LOCK, Constants.FIVE_MINUTE);
+			if(lock){
+				jsonResponse.setRetDesc("异步回调加锁失败");//可以直接返回成功;
+				return jsonResponse;
+			};
+			if(payType.equals("alipay")){
+				if (!"TRADE_SUCCESS".equals(request.getParameter("trade_status"))) {
+					jsonResponse.setRetDesc("异步回调接口验签失败--->付款状态trade_statu="+request.getParameter("trade_status"));
+					return jsonResponse;
+				}
+				orderId = request.getParameter("out_trade_no");
+				if(StringUtils.isBlank(orderId)){
+					jsonResponse.setRetDesc("订单号为空");
+					return jsonResponse;
+				}
+				//标识支付宝的验签
+				Map<String,String> param = getParam(request);
+				logger.info("订支付宝验签获取的响应参数内容param={}" + JSON.toJSONString(param)); 
+				boolean signVerified = AlipaySignature.rsaCheckV1(param, Constants.ALI_PUBLIC_KEY,Constants.CHARSET_UTF8); // 校验签名是否正确
+				if (!signVerified) {
+					jsonResponse.setRetDesc("异步回调接口验签失败");
+					return jsonResponse;
+				} 
+				// TODO 验签成功后
+				logger.info("订单支付宝验签成功signVerified = "+signVerified);
+				trade_no = request.getParameter("trade_no");
+				total_amount = request.getParameter("total_amount");
+
+			}else{
+				//微信的回调内容;
+				
+			}
+			
+			//先查询该订单是否已付款--->如果已付款说明已经更新过了
+			OrderInfo info = new OrderInfo();
+			info.setOrderId(orderId);
+			orderInfo = orderInfoMapper.getPayOrder(info);
+			if(null == orderInfo){
+				jsonResponse.setRetDesc("未查询到当前订单信息");
+				return jsonResponse;
+			}
+			if(new BigDecimal(total_amount).compareTo(orderInfo.getRmb())!=0){
+				//说明前后的钱不一致
+				jsonResponse.setRetDesc("付款金额不对");
+				return jsonResponse;
+			}
+			if(orderInfo.getPayStatus() != Constants.ORDER_PAYSTATUS_WFK){
+				jsonResponse.success(true);
+				return jsonResponse;
+			}
+			Integer orderType = orderInfo.getOrderType();
+			String uid = orderInfo.getUid();
+			if(orderType == Constants.PAY_PRODUCT){
+				//更新订单的状态
+				OrderInfo updateOrder = new OrderInfo();
+				updateOrder.setUid(uid);
+				updateOrder.setOrderId(orderId);
+				updateOrder.setStatus(Constants.ORDER_STATUS_WWC);
+				updateOrder.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
+				updateOrder.setPayTime(now);
+				updateOrder.setTradeNo(trade_no);
+				orderInfoMapper.update(updateOrder);
+				//更新商品的库存/销量
+				String productDetail = orderInfo.getProductDetail();
+				batchUpdateProduct(productDetail);
+				//如果含有余额抵扣的扣除余额-->生成订单已经更新
+				//设置账单内容-->定时处理
+				//设置分佣内容-->定时/用户确认收款设置
+			}else if(orderType == Constants.PAY_PHONE){ //充值订单内容
+				OrderInfo updateOrder = new OrderInfo();
+				updateOrder.setOrderId(orderId);
+				updateOrder.setUid(uid);
+				updateOrder.setStatus(Constants.ORDER_STATUS_WWC);
+				updateOrder.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
+				updateOrder.setPayTime(now);
+				updateOrder.setTradeNo(trade_no);
+				orderInfoMapper.update(updateOrder);
+				if(orderInfo.getTotalMoney().compareTo(orderInfo.getTotalPay()) != 0){
+					key = getKey(uid);
+					amount = orderInfo.getTotalMoney().longValue();
+					cacheService.incr(key, orderInfo.getTotalMoney().longValue(), Constants.ONE_MONTH);	
+					//订单更新之后全部开始定时器配置内容;
+				}
+			}else if(orderType == Constants.PAY_CARD){
+				OrderInfo updateOrder = new OrderInfo();
+				updateOrder.setOrderId(orderId);
+				updateOrder.setUid(uid);
+				updateOrder.setStatus(Constants.ORDER_STATUS_WC);
+				updateOrder.setPayStatus(Constants.ORDER_PAYSTATUS_YFF);
+				updateOrder.setPayTime(now);
+				updateOrder.setTradeNo(trade_no);
+				orderInfoMapper.update(updateOrder);
+				
+				//更新用户的余额内容
+				BigDecimal totalMoney = orderInfo.getTotalMoney();
+				User user = userMapper.getUserByUid(uid);
+				BigDecimal cardMoney = user.getCardMoney();
+				user.setCardMoney(cardMoney.add(totalMoney));
+				userMapper.updateUser(user);
+				String desc = "点卡充值";
+				saveUserRecord(uid, Constants.RECORD_INCOME, Constants.RECORD_CARD_MONEY, totalMoney, cardMoney, info.getOrderId(), desc, now);
+			}else if(orderType == Constants.PAY_VIP){
+				OrderInfo updateOrder = new OrderInfo();
+				updateOrder.setOrderId(orderId);
+				updateOrder.setUid(uid);
+				updateOrder.setStatus(Constants.ORDER_STATUS_WC);
+				updateOrder.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
+				updateOrder.setPayTime(now);
+				updateOrder.setTradeNo(trade_no);
+				orderInfoMapper.update(updateOrder);
+				//然后查看vip升级是否还有转成余额的部分
+				BigDecimal discountMoney = orderInfo.getDiscountMoney();
+				if(null != discountMoney && discountMoney.compareTo(ZERO) !=0){
+					//标识含有转换的余额内容
+					User user = userMapper.getUserByUid(uid);
+					BigDecimal money = user.getMoney();
+					user.setMoney(money.add(discountMoney));
+					userMapper.updateUser(user);
+					saveUserRecord(uid, Constants.RECORD_INCOME, Constants.RECORD_MONEY, discountMoney, money, info.getOrderId(), "VIP升级转成余额", now);
+				}
+			}
+			jsonResponse.success(true);
+		} catch (Exception e) {
+			logger.error("支付回调接口异常订单orderId={},e={}",orderId,e.getMessage());
+			throw new BusinessException("支付回调接口异常");
+		}finally {
+			cacheService.releaseLock(Constants.LOCK_NOTIFY_ORDER.concat(orderId));
+			if(StringUtils.isNotBlank(key)){
+				cacheService.decr(key,amount);	
+			}
+		}
+		return jsonResponse;
+	}
+
+
+	private void batchUpdateProduct(String productDetail) {
+		if(StringUtils.isNotBlank(productDetail)){
+			List<PayProductDetailDTO> productList = JSONArray.parseArray(productDetail, PayProductDetailDTO.class);
+			if(CollectionUtils.isNotEmpty(productList)){
+				for (PayProductDetailDTO dto : productList) {
+					Long productId = dto.getProductId();
+					Integer amount = dto.getAmount();
+					JSONObject json = getProductByProductIdAndLock(productId);
+					if(json.getIntValue("code")==1000){
+						logger.error("异步回调更新商品失败内容商品productId="+productId);
+						throw new BusinessException("更新商品状态异常product = "+productId);
+					}
+					try {
+						Product findProduct = json.getObject("product",Product.class);
+						findProduct.setSalesAmount(findProduct.getSalesAmount()+amount);
+						findProduct.setStockAmount(findProduct.getStockAmount()-amount);
+					} catch (Exception e) {
+						logger.error("异步回调更新商品失败内容");
+						throw new BusinessException(e.getMessage());
+					}finally {
+						cacheService.releaseLock(Constants.LOCK_PRODUCT+productId);
+					}
+					
+				}
+			}
+			
+		}
+		
+	}
+
+
+	private Map<String, String> getParam(HttpServletRequest request) {
+		 Map<String,String> params = new HashMap<String,String>();
+		 Map requestParams = request.getParameterMap();
+		 for (Iterator iter = requestParams.keySet().iterator(); iter.hasNext();) {
+			 String name = (String) iter.next();
+			 String[] values = (String[]) requestParams.get(name);
+			 String valueStr = "";
+			 for (int i = 0; i < values.length; i++) {
+				 valueStr = (i == values.length - 1) ? valueStr + values[i]:valueStr + values[i] + ",";
+			 }
+			 //乱码解决，这段代码在出现乱码时使用。如果mysign和sign不相等也可以使用这段代码转化//
+//			 valueStr = new String(valueStr.getBytes("ISO-8859-1"), "gbk");
+			 params.put(name, valueStr);
+		}
+		return null;
+	}
+	
 	private JSONObject checkProductOrderInfo(OrderInfo orderInfo, SubmitOrderDTO dto, User user, Map<String, String> online,List<Product>listProduct) {
 		JSONObject json = new JSONObject();
 		json.put("code",2000);
@@ -611,424 +1049,21 @@ public class PayServiceImpl extends BaseService implements PayService {
 		return json;
 	}
 	
-	@Override
-	public JsonResponse<RechargeResultDTO> recharge(RechargeSubmitDTO dto) {
-		JsonResponse<RechargeResultDTO>jsonResponse = new JsonResponse<>();
-		if(null == dto){
-			jsonResponse.setRetDesc("请求参数不能为空");
-			return jsonResponse;
-		}
-		User user = SessionHolder.currentUser();
-		if(null == user){
-			jsonResponse.setRetDesc("请重新登录");
-			return jsonResponse;
-		}
-		String uid = user.getUid();
-		Map<String, String> online = getOnline();
-		logger.info("获取在线参数的map={}",JSON.toJSON(online));
-		if(null ==online || online.size() == 0){
-			jsonResponse.setRetDesc("获取在线参数异常,请联系管理员");
-			return jsonResponse;
-		}
-		Integer orderType = dto.getOrderType();
-		RechargeResultDTO ret = new RechargeResultDTO();
-		try {
-			JSONObject userRet = getUserByUidAndLock(uid);
-			if(userRet.getIntValue("code") == 1000){
-				jsonResponse.setRetDesc(userRet.getString("msg"));
-				return jsonResponse;
-			}
-			user = userRet.getObject("user",User.class);
-			if(null == user){
-				jsonResponse.setRetDesc("当前用户状态异常");
-				return jsonResponse;
-			}
-			//针对生成前置订单的用户加锁防止生成多个前置订单;
-			boolean lock = cacheService.lock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),Constants.LOCK ,Constants.FIVE_MINUTE);
-			logger.info("充值加锁操作key = {},结果 = {}",Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)),lock);
-			if(lock){
-				jsonResponse.setRetDesc("VIP购买提交订单生成失败请稍后再试");
-				return jsonResponse;
-			}
-			JSONObject json = check(dto,user,online);
-			if(json.getIntValue("code") == 2000){
-				logger.error("提交充值订单的校验内容的失败ret = "+json.toString());
-				jsonResponse.setRetDesc(json.getString("msg"));
-				return jsonResponse;
-			}
-			OrderInfo info = json.getObject("order", OrderInfo.class);
-			Date now = new Date();
-			//校验通过开始处理扣费
-			info.setCreateTime(now);
-			Integer payType = dto.getPayType();
-			BeanUtils.copyProperties(info, ret);
-			// TODO 充值订单的设置内容(未完成待续)
-			String sign = null;
-			if(payType == Constants.MONEY_PAY){//等于余额抵扣的 那么余额和点卡当时更新完毕生效
-				//余额抵扣只能购买点卡
-				info.setStatus(Constants.ORDER_STATUS_WC);
-				info.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
-				info.setPayTime(now);
-				info.setIsBill(Constants.ORDER_ISBILL_WCZ);
-				orderInfoMapper.insert(info);
-
-				//更新用户的余额内容
-				BigDecimal totalPay = dto.getTotalPay();
-				BigDecimal money = user.getMoney();
-				BigDecimal cardMoney = user.getCardMoney();
-				user.setMoney(money.subtract(totalPay));
-				user.setCardMoney(cardMoney.add(totalPay));
-				userMapper.updateUser(user);
-				//余额 流水
-				String desc ="余额充值点卡";
-				saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, totalPay, money, info.getOrderId(), desc, now);
-				desc = "点卡充值";
-				saveUserRecord(uid, Constants.RECORD_INCOME, Constants.RECORD_CARD_MONEY, totalPay, cardMoney, info.getOrderId(), desc, now);
-				ret.setFlag(1);
-				//充值点卡 这个订单就算完事了;
-			}else if(payType == Constants.ALIPAY){
-				sign = PayUtil.setRechargeSign(info,ret);
-			}else if(payType == Constants.WEIXIN_PAY){
-				//微信支付的sign
-				
-			}
-			if(StringUtils.isBlank(sign)){
-				jsonResponse.setRetDesc("获取APP支付验签失败");
-				return jsonResponse;
-			}
-			
-			//保存订单内容
-			
-			
-			ret.setPaySign(sign);
-			ret.setFlag(2);
-		} catch (Exception e) {
-			jsonResponse.setRetDesc("充值订单异常");
-			logger.error("充值订单异常"+e.getMessage());
-			throw new BusinessException("充值订单异常"+e.getMessage());
-		}finally {
-			//释放加锁内容;
-			cacheService.releaseLock(Constants.USER_CREATE_PRE_ORDER_LOCK.concat(uid).concat(String.valueOf(orderType)));
-			// 清除用户锁和商品锁
-			cacheService.releaseLock(Constants.LOCK_USER + uid);
-		}
-		jsonResponse.success(ret);
-		return jsonResponse;
-	}
-
-	
-
-	private JSONObject check(RechargeSubmitDTO dto, User user, Map<String, String> online) {
-		JSONObject json = new JSONObject();
-		json.put("code",2000);
-		Integer orderType = dto.getOrderType();
-		Integer payType = dto.getPayType();
-		BigDecimal totalPay = dto.getTotalPay();
-		BigDecimal totalMoney = dto.getTotalMoney();
-		if(null == orderType){
-			json.put("msg","充值类型不能为空");
-			return json;
-		}
-		if(null == payType){
-			json.put("msg","付款方式不能为空");
-			return json;
-		}
-		if(null == totalPay){
-			json.put("msg","付款总额不能为空");
-			return json;
-		}
-		if(null == totalMoney){
-			json.put("msg","当前充值金额不为空");
-			return json;
-		}
-		OrderInfo info = new OrderInfo();
-		if(orderType == Constants.PAY_VIP){
-			if(payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
-				json.put("msg","VIP只能支付宝/微信支付");
-				return json;
-			}
-			Integer isVip = user.getIsVip();
-			if(null != isVip && isVip.intValue()==Constants.VIP_USER){
-				json.put("msg","您已经是会员请勿重复购买");
-				return json;
-			}
-			if(StringUtils.isBlank(online.get(Constants.VIP_PRICE))){
-				json.put("msg","获取会员价格请您联系管理员稍后再试");
-				return json;
-			}
-			BigDecimal vipPrice = new BigDecimal(online.get(Constants.VIP_PRICE));
-			if(totalPay.compareTo(vipPrice) != 0){
-				json.put("msg","VIP价格和应付金额不一致请重新下单");
-				return json;
-			}
-			String toMoney = online.get(Constants.VIP_TO_USER_MONEY);
-			if(StringUtils.isBlank(toMoney)){
-				json.put("msg","购买vip送的余额数值异常,请联系管理员");
-				return json;
-			}
-			info.setProductDetail("VIP升级");
-			info.setDescription(totalPay+":元(充到余额"+toMoney+":元)");
-			info.setDiscountMoney(new BigDecimal(toMoney));
-		}else if(orderType == Constants.PAY_CARD){
-			if(totalMoney.intValue() %100 != 0 ){
-				json.put("msg","点卡充值金额必须是100的整倍数");
-				return json;
-			}
-			if(totalMoney.compareTo(totalPay)!=0){
-				json.put("msg","点卡充值金额金和点卡总价不一致");
-				return json;
-			}
-			if(payType != Constants.MONEY_PAY || payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
-				json.put("msg","点卡只支持支付宝/微信/余额购买");
-				return json;
-			}
-			BigDecimal money = user.getMoney() != null ?user.getMoney() :ZERO;
-			if(payType == Constants.MONEY_PAY && money.compareTo(totalPay) < 0){
-				json.put("msg","用户余额不足");
-				return json;
-			}
-			info.setProductDetail("点卡购买");
-			info.setProductDetail("用户购买"+totalPay+":元的点卡");
-		}else if(orderType == Constants.PAY_PHONE){//话费充值
-			if(payType != Constants.ALIPAY || payType != Constants.WEIXIN_PAY ){
-				json.put("msg","话充值只能支付宝/微信支付");
-				return json;
-			}
-			if(totalMoney.intValue() %50 != 0 ){
-				json.put("msg","当前充值金额必须是50的整倍数");
-				return json;
-			}
-			String phone = user.getPhone();
-			JSONObject checkRet = PhoneUtils.checkPhoneNum(phone, totalMoney.intValue());
-			if(null == checkRet){
-				json.put("msg","手机号校验失败,当前手机号充值异常");
-				return json;
-			}
-			
-			if(checkRet.getIntValue("error_code")!= 0){
-				json.put("msg",checkRet.getString("reason"));
-				return json;
-			}
-			//充值话费总金额和付款总金额是否相同正常充值
-			if(totalMoney.compareTo(totalPay) != 0){
-				//标识会员折扣充值
-				Integer isVip = user.getIsVip();
-				if(isVip == Constants.GENERAL_UER){
-					json.put("msg","您不是会员不享受话费充值优惠");
-					return json;
-				}
-				String vipDiscount = online.get(Constants.VIP_PHONE_DISCOUNT);
-				if (StringUtils.isBlank(vipDiscount)) {
-					json.put("msg", "获取vip充值话费折扣异常请您联系管理员稍后再试");
-					return json;
-				}
-				BigDecimal dicountMoney = totalMoney.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
-				if(dicountMoney.compareTo(totalPay) != 0){ 
-					json.put("msg","VIP充值话费应付金额不等于折扣后价格");
-					return json;
-				}
-				//查询当月vip用户已经充值了多少钱的
-				String key = getKey(user.getUid());
-				String accumulate = cacheService.getString(key);//已经充值的额度incr自增内容
-				BigDecimal accumulatePrice = StringUtils.isNotBlank(accumulate)? new BigDecimal(accumulate):ZERO;
-				String phoneRecharge = online.get(Constants.VIP_PHONE_RECHARGE);
-				if (StringUtils.isBlank(phoneRecharge)) {
-					json.put("msg", "获取vip充值话费每月优惠额度数据折扣异常请您联系管理员稍后再试");
-					return json;
-				}
-				if((accumulatePrice.add(totalMoney)).compareTo(new BigDecimal(phoneRecharge)) > 0){
-					json.put("msg", "您当月VIP已经优惠充值了"+accumulate+":元,现在充值"+totalMoney+":元,已超出优惠额度");
-					return json;
-				}
-				info.setDiscount(Float.valueOf(vipDiscount)/100);
-				info.setDiscountDetail("会员话费充值折扣优惠内容");
-				info.setDiscountMoney(totalPay);
-			}
-			info.setProductDetail("手机话费充值");
-			info.setDescription(user.getPhone());
-		}else{
-			json.put("msg","当前充值类型不匹配,充值失败");
-			return json;
-		}
-		info.setOrderId(Utils.getOrderId());
-		info.setOrderType(orderType);
-		info.setPayType(payType);
-		info.setUid(user.getUid());
-		info.setTotalMoney(totalMoney);;
-		info.setTotalPay(totalPay);
-		if(payType == Constants.MONEY_PAY){
-			info.setCornMoney(totalPay);
-		}else{
-			info.setRmb(totalPay);
-		}
-		json.put("code",1000);
-		json.put("order",info);
-		return json;
-	}
-	private String getKey(String uid) {
-		String key = Constants.USER_PHONE_RECHARGE;
-		Calendar calendar = Calendar.getInstance();
-		int month = calendar.get(Calendar.MONTH) + 1;
-		key = key.concat(month+":").concat(uid);
-		return key;
-	}
-	public static boolean isPhone(String phone) {
-		Pattern p = Pattern.compile("^[1][3,4,5,7,8][0-9]{9}$");
-		Matcher m = p.matcher(phone);
-		return m.matches();
-	}
-
-	/***
-	 * 状态TRADE_SUCCESS的通知触发条件是商户签约的产品支持退款功能的前提下，买家付款成功；
-	 * 交易状态TRADE_FINISHED的通知触发条件是商户签约的产品不支持退款功能的前提下，买家付款成功；
-	 * 或者，商户签约的产品支持退款功能的前提下，交易已经成功并且已经超过可退款期限。
+	/**
+	 * 批量更新商品的库存和销售数量
+	 * @Description
+	 * @author khy
+	 * @date  2018年10月17日下午6:47:28
+	 * @param listProduct
 	 */
-	//异步回调
-	@Override
-	public JsonResponse<Boolean> payNotify(String payType, HttpServletRequest request) {
-		JsonResponse<Boolean>jsonResponse = new JsonResponse<>();
-		OrderInfo orderInfo = null;
-		String orderId = null;
-		String trade_no = null;
-		try {
-			Date now = new Date();
-			if(payType.equals("alipay")){
-				if (!"TRADE_SUCCESS".equals(request.getParameter("trade_status"))) {
-					jsonResponse.setRetDesc("异步回调接口验签失败--->付款状态trade_statu="+request.getParameter("trade_status"));
-					return jsonResponse;
-				}
-					orderId = request.getParameter("out_trade_no");
-					if(StringUtils.isBlank(orderId)){
-						jsonResponse.setRetDesc("订单号为空");
-						return jsonResponse;
-					}
-					//标识支付宝的验签
-					Map<String,String> param = getParam(request);
-					logger.info("订支付宝验签获取的响应参数内容param={}" + JSON.toJSONString(param)); 
-					boolean signVerified = AlipaySignature.rsaCheckV1(param, Constants.ALI_PUBLIC_KEY,Constants.CHARSET_UTF8); // 校验签名是否正确
-					if (!signVerified) {
-						jsonResponse.setRetDesc("异步回调接口验签失败");
-						return jsonResponse;
-					} 
-					// TODO 验签成功后
-					logger.info("订单支付宝验签成功signVerified = "+signVerified);
-					//先查询该订单是否已付款--->如果已付款说明已经更新过了
-					OrderInfo info = new OrderInfo();
-					info.setOrderId(orderId);
-					orderInfo = orderInfoMapper.getPayOrder(info);
-					if(null == orderInfo){
-						jsonResponse.setRetDesc("未查询到当前订单信息");
-						return jsonResponse;
-					}
-					String total_amount = request.getParameter("total_amount");
-					if(new BigDecimal(total_amount).compareTo(orderInfo.getRmb())!=0){
-						//说明前后的钱不一致
-						jsonResponse.setRetDesc("付款金额不对");
-						return jsonResponse;
-					}
-					if(orderInfo.getPayStatus() != Constants.ORDER_PAYSTATUS_WFK){
-						jsonResponse.success(true);
-						return jsonResponse;
-					}
-					trade_no = request.getParameter("trade_no");
-			}else{
-				//微信的回调内容;
-				
+	private void batchUpdateProduct(List<Product> listProduct) {
+		if(CollectionUtils.isNotEmpty(listProduct)){
+			for (Product product : listProduct) {
+				productMapper.updateProduct(product);	
 			}
-			
-			//针对该内容加锁处理--->防止多次回调都会执行内容
-			boolean lock = cacheService.lock(Constants.LOCK_NOTIFY_ORDER.concat(orderId), Constants.LOCK, Constants.FIVE_MINUTE);
-			if(lock){
-				jsonResponse.setRetDesc("异步回调加锁失败");//可以直接返回成功;
-				return jsonResponse;
-			};
-			Integer orderType = orderInfo.getOrderType();
-			if(orderType == Constants.PAY_PRODUCT){
-				//更新订单的状态
-				OrderInfo updateOrder = new OrderInfo();
-				updateOrder.setOrderId(orderId);
-				updateOrder.setStatus(Constants.ORDER_STATUS_WWC);
-				updateOrder.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
-				updateOrder.setUid(orderInfo.getUid());
-				updateOrder.setPayTime(now);
-				updateOrder.setTradeNo(trade_no);
-				orderInfoMapper.update(orderInfo);
-				//更新商品的库存/销量
-				String productDetail = orderInfo.getProductDetail();
-				batchUpdateProduct(productDetail);
-				//如果含有余额抵扣的扣除余额-->生成订单已经更新
-				//设置账单内容-->定时处理
-				//设置分佣内容-->定时/用户确认收款设置
-			}else { //充值订单内容
-				//更新订单内容;
-				OrderInfo updateOrder = new OrderInfo();
-				updateOrder.setOrderId(orderId);
-				updateOrder.setStatus(Constants.ORDER_STATUS_WC);
-				updateOrder.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
-				updateOrder.setUid(orderInfo.getUid());
-				updateOrder.setPayTime(now);
-				updateOrder.setTradeNo(trade_no);
-				orderInfoMapper.update(orderInfo);
-				//订单更新之后全部开始定时器配置内容;
-			}
-			jsonResponse.success(true);
-		} catch (Exception e) {
-			logger.error("支付回调接口异常订单orderId={},e={}",orderId,e.getMessage());
-			throw new BusinessException("支付回调接口异常");
-		}finally {
-			cacheService.releaseLock(Constants.LOCK_NOTIFY_ORDER.concat(orderId));
 		}
-		return jsonResponse;
 	}
-
-
-	private void batchUpdateProduct(String productDetail) {
-		if(StringUtils.isNotBlank(productDetail)){
-			List<PayProductDetailDTO> productList = JSONArray.parseArray(productDetail, PayProductDetailDTO.class);
-			if(CollectionUtils.isNotEmpty(productList)){
-				for (PayProductDetailDTO dto : productList) {
-					Long productId = dto.getProductId();
-					Integer amount = dto.getAmount();
-					JSONObject json = getProductByProductIdAndLock(productId);
-					if(json.getIntValue("code")==1000){
-						logger.error("异步回调更新商品失败内容商品productId="+productId);
-						throw new BusinessException("更新商品状态异常product = "+productId);
-					}
-					try {
-						Product findProduct = json.getObject("product",Product.class);
-						findProduct.setSalesAmount(findProduct.getSalesAmount()+amount);
-						findProduct.setStockAmount(findProduct.getStockAmount()-amount);
-					} catch (Exception e) {
-						logger.error("异步回调更新商品失败内容");
-						throw new BusinessException(e.getMessage());
-					}finally {
-						cacheService.releaseLock(Constants.LOCK_PRODUCT+productId);
-					}
-					
-				}
-			}
-			
-		}
-		
-	}
-
-
-	private Map<String, String> getParam(HttpServletRequest request) {
-		 Map<String,String> params = new HashMap<String,String>();
-		 Map requestParams = request.getParameterMap();
-		 for (Iterator iter = requestParams.keySet().iterator(); iter.hasNext();) {
-			 String name = (String) iter.next();
-			 String[] values = (String[]) requestParams.get(name);
-			 String valueStr = "";
-			 for (int i = 0; i < values.length; i++) {
-				 valueStr = (i == values.length - 1) ? valueStr + values[i]:valueStr + values[i] + ",";
-			 }
-			 //乱码解决，这段代码在出现乱码时使用。如果mysign和sign不相等也可以使用这段代码转化//
-//			 valueStr = new String(valueStr.getBytes("ISO-8859-1"), "gbk");
-			 params.put(name, valueStr);
-		}
-		return null;
-	}
+	
 	
 	public static void main(String[] args) {
 		String discount="88";
@@ -1037,6 +1072,9 @@ public class PayServiceImpl extends BaseService implements PayService {
 		BigDecimal b3 = new BigDecimal("1.19");
 		System.out.println(b1.add(b2).add(b3).multiply(new BigDecimal(discount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP));
 		System.out.println(b1.multiply(new BigDecimal(discount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP));
-		
+		Integer payType=3;
+		if(payType != Constants.ALIPAY){
+			System.out.println("不想等");
+		}
 	}
 }

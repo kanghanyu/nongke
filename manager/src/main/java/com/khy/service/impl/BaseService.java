@@ -1,10 +1,13 @@
 package com.khy.service.impl;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -90,6 +93,8 @@ public class BaseService {
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
+					}else{
+						break;
 					}
 				}
 			}
@@ -173,7 +178,7 @@ public class BaseService {
 			info.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
 			OrderInfo order = orderInfoMapper.getPayOrder(info);
 			// 充值点卡是没有分佣的
-			if (null == order && order.getOrderType() == Constants.PAY_CARD) {
+			if (null == order || order.getOrderType() == Constants.PAY_CARD) {
 				return;
 			}
 			String uid = order.getUid();
@@ -237,27 +242,20 @@ public class BaseService {
 				updateInfo.setOrderId(orderId);
 				updateInfo.setUid(uid);
 				updateInfo.setPayStatus(Constants.ORDER_PAYSTATUS_YFF);
-				orderInfoMapper.update(info);
+				orderInfoMapper.update(updateInfo);
 			} catch (Exception e) {
 				logger.error("用户uid = {} 的订单orderId={}交易完成提成异常",uid,orderId);
 				throw new BusinessException(e.getMessage());
 			}
 		}
 	}
-
 	
 	private String setCommission(String uid, BigDecimal money, String desc, String orderId) {
 		int num=0;
 		JSONObject jsonObject = null;
 		String inviterUid = null;
 		try {
-			while(num < 2){
-				jsonObject = getUserByUidAndLock(uid);
-				if(jsonObject.getInteger("code")== 1000){
-					Thread.sleep(3000L);
-				}
-				num++;
-			}
+			jsonObject = getUserByUidAndLock(uid,2);
 			if(jsonObject.getInteger("code")== 1000){
 				logger.error("分佣操作当前用户操作繁忙请稍后再试orderId={},uid={}",orderId,uid);
 			}
@@ -270,7 +268,7 @@ public class BaseService {
 			user.setCommission(commission.add(money));
 			userMapper.updateUser(user);
 			saveUserRecord(uid, Constants.RECORD_INCOME, Constants.RECORD_COMMISSION, money, commission, orderId, desc, new Date());
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new BusinessException("用户分佣异常,请联系关联员uid={"+uid+"},orderId={"+orderId+"}");
 		}finally{
 			//释放当前用户的锁
@@ -306,4 +304,18 @@ public class BaseService {
 			cacheService.releaseLock(Constants.LOCK_USER+uid);
 		}
 	}
+	
+	public String getKey(String uid) {
+		String key = Constants.USER_PHONE_RECHARGE;
+		Calendar calendar = Calendar.getInstance();
+		int month = calendar.get(Calendar.MONTH) + 1;
+		key = key.concat(month+":").concat(uid);
+		return key;
+	}
+	public static boolean isPhone(String phone) {
+		Pattern p = Pattern.compile("^[1][3,4,5,7,8][0-9]{9}$");
+		Matcher m = p.matcher(phone);
+		return m.matches();
+	}
+
 }

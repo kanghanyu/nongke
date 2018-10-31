@@ -17,4 +17,6 @@ public interface CacheService {
 	public String getHash(String key,String fieid);
 	public Map<String, String> getHash(String key);
 	public Set<String> keys(String pattern);
+	public void incr(String key,Long value,Integer seconds);
+	public void decr(String key,Long number);
 }

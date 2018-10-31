@@ -9,15 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.khy.common.Constants;
 import com.khy.entity.OrderInfo;
 import com.khy.service.OrderService;
 import com.khy.service.impl.BaseService;
 
-//@Component
+@Component
 public class BillTask extends BaseService{
 	public final static Logger logger = LoggerFactory.getLogger(BillTask.class);
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -45,23 +44,5 @@ public class BillTask extends BaseService{
 			logger.info("处理出账的订单内容异常订单的num={}",num);
 		}
 	}
-	
-	
-	
-
-//	@Scheduled(cron = "*/5 * * * * ?")
-//	public void setBill(){
-// 
-//		for (int i = 0; i < 10; i++) {
-//			try {
-//				orderService.insert(i);
-//			} catch (Exception e) {
-//				logger.error("处理到过期的用户订单异常订单的orderId={}");
-//				continue;
-//			}
-//			
-//		}
-//		 
-//	}
 	 
 }
