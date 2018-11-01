@@ -7,9 +7,12 @@ import javax.servlet.http.HttpSession;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.khy.entity.User;
+import com.khy.entity.UserBillDTO;
 import com.khy.entity.UserCash;
+import com.khy.entity.UserPhoneRecord;
 import com.khy.mapper.dto.UserCommonDTO;
 import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserOrderInfoDTO;
 import com.khy.mapper.dto.UserRecordDTO;
 
 public interface UesrService {
@@ -35,6 +38,12 @@ public interface UesrService {
 	List<UserInviterDTO> listUserInviter(UserCommonDTO dto);
 
 	List<UserRecordDTO> listUserRecord(UserCommonDTO dto);
+
+	List<UserBillDTO> listUserBill(UserCommonDTO dto);
+
+	List<UserPhoneRecord> listUserPhoneRecord(UserCommonDTO dto);
+
+	List<UserOrderInfoDTO> listUserOrderInfo(UserCommonDTO dto);
 
 
 }

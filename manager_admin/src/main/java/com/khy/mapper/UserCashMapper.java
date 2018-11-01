@@ -12,5 +12,7 @@ public interface UserCashMapper {
 	UserCash get(UserCommonDTO dto);
 
 	int update(UserCash cash);
+
+	List<UserCash> listUserCashByUid(String uid);
 	
 }

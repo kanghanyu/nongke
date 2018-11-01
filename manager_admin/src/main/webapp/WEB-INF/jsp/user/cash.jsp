@@ -17,10 +17,10 @@
 		<!-- Content Header (Page header) -->
 		<section class="content-header">
 			<h1>
-				体现管理 
+				提现管理 
 			</h1>
 			<ol class="breadcrumb">
-				<li><a href="#">体现列表 </a></li>
+				<li><a href="#">提现列表 </a></li>
 			</ol>
 		</section>
 
@@ -34,11 +34,11 @@
 									账户手机号: <input type="text" maxlength="11"  id="phone">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 									<!-- 开始时间:<input id="startDate" style="width: 100px;height: 26px" class="Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd',readOnly:true,maxDate:'#F{$dp.$D(\'endDate\');}'})" />&nbsp;&nbsp;
 									结束时间:<input id="endDate" style="width: 100px;height: 26px" class="Wdate" onfocus="WdatePicker({dateFmt:'yyyy-MM-dd',readOnly:true,minDate:'#F{$dp.$D(\'startDate\');}'})" /> -->
-									体现状态:
+									提现状态:
 									<select id="status">
 										<option value="">-请选择-</option>
 										<option value=0>未审核</option>
-										<option value="1">体现完成</option>
+										<option value="1">提现完成</option>
 									</select>
 									<button type="button" name="search" onclick="search()" class="btn btn-primary">查询</button>
 							</div>
@@ -54,7 +54,7 @@
 										<th>id</th>
 										<th>uid</th>
 										<th>注册账户</th>
-										<th>体现金额</th>
+										<th>提现金额</th>
 										<th>手续费</th>
 										<th>实际金额</th>
 										<th>银行名称</th>
@@ -81,12 +81,12 @@
 											<td width="4%">${cash.userName}</td>
 											<td width="4%">${cash.phone}</td>
 											<td width="8%">${cash.bankAdress}</td>
-											<td width="4%">${cash.status==0?"未审核":"体现完成"}</td>
+											<td width="4%">${cash.status==0?"未审核":"提现完成"}</td>
 											<td width="5%">${cash.applyTimeStr}</td>
 											<td width="10%">
 											<c:if test="${cash.status==0}">
 												<button class="btn btn-primary btn-sm"
-													onclick="audit('${cash.id}')">体现</button>
+													onclick="audit('${cash.id}')">提现</button>
 											</c:if>
 											</td>
 										</tr>

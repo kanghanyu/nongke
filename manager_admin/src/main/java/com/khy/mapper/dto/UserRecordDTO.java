@@ -8,11 +8,11 @@ public class UserRecordDTO implements Serializable {
 	private static final long serialVersionUID = -5406697925224175744L;
 	
 	private String uid;
-	
+	//	1:收入 2支出
 	private Integer type;
 	
 	private BigDecimal amount;
-	
+	//1:余额 2:点卡 3 :佣金 4:rmb
     private Integer payType;
 
 	private String description;

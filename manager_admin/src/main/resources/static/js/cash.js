@@ -39,7 +39,7 @@ function addHtml(pageNum){
 					var amount =(item.amount!=null&&item.amount!=0)?item.amount:"0.00"
 					var feeAmount =(item.feeAmount!=null&&item.feeAmount!=0)?item.feeAmount:"0.00"
 					var realAmount =(item.realAmount!=null&&item.realAmount!=0)?item.realAmount:"0.00"
-					var status = item.status==0?"未审核":"体现完成";
+					var status = item.status==0?"未审核":"提现完成";
 					htmlStr += "<tr>";
 					htmlStr += '<td width="2%">'+item.id+'</td>';
 					htmlStr += '<td width="4%">'+item.uid+'</td>';
@@ -56,7 +56,7 @@ function addHtml(pageNum){
 					htmlStr += '<td width="5%">'+item.applyTimeStr+'</td>';
 					htmlStr += '<td width="10%">';
 					if(item.status==0){
-						htmlStr += '<button class="btn btn-primary btn-sm" onclick="audit('+item.id+',1)">体现</button>'
+						htmlStr += '<button class="btn btn-primary btn-sm" onclick="audit('+item.id+',1)">提现</button>'
 					}
 					htmlStr += '</td>'
 					htmlStr += '</tr>';
@@ -95,7 +95,7 @@ function search(){
 					var amount =(item.amount!=null&&item.amount!=0)?item.amount:"0.00"
 					var feeAmount =(item.feeAmount!=null&&item.feeAmount!=0)?item.feeAmount:"0.00"
 					var realAmount =(item.realAmount!=null&&item.realAmount!=0)?item.realAmount:"0.00"
-					var status = item.status==0?"未审核":"体现完成";
+					var status = item.status==0?"未审核":"提现完成";
 					htmlStr += "<tr>";
 					htmlStr += '<td width="2%">'+item.id+'</td>';
 					htmlStr += '<td width="4%">'+item.uid+'</td>';
@@ -112,7 +112,7 @@ function search(){
 					htmlStr += '<td width="5%">'+item.applyTimeStr+'</td>';
 					htmlStr += '<td width="10%">';
 					if(item.status==0){
-						htmlStr += '<button class="btn btn-primary btn-sm" onclick="audit('+item.id+',1)">体现</button>'
+						htmlStr += '<button class="btn btn-primary btn-sm" onclick="audit('+item.id+',1)">提现</button>'
 					}
 					htmlStr += '</td>'
 					htmlStr += '</tr>';
@@ -140,7 +140,7 @@ function search(){
 
 
 function audit(id){
-		var msg = "您确定该体现记录金额已发放了吗？\n\n请确认！";
+		var msg = "您确定该提现记录金额已发放了吗？\n\n请确认！";
 		var data={"id":id}
 		if (confirm(msg) == true) {
 			$.ajax({

@@ -29,7 +29,7 @@
 					<li><a href="${pageContext.request.contextPath }/product/toProductList?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i> 商品管理</a></li>
 				</ul>
 				<ul class="treeview-menu">
-					<li><a href="${pageContext.request.contextPath }/user/toUserCash?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>用户体现</a></li>
+					<li><a href="${pageContext.request.contextPath }/user/toUserCash?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>用户提现</a></li>
 				</ul>
 				<ul class="treeview-menu">
 					<li><a href="${pageContext.request.contextPath }/online/toOnline?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>在线参数管理</a></li>

@@ -18,7 +18,7 @@ public class UserCash implements Serializable {
     //手续费
     private BigDecimal feeAmount;
 
-    //真实体现金额
+    //真实提现金额
     private BigDecimal realAmount;
     
     private String bankName;
@@ -34,7 +34,7 @@ public class UserCash implements Serializable {
     private Date applyTime;
     private String applyTimeStr;
 
-    /**0 申请体现  1提现完成*/
+    /**0 申请提现  1提现完成*/
     private Integer status;
 
     private Date updateTime;

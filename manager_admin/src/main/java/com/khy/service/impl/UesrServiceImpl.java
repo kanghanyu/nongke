@@ -1,7 +1,9 @@
 package com.khy.service.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,25 +12,36 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.khy.config.RedisUtils;
+import com.khy.entity.OrderInfo;
 import com.khy.entity.User;
 import com.khy.entity.UserAddress;
 import com.khy.entity.UserBank;
+import com.khy.entity.UserBill;
+import com.khy.entity.UserBillDTO;
 import com.khy.entity.UserCash;
+import com.khy.entity.UserPhoneRecord;
+import com.khy.mapper.OrderInfoMapper;
 import com.khy.mapper.UserAddressMapper;
 import com.khy.mapper.UserBankMapper;
+import com.khy.mapper.UserBillMapper;
 import com.khy.mapper.UserCashMapper;
 import com.khy.mapper.UserMapper;
 import com.khy.mapper.dto.UserCommonDTO;
 import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserOrderInfoDTO;
+import com.khy.mapper.dto.UserOrderProductDTO;
 import com.khy.mapper.dto.UserRecordDTO;
 import com.khy.service.UesrService;
 import com.khy.utils.Constants;
@@ -46,6 +59,10 @@ public class UesrServiceImpl implements UesrService {
 	private UserAddressMapper userAddressMapper;
 	@Autowired
 	private UserCashMapper userCashMapper;
+	@Autowired
+	private UserBillMapper userBillMapper;
+	@Autowired
+	private OrderInfoMapper orderInfoMapper;
 	@Autowired
 	private RedisUtils RedisUtils;
 	@Override
@@ -247,31 +264,52 @@ public class UesrServiceImpl implements UesrService {
 			json.put("msg","当前记录不存在/已提现");
 			return json;
 		}
+		Date now = new Date();
+		
 		cash.setStatus(1);
-		cash.setUpdateTime(new Date());
+		cash.setUpdateTime(now);
 		int flag = userCashMapper.update(cash);
 		if(flag > 0){
+			//设置账单内容
+			UserBill bill = new UserBill();
+			bill.setUid(cash.getUid());
+			bill.setType(2);
+			bill.setBillType(5);
+			bill.setAmount(cash.getRealAmount());
+			bill.setDescription("用户提现");
+			bill.setCreateTime(now);
+			Map<String,Object>map = new HashMap<String, Object>();
+			map.put("productName", "用户提现");
+			map.put("productType", "提现");
+			map.put("price", cash.getRealAmount());
+			map.put("amount", "1");
+			map.put("total", cash.getRealAmount());
+			map.put("description", "用户提现内容");
+			List<Map<String,Object>>list =new ArrayList<>();
+			list.add(map);
+			bill.setInfo(JSON.toJSONString(list));
+			userBillMapper.insert(bill);
 			json.put("code", 1000);
-			json.put("msg","体现已完成");
+			json.put("msg","提现已完成");
 			return json;
 		}else{
-			json.put("msg","体现审核失败");
+			json.put("msg","提现审核失败");
 		}
 		return json;
 	}
 
 	@Override
 	public List<UserCash> listUserCash(UserCommonDTO dto) {
-		if(null == dto){
+		if(null == dto || null == dto.getUid()){
 			return null;
 		}
-		List<UserCash> list = userCashMapper.listUserCash(dto);
+		List<UserCash> list = userCashMapper.listUserCashByUid(dto.getUid());
 		return list;
 	}
 
 	@Override
 	public List<UserInviterDTO> listUserInviter(UserCommonDTO dto) {
-		if(null == dto){
+		if(null == dto || null == dto.getUid()){
 			return null;
 		}
 		List<UserInviterDTO> list = userMapper.listUserInviter(dto);
@@ -292,6 +330,85 @@ public class UesrServiceImpl implements UesrService {
 		}
 		List<UserRecordDTO> list = userMapper.listUserRecord(param);
 		return list;
+	}
+
+	@Override
+	public List<UserBillDTO> listUserBill(UserCommonDTO dto) {
+		if(null == dto || null == dto.getUid()){
+			return null;
+		}
+		List<OrderInfo> list = orderInfoMapper.getUserBill(dto.getUid());
+		List<UserBillDTO>ret = new ArrayList<>();
+		if(CollectionUtils.isNotEmpty(list)){
+			for (OrderInfo info : list) {
+				UserBillDTO billDto = new UserBillDTO();
+				Integer orderType = info.getOrderType();
+				billDto.setTime(info.getPayTime());
+				billDto.setDescription(info.getProductDetail());
+				BigDecimal totalPay = info.getTotalPay();
+				if(orderType == 1){
+					billDto.setTotalDesc(info.getDescription());
+				}else{
+					billDto.setTotalDesc(totalPay.toString()+":元");
+				}
+				billDto.setAmount(totalPay);
+				ret.add(billDto);
+			}
+		}
+		return ret;
+	}
+
+	@Override
+	public List<UserPhoneRecord> listUserPhoneRecord(UserCommonDTO dto) {
+		if(null == dto || null == dto.getUid()){
+			return null;
+		}
+		String uid = dto.getUid();
+		OrderInfo info = new OrderInfo();
+		info.setUid(uid);
+		info.setOrderType(3);
+		List<OrderInfo> list = orderInfoMapper.listOrderInfo(info);
+		List<UserPhoneRecord> ret = new ArrayList<>();
+		if(CollectionUtils.isNotEmpty(list)){
+			for (OrderInfo orderInfo : list) {
+				UserPhoneRecord phoneRecord = new UserPhoneRecord();
+				ret.add(phoneRecord);
+				phoneRecord.setPhone(orderInfo.getDescription());
+				phoneRecord.setCreateTime(orderInfo.getCreateTime());
+				phoneRecord.setTotalMoney(orderInfo.getTotalMoney());
+				phoneRecord.setDiscountMoney(orderInfo.getTotalPay());
+				Integer s = orderInfo.getPayStatus();
+				phoneRecord.setStatus(s==1?"未付款":(s==3?"已取消":"已付款"));
+			}
+		}
+		return ret;
+	}
+
+	@Override
+	public List<UserOrderInfoDTO> listUserOrderInfo(UserCommonDTO dto) {
+		if(null == dto || null == dto.getUid()){
+			return null;
+		}
+		String uid = dto.getUid();
+		OrderInfo info = new OrderInfo();
+		info.setUid(uid);
+		info.setOrderType(4);
+		List<OrderInfo> list = orderInfoMapper.listOrderInfo(info);
+		List<UserOrderInfoDTO>ret = new ArrayList<>();
+		if(CollectionUtils.isNotEmpty(list)){
+			UserOrderInfoDTO orderDto = null;
+			for (OrderInfo orderInfo : list) {
+				orderDto = new UserOrderInfoDTO();
+				BeanUtils.copyProperties(orderInfo, orderDto);
+				String productDetail = orderInfo.getProductDetail();
+				if(StringUtils.isNotBlank(productDetail)){
+					List<UserOrderProductDTO> products = JSONArray.parseArray(productDetail, UserOrderProductDTO.class);
+					orderDto.setProducts(products);
+				}
+				ret.add(orderDto);
+			}
+		}
+		return ret;
 	}
 
 }

@@ -91,13 +91,13 @@
 											<td width="5%">${user.inviterPhone==null?"无":user.inviterPhone}</td>
 											<td width="3.5%">${user.isManager==0?"普通用户":"管理员"}</td>
 											<td width="4%">${user.isVip==0?"普通用户":"VIP用户"}</td>
-											<td width="4%" class="info" ><a/>转账记录</td>
-											<td width="4%"><a/>佣金记录</td>
-											<td width="4%"><a/>提现记录</td>
-											<td width="4%"><a/>通讯录</td>
-											<td width="4%"><a/>我的账单</td>
-											<td width="4%"><a/>我的订单</td>
-											<td width="5%"><a/>话费充值记录</td>
+											<td width="4%" class="move"><a onclick="userRecord(${user.uid},2)" />转账记录</td>
+											<td width="4%" class="move"><a onclick="userRecord(${user.uid},3)" />佣金记录</td>
+											<td width="4%" class="move"><a onclick="userCash(${user.uid})" />提现记录</td>
+											<td width="4%" class="move"><a onclick="userInviter(${user.uid},1)"/>通讯录</td>
+											<td width="4%" class="move"><a onclick="userBill(${user.uid})" />我的账单</td>
+											<td width="4%" class="move"><a onclick="userOrder(${user.uid})" />我的订单</td>
+											<td width="5%" class="move"><a onclick="userPhoneRecord(${user.uid})" />话费充值记录</td>
 											<td width="20%">
 												<button class="btn btn-primary btn-sm"
 													onclick="detailUserInfo('${user.uid }')">详情</button>
@@ -223,6 +223,204 @@
 			</div>
 		</div>
 	</div>
+	
+	<!-- 转账记录 /佣金记录 -->
+	<div class='modal' id='zzjl_Modal'>
+		<div class='modal-dialog'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'>
+						<span aria-hidden='true'>×</span><span class='sr-only'>Close</span>
+					</button>
+					<h4 align="center" class='modal-title-zz-yj'></h4>
+				</div>
+				<div class='modal-body' style="min-width:700;max-height:500px; overflow:scroll;">
+					<table id="zzjl_table" class="table table-bordered  table-striped table-hover">
+						<thead>
+							<tr>
+								<th>类型</th>
+								<th>描述</th>
+								<th class="daoli">稻粒</th>
+								<th>时间</th>
+							</tr>
+						</thead>
+						<tbody id="zzjl_tbody">
+						</tbody>
+					</table>
+					<div class='modal-footer'>
+						<button type='button' class='btn btn-default'
+							data-dismiss='modal'>关闭</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!--体现记录  -->
+	<div class='modal' id='txjl_Modal'>
+		<div class='modal-dialog'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'>
+						<span aria-hidden='true'>×</span><span class='sr-only'>Close</span>
+					</button>
+					<h4 align="center" class='modal-title'>体现记录</h4>
+				</div>
+				<div class='modal-body' style="min-width:700;max-height:500px; overflow:scroll;">
+					<table id="txjl_table" class="table table-bordered  table-striped table-hover">
+						<thead>
+							<tr>
+								<th>时间</th>
+								<th>金额</th>
+								<th>状态</th>
+							</tr>
+						</thead>
+						<tbody id="txjl_tbody">
+						</tbody>
+					</table>
+					<div class='modal-footer'>
+						<button type='button' class='btn btn-default'
+							data-dismiss='modal'>关闭</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!--我的通讯录  -->
+	<div class='modal' id='txl_Modal'>
+		<div class='modal-dialog'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'>
+						<span aria-hidden='true'>×</span><span class='sr-only'>Close</span>
+					</button>
+					<h4 align="center" class='modal-title'>我的通讯录</h4>
+				</div>
+				<div class='modal-body' style="min-width:700;max-height:500px; overflow:scroll;">
+				
+					<h5 align="center" class='modal-title_fs'>粉丝:0人数</h4>
+					<table id="txl_table" class="table table-bordered  table-striped table-hover">
+						<thead>
+							<tr>
+								<th>头像</th>
+								<th>用户信息</th>
+								<th>身份类别</th>
+							</tr>
+						</thead>
+						<tbody id="txl_tbody">
+						</tbody>
+					</table>
+					<div class='modal-footer'>
+						<button type='button' class='btn btn-default'
+							data-dismiss='modal'>关闭</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!--我的账单内容  -->
+	<div class='modal' id='zd_Modal'>
+		<div class='modal-dialog'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'>
+						<span aria-hidden='true'>×</span><span class='sr-only'>Close</span>
+					</button>
+					<h4 align="center" class='modal-title'>我的账单</h4>
+				</div>
+				<div class='modal-body' style="min-width:700;max-height:500px; overflow:scroll;">
+					<table id="zd_table" class="table table-bordered  table-striped table-hover">
+						<thead>
+							<tr>
+								<th>时间</th>
+								<th>金额</th>
+								<th>类型</th>
+							</tr>
+						</thead>
+						<tbody id="zd_tbody">
+						</tbody>
+					</table>
+					<div class='modal-footer'>
+						<button type='button' class='btn btn-default'
+							data-dismiss='modal'>关闭</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	<!--话费充值记录  -->
+	<div class='modal' id='hf_Modal'>
+		<div class='modal-dialog'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'>
+						<span aria-hidden='true'>×</span><span class='sr-only'>Close</span>
+					</button>
+					<h4 align="center" class='modal-title'>话费充值记录</h4>
+				</div>
+				<div class='modal-body' style="min-width:700;max-height:500px; overflow:scroll;">
+					<table id="hf_table" class="table table-bordered  table-striped table-hover">
+						<thead>
+							<tr>
+								<th>提交时间</th>
+								<th>充值号码</th>
+								<th>充值金额</th>
+								<th>折扣金额</th>
+								<th>状态</th>
+							</tr>
+						</thead>
+						<tbody id="hf_tbody">
+						</tbody>
+					</table>
+					<div class='modal-footer'>
+						<button type='button' class='btn btn-default'
+							data-dismiss='modal'>关闭</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!--我的订单  -->
+	<div class='modal' id='dd_Modal'>
+		<div class='modal-dialog'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<button type='button' class='close' data-dismiss='modal'>
+						<span aria-hidden='true'>×</span><span class='sr-only'>Close</span>
+					</button>
+					<h4 align="center" class='modal-title'>我的订单</h4>
+				</div>
+				<div class='modal-body' style="min-width:700;max-height:500px; overflow:scroll;">
+					<table id="dd_table" class="table table-bordered  table-striped table-hover">
+						<thead>
+							<!-- <tr>
+								<th>提交时间</th>
+								<th>充值号码</th>
+								<th>充值金额</th>
+								<th>折扣金额</th>
+								<th>状态</th>
+							</tr> -->
+						</thead>
+						<tbody id="dd_tbody">
+						</tbody>
+					</table>
+					<div class='modal-footer'>
+						<button type='button' class='btn btn-default'
+							data-dismiss='modal'>关闭</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	
+	
 </body>
 <!-- /.content-wrapper -->
 </html>

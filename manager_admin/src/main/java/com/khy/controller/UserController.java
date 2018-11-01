@@ -2,7 +2,6 @@ package com.khy.controller;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -21,9 +20,12 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.github.pagehelper.PageInfo;
 import com.khy.entity.Msg;
 import com.khy.entity.User;
+import com.khy.entity.UserBillDTO;
 import com.khy.entity.UserCash;
+import com.khy.entity.UserPhoneRecord;
 import com.khy.mapper.dto.UserCommonDTO;
 import com.khy.mapper.dto.UserInviterDTO;
+import com.khy.mapper.dto.UserOrderInfoDTO;
 import com.khy.mapper.dto.UserRecordDTO;
 import com.khy.service.UesrService;
 import com.khy.utils.SmsUtils;
@@ -32,7 +34,8 @@ import com.khy.utils.SmsUtils;
 @RequestMapping("/user")
 public class UserController {
 
-	private static final String FORMTE="yyyy-MM-dd HH:mm:ss";
+	private static final String YEAR_FORMTE="yyyy-MM-dd HH:mm:ss";
+	private static final String MONTH_FORMTE="MM-dd HH:mm:ss";
 	private static String msg = "手机号/密码不正确";
 	private static String msg2 = "非管理员不能登录";
 	private static String msg3 = "您的账户被冻结,请联系客服";
@@ -198,7 +201,7 @@ public class UserController {
 	}
 
 	/**
-	 * 获取当前用户所有的体现记录
+	 * 获取当前用户所有的提现记录
 	 * @Description
 	 * @author khy
 	 * @date  2018年10月26日下午5:05:05
@@ -209,7 +212,7 @@ public class UserController {
 	@ResponseBody
 	public String listUserCash(@RequestBody UserCommonDTO dto) {
 		List<UserCash> list = uesrService.listUserCash(dto);
-		return JSON.toJSONString(list);
+		return JSON.toJSONStringWithDateFormat(list, MONTH_FORMTE, new SerializerFeature[0]);
 	}
 	
 	/**
@@ -224,7 +227,7 @@ public class UserController {
 	@ResponseBody
 	public String listUserInviter(@RequestBody UserCommonDTO dto) {
 		List<UserInviterDTO> list = uesrService.listUserInviter(dto);
-		return JSON.toJSONString(list);
+		return JSON.toJSONStringWithDateFormat(list, YEAR_FORMTE, new SerializerFeature[0]);
 	}
 	
 	/**
@@ -239,14 +242,39 @@ public class UserController {
 	@ResponseBody
 	public String listUserRecord(@RequestBody UserCommonDTO dto) {
 		List<UserRecordDTO> list = uesrService.listUserRecord(dto);
-		return JSON.toJSONStringWithDateFormat(list, FORMTE, new SerializerFeature[0]);
+		return JSON.toJSONStringWithDateFormat(list, MONTH_FORMTE, new SerializerFeature[0]);
+	}
+	/**
+	 * 我的账单内容
+	 * @Description
+	 * @author khy
+	 * @date  2018年11月1日下午5:15:35
+	 * @param dto
+	 * @return
+	 */
+	@RequestMapping("/listUserBill")
+	@ResponseBody
+	public String listUserBill(@RequestBody UserCommonDTO dto) {
+		List<UserBillDTO> list = uesrService.listUserBill(dto);
+		return JSON.toJSONStringWithDateFormat(list, MONTH_FORMTE, new SerializerFeature[0]);
+	}
+	@RequestMapping("/listUserPhoneRecord")
+	@ResponseBody
+	public String listUserPhoneRecord(@RequestBody UserCommonDTO dto) {
+		List<UserPhoneRecord> list = uesrService.listUserPhoneRecord(dto);
+		return JSON.toJSONStringWithDateFormat(list, MONTH_FORMTE, new SerializerFeature[0]);
+	}
+	
+	@RequestMapping("/listUserOrderInfo")
+	@ResponseBody
+	public String listUserOrderInfo(@RequestBody UserCommonDTO dto) {
+		List<UserOrderInfoDTO> list = uesrService.listUserOrderInfo(dto);
+		return JSON.toJSONStringWithDateFormat(list, MONTH_FORMTE, new SerializerFeature[0]);
 	}
 	
 	
-	
 	/**
-	 * 跳转到体现列表
-	 * 
+	 * 跳转到提现列表
 	 * @Description
 	 * @author khy
 	 * @date 2018年10月26日下午4:42:30
