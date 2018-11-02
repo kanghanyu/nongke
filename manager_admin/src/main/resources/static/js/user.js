@@ -43,10 +43,10 @@ function addHtml(pageNum){
 		dataType : "json",
 		contentType : 'application/json',
 		success : function(data) {
-			if(data != null){
+			if(data != null&& null != data.page){
 				$("#tbody").html("");
 				var htmlStr="";
-				$.each(data.list, function (index, item) {
+				$.each(data.page.list, function (index, item) {
 					var moneyStr = item.moneyStr!=null?item.moneyStr:"0.00";
 					var cardMoney =(item.cardMoney!=null&&item.cardMoney!=0)?item.cardMoney:"0.00"
 					var commission =(item.commission!=null&&item.commission!=0)?item.commission:"0.00"
@@ -56,7 +56,6 @@ function addHtml(pageNum){
 					var isManager = item.isManager==0?"普通用户":"管理员";
 					var isVip = item.isVip==0?"普通用户":"VIP用户";
 					htmlStr += "<tr>";
-					htmlStr += '<td width="2.5%">'+item.id+'</td>';
 					htmlStr += '<td width="4.5%">'+item.uid+'</td>';
 					htmlStr += '<td width="5%">'+item.phone+'</td>';
 					htmlStr += '<td width="3.5%">'+moneyStr+'</td>';
@@ -86,6 +85,12 @@ function addHtml(pageNum){
 					htmlStr += '</tr>';
 				});
 				$("#tbody").html(htmlStr);
+				if(null != data.count){
+					$("#countTotalMoney").text(data.count.totalMoney+"(元)");
+					$("#countTotalCardMoney").text(data.count.totalCardMoney+"(元)");
+					$("#countTotalCommission").text(data.count.totalCommission+"(元)");
+					$("#countUserAmount").text(data.count.vipNum+"人/"+data.count.amount+"人");
+				}
 			}
 		}
 	});
@@ -113,12 +118,12 @@ function search(){
 		dataType : "json",
 		contentType : 'application/json',
 		success : function(data) {
-			if(data != null){
-				pageNum = data.pageNum
-				pages = data.pages;
+			if(data != null && null != data.page){
+				pageNum = data.page.pageNum
+				pages = data.page.pages;
 				$("#tbody").html("");
 				var htmlStr="";
-				$.each(data.list, function (index, item) {
+				$.each(data.page.list, function (index, item) {
 					var moneyStr = item.moneyStr!=null?item.moneyStr:"0.00";
 					var cardMoney =(item.cardMoney!=null&&item.cardMoney!=0)?item.cardMoney:"0.00"
 					var commission =(item.commission!=null&&item.commission!=0)?item.commission:"0.00"
@@ -128,7 +133,6 @@ function search(){
 					var isManager = item.isManager==0?"普通用户":"管理员";
 					var isVip = item.isVip==0?"普通用户":"VIP用户";
 					htmlStr += "<tr>";
-					htmlStr += '<td width="2.5%">'+item.id+'</td>';
 					htmlStr += '<td width="4.5%">'+item.uid+'</td>';
 					htmlStr += '<td width="5%">'+item.phone+'</td>';
 					htmlStr += '<td width="3.5%">'+moneyStr+'</td>';
@@ -158,6 +162,12 @@ function search(){
 					htmlStr += '</tr>';
 				});
 				$("#tbody").html(htmlStr);
+				if(null != data.count){
+					$("#countTotalMoney").text(data.count.totalMoney+"(元)");
+					$("#countTotalCardMoney").text(data.count.totalCardMoney+"(元)");
+					$("#countTotalCommission").text(data.count.totalCommission+"(元)");
+					$("#countUserAmount").text(data.count.vipNum+"人/"+data.count.amount+"人");
+				}
 			}
 			var options={
 		            bootstrapMajorVersion:1,    //版本
@@ -215,7 +225,7 @@ function setUserStatus(uid,type){
 				success : function(data) {
 					if(null != data && data.code == 1000){
 						alert(s+data.msg);
-						window.location.href = "/user/toUserList?pageSize=2&pageNum=1";
+						window.location.href = "/user/toUserList?pageSize=10&pageNum=1";
 					}
 				}
 			});

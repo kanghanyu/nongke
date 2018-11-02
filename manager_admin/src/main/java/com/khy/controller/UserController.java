@@ -24,6 +24,7 @@ import com.khy.entity.UserBillDTO;
 import com.khy.entity.UserCash;
 import com.khy.entity.UserPhoneRecord;
 import com.khy.mapper.dto.UserCommonDTO;
+import com.khy.mapper.dto.UserCountDTO;
 import com.khy.mapper.dto.UserInviterDTO;
 import com.khy.mapper.dto.UserOrderInfoDTO;
 import com.khy.mapper.dto.UserRecordDTO;
@@ -164,7 +165,9 @@ public class UserController {
 	public ModelAndView toUserList(User user) {
 		ModelAndView model = new ModelAndView("user/list");
 		PageInfo<User> page = uesrService.page(user);
+		UserCountDTO count = uesrService.getUserCount(user);
 		model.addObject("page", page);
+		model.addObject("count", count);
 		return model;
 	}
 
@@ -181,7 +184,11 @@ public class UserController {
 	@ResponseBody
 	public String dateList(@RequestBody User user) {
 		PageInfo<User> page = uesrService.page(user);
-		return JSON.toJSONString(page);
+		UserCountDTO count = uesrService.getUserCount(user);
+		JSONObject json = new JSONObject();
+		json.put("page", page);
+		json.put("count", count);
+		return json.toString();
 	}
 
 	/**

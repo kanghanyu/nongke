@@ -152,7 +152,7 @@ function audit(id){
 				success : function(data) {
 					if(null != data && data.code == 1000){
 						alert(data.msg);
-						window.location.href = "/user/toUserCash?pageSize=2&pageNum=1";
+						window.location.href = "/user/toUserCash?pageSize=10&pageNum=1";
 					}
 				}
 			});

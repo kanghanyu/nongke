@@ -16,7 +16,7 @@
 		<jsp:include page="header.jsp" />
 		<jsp:include page="left.jsp" />
 		<div class="content-wrapper">
-			<iframe name="mainFrame" id="mainFrame" frameborder="0" src="user/toUserList?pageSize=2&pageNum=1"
+			<iframe name="mainFrame" id="mainFrame" frameborder="0" src="user/toUserList?pageSize=10&pageNum=1"
 				style="margin: 0 auto; width: 100%; height: 100%;" ></iframe>
 		</div>
 	</div>

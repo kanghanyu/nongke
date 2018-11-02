@@ -140,7 +140,7 @@ function save(){
 		contentType : 'application/json',
 		success : function(data) {
 			if(null != data && data.code == 1000){
-				 window.location.href = "/message/toMessageList?pageSize=2&pageNum=1"; 
+				 window.location.href = "/message/toMessageList?pageSize=10&pageNum=1"; 
 			}else{
 				alert(data.msg);
 				return false;
@@ -203,7 +203,7 @@ function update(){
 		contentType : 'application/json',
 		success : function(data) {
 			if (null != data && data.code == 1000) {
-				window.location.href = "/message/toMessageList?pageSize=2&pageNum=1";
+				window.location.href = "/message/toMessageList?pageSize=10&pageNum=1";
 			} else {
 				alert(data.msg);
 				return false;
@@ -231,7 +231,7 @@ function del(id) {
 			success : function(data) {
 				if (null != data && data.code == 1000) {
 					alert(data.msg);
-					window.location.href = "/message/toMessageList?pageSize=2&pageNum=1";
+					window.location.href = "/message/toMessageList?pageSize=10&pageNum=1";
 				}
 			}
 		});

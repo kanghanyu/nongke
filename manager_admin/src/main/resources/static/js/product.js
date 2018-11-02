@@ -365,7 +365,7 @@ function saveProduct(){
 		contentType : 'application/json',
 		success : function(data) {
 			if(null != data && data.code == 1000){
-				 window.location.href = "/product/toProductList?pageSize=2&pageNum=1"; 
+				 window.location.href = "/product/toProductList?pageSize=10&pageNum=1"; 
 			}
 		}
 	});
@@ -445,7 +445,7 @@ function setProductStatus(productId,type){
 			success : function(data) {
 				if(null != data && data.code == 1000){
 					alert(ret+data.msg);
-					 window.location.href = "/product/toProductList?pageSize=2&pageNum=1"; 
+					 window.location.href = "/product/toProductList?pageSize=10&pageNum=1"; 
 				}
 			}
 		});
@@ -710,7 +710,7 @@ function editDbProduct(){
 		success : function(data) {
 			if(null != data && data.code == 1000){
 				alert("修改商品信息成功");
-				 window.location.href = "/product/toProductList?pageSize=2&pageNum=1"; 
+				 window.location.href = "/product/toProductList?pageSize=10&pageNum=1"; 
 			}
 		}
 	});
@@ -730,7 +730,7 @@ function delProduct(productId){
 			success : function(data) {
 				if(null != data && data.code == 1000){
 					alert(data.msg);
-					window.location.href = "/product/toProductList?pageSize=2&pageNum=1"; 
+					window.location.href = "/product/toProductList?pageSize=10&pageNum=1"; 
 				}
 			}
 		});

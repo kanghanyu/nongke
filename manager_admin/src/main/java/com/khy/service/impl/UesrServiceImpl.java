@@ -39,6 +39,7 @@ import com.khy.mapper.UserBillMapper;
 import com.khy.mapper.UserCashMapper;
 import com.khy.mapper.UserMapper;
 import com.khy.mapper.dto.UserCommonDTO;
+import com.khy.mapper.dto.UserCountDTO;
 import com.khy.mapper.dto.UserInviterDTO;
 import com.khy.mapper.dto.UserOrderInfoDTO;
 import com.khy.mapper.dto.UserOrderProductDTO;
@@ -150,6 +151,11 @@ public class UesrServiceImpl implements UesrService {
 		List<User> list = userMapper.list(user);
 		PageInfo <User>pageInfo = new PageInfo<User>(list);
 		return pageInfo;
+	}
+
+	@Override
+	public UserCountDTO getUserCount(User user) {
+		return userMapper.getUserCount(user);
 	}
 
 	@Override

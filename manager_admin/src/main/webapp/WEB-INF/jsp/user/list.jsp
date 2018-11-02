@@ -58,7 +58,6 @@
 							<table id="table1" class="table table-bordered  table-striped table-hover" style="min-width:2500px;">
 								<thead>
 									<tr>
-										<th>id</th>
 										<th>uid</th>
 										<th>手机号</th>
 										<th>余额</th>
@@ -81,7 +80,6 @@
 								<tbody id="tbody">
 									<c:forEach var="user" items="${page.list}">
 										<tr>
-											<td width="2.5%">${user.id}</td>
 											<td width="4.5%">${user.uid}</td>
 											<td width="5%">${user.phone}</td>
 											<td width="3.5%">${user.money==null?0:user.money}</td>
@@ -119,6 +117,15 @@
 										</tr>
 									</c:forEach>
 								</tbody>
+										<tr>
+											<td colspan="2">统计</td>
+											<td id="countTotalMoney">${count.totalMoney}(元)</td>
+											<td id="countTotalCardMoney">${count.totalCardMoney}(元)</td>
+											<td id="countTotalCommission">${count.totalCommission}(元)</td>
+											<td ></td>
+											<td colspan="2"></td>
+											<td id="countUserAmount">${count.vipNum}人/${count.amount}人</td>
+										</tr>
 							</table>
 							<tr><div id="page"></div> </tr>
 						</div>
@@ -256,7 +263,7 @@
 		</div>
 	</div>
 	
-	<!--体现记录  -->
+	<!--提现记录  -->
 	<div class='modal' id='txjl_Modal'>
 		<div class='modal-dialog'>
 			<div class='modal-content'>
@@ -264,7 +271,7 @@
 					<button type='button' class='close' data-dismiss='modal'>
 						<span aria-hidden='true'>×</span><span class='sr-only'>Close</span>
 					</button>
-					<h4 align="center" class='modal-title'>体现记录</h4>
+					<h4 align="center" class='modal-title'>提现记录</h4>
 				</div>
 				<div class='modal-body' style="min-width:700;max-height:500px; overflow:scroll;">
 					<table id="txjl_table" class="table table-bordered  table-striped table-hover">

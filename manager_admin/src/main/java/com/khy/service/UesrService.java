@@ -11,6 +11,7 @@ import com.khy.entity.UserBillDTO;
 import com.khy.entity.UserCash;
 import com.khy.entity.UserPhoneRecord;
 import com.khy.mapper.dto.UserCommonDTO;
+import com.khy.mapper.dto.UserCountDTO;
 import com.khy.mapper.dto.UserInviterDTO;
 import com.khy.mapper.dto.UserOrderInfoDTO;
 import com.khy.mapper.dto.UserRecordDTO;
@@ -44,6 +45,8 @@ public interface UesrService {
 	List<UserPhoneRecord> listUserPhoneRecord(UserCommonDTO dto);
 
 	List<UserOrderInfoDTO> listUserOrderInfo(UserCommonDTO dto);
+
+	UserCountDTO getUserCount(User user);
 
 
 }

@@ -36,14 +36,8 @@
 			<if test="null != phone and phone != '' ">
 				phone = #{phone}
 			</if>
-			<if test="null != uid and uid != '' ">
-				AND uid = #{uid}
-			</if>
 			<if test="null != inviterPhone and inviterPhone != '' ">
 				AND inviter_phone = #{inviterPhone}
-			</if>
-			<if test="null != inviterUid and inviterUid != '' ">
-				AND inviter_uid = #{inviterUid}
 			</if>
 			<if test="null != isManager">
 				AND is_manager = #{isManager}
@@ -59,6 +53,39 @@
 			</if>
 		</where>
 	</select>
+	
+	<select id="getUserCount" parameterType="com.khy.entity.User" resultType="com.khy.mapper.dto.UserCountDTO">
+	SELECT
+		SUM(money)  totalMoney,
+		SUM(card_money)  totalCardMoney,
+		SUM(commission)  totalCommission,
+		COUNT(*) amount ,
+		COUNT(CASE WHEN is_vip = 1 THEN 1 ELSE NULL END) vipNum
+	FROM
+		t_user
+		<where>
+			<if test="null != phone and phone != '' ">
+				phone = #{phone}
+			</if>
+			<if test="null != inviterPhone and inviterPhone != '' ">
+				AND inviter_phone = #{inviterPhone}
+			</if>
+			<if test="null != isManager">
+				AND is_manager = #{isManager}
+			</if>
+			<if test="null != isVip">
+				AND is_vip = #{isVip}
+			</if>
+			<if test="null != startDate and startDate != '' ">
+				AND DATE_FORMAT(create_time,'%Y-%m-%d') >= #{startDate}
+			</if>
+			<if test="null != endDate and endDate != '' ">
+			   <![CDATA[AND DATE_FORMAT(create_time,'%Y-%m-%d') <= #{endDate}]]>
+			</if>
+		</where>
+	
+	</select>
+	
 	
 	
 	<insert id="insert" parameterType="com.khy.entity.User">

@@ -23,19 +23,19 @@
 						<span> 菜单管理</span> <i class="fa fa-angle-left pull-right"></i>
 				</a>
 				<ul class="treeview-menu">
-					<li><a href="${pageContext.request.contextPath }/user/toUserList?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i> 用户管理</a></li>
+					<li><a href="${pageContext.request.contextPath }/user/toUserList?pageSize=10&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i> 用户管理</a></li>
 				</ul>
 				<ul class="treeview-menu">
-					<li><a href="${pageContext.request.contextPath }/product/toProductList?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i> 商品管理</a></li>
+					<li><a href="${pageContext.request.contextPath }/product/toProductList?pageSize=10&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i> 商品管理</a></li>
 				</ul>
 				<ul class="treeview-menu">
-					<li><a href="${pageContext.request.contextPath }/user/toUserCash?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>用户提现</a></li>
+					<li><a href="${pageContext.request.contextPath }/user/toUserCash?pageSize=10&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>用户提现</a></li>
 				</ul>
 				<ul class="treeview-menu">
-					<li><a href="${pageContext.request.contextPath }/online/toOnline?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>在线参数管理</a></li>
+					<li><a href="${pageContext.request.contextPath }/online/toOnline?pageSize=10&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>在线参数管理</a></li>
 				</ul>
 				<ul class="treeview-menu">
-					<li><a href="${pageContext.request.contextPath }/message/toMessageList?pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>公告管理</a></li>
+					<li><a href="${pageContext.request.contextPath }/message/toMessageList?pageSize=10&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>公告管理</a></li>
 				</ul>
 			</li>
 		</ul>
