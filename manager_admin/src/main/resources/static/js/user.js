@@ -318,7 +318,7 @@ function userRecord(uid,type){
 				htmlStr += '<td width="5%">'+item.createTime+'</td>';
 				htmlStr += "</tr>";
 			});
-			htmlStr += '<tr> <td align="center" valign="middle" colspan="2">总金额</td> <td align="left" valign="middle" colspan="2">'+total+':元</td> </tr>'
+			htmlStr += '<tr> <td align="left" valign="middle" colspan="2">总金额</td> <td align="left" valign="middle" colspan="2">'+total+'元</td> </tr>'
 			$("#zzjl_tbody").html(htmlStr);
 			$('#zzjl_Modal').modal('toggle');
 		}
@@ -351,7 +351,7 @@ function userCash(uid){
 				htmlStr += '<td width="3%">'+status+'</td>';
 				htmlStr += "</tr>";
 			});
-			htmlStr += '<tr> <td align="center" valign="middle">总金额</td> <td align="left" valign="middle" colspan="2">'+total+':元</td> </tr>'
+			htmlStr += '<tr> <td align="left" valign="middle">总金额</td> <td align="left" valign="middle" colspan="2">'+total+'元</td> </tr>'
 			$("#txjl_tbody").html(htmlStr);
 		}
 	})
@@ -420,7 +420,7 @@ function userBill(uid){
 				htmlStr += '<td width="3%">'+item.description+'</td>';
 				htmlStr += "</tr>";
 			});
-			htmlStr += '<tr> <td align="center" valign="middle">总金额</td> <td align="left" valign="middle" colspan="2">'+total+':元</td> </tr>'
+			htmlStr += '<tr> <td align="left" valign="middle">总金额</td> <td align="left" valign="middle" colspan="2">'+total+'元</td> </tr>'
 			$("#zd_tbody").html(htmlStr);
 		}
 	})
@@ -454,7 +454,7 @@ function userPhoneRecord(uid){
 				htmlStr += '<td width="3%">'+item.status+'</td>';
 				htmlStr += "</tr>";
 			});
-			htmlStr += '<tr> <td align="center" valign="middle">总金额</td> <td align="left" valign="middle" colspan="2">'+total+':元</td> </tr>'
+			htmlStr += '<tr> <td align="left" valign="middle">总金额</td> <td align="left" valign="middle" colspan="2">'+total+'元</td> </tr>'
 			$("#hf_tbody").html(htmlStr);
 		}
 	})
@@ -486,16 +486,16 @@ function userOrder(uid){
 				htmlStr += '<td width="4%">状态:'+item.statusStr+'</td>';
 				htmlStr += "</tr>";
 				var num=0;
-				var discount = (item.discount!= null&&item.discount!=0)?item.discount:"暂无";
+				var discount = (item.discount!= null&&item.discount!=0)?(item.discount)*100:"暂无";
 				$.each(item.products, function (index, product) {
 					htmlStr += "<tr>";
 					htmlStr += '<td width="5%"><img src="'+product.img+'" height="60px" width="60px"></td>';
 					htmlStr += '<td width="5%">'+product.productName+'</td>';
-					htmlStr += '<td width="4%">￥ '+product.productPrice+' X '+product.amount+'<br/>总价格:'+product.total+'(元)</td>';
+					htmlStr += '<td width="4%">￥'+product.productPrice+'&nbsp;&nbsp;X&nbsp;&nbsp;'+product.amount+'<br/>总价格:&nbsp;&nbsp;'+product.total+'(元)</td>';
 					htmlStr += "</tr>";
 					num++;
 				});
-				htmlStr += '<tr><td align="left" valign="middle" colspan="3">共计'+num+'件商品    合计:￥'+item.totalMoney+'<br/>折扣:'+discount+'  折后价:￥'+item.discountMoney+'运费:￥'+item.postage+'</tr>'
+				htmlStr += '<tr><td align="left" valign="middle" colspan="3">共计&nbsp;&nbsp;'+num+'&nbsp;&nbsp;件商品合计:&nbsp;&nbsp;￥'+item.totalMoney+'<br/>享受&nbsp;&nbsp;'+discount+'&nbsp;&nbsp;折扣;&nbsp;&nbsp;&nbsp;&nbsp;折后价:&nbsp;&nbsp;￥'+item.discountMoney+'&nbsp;&nbsp;&nbsp;&nbsp;运费:&nbsp;&nbsp;￥'+item.postage+'</td></tr>'
 			});
 			$("#dd_tbody").html(htmlStr);
 		}
