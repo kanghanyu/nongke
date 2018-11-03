@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.khy.entity.OrderInfo;
@@ -50,5 +51,13 @@ public class OrderServiceImpl implements OrderService {
 		}
 		PageInfo <UserOrderInfoDTO>pageInfo = new PageInfo<UserOrderInfoDTO>(ret);
 		return pageInfo;
+	}
+
+	@Override
+	public JSONObject countOrderMoney(UserCommonDTO dto) {
+		if(null == dto){
+			return null;
+		}
+		return orderInfoMapper.countOrderMoney(dto);
 	}
 }

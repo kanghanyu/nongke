@@ -21,6 +21,9 @@ public class UserOrderInfoDTO implements Serializable{
 	/**折扣前的商品总金额*/
 	private BigDecimal totalMoney;
 	
+	/**应付款  商品的折扣前总金额+邮费*/
+	private BigDecimal totalPayable;
+	
 	/**折扣*/
 	private Float discount;
 	
@@ -80,6 +83,13 @@ public class UserOrderInfoDTO implements Serializable{
 
 	public Integer getPayStatus() {
 		return payStatus;
+	}
+	public BigDecimal getTotalPayable() {
+		return totalPayable;
+	}
+
+	public void setTotalPayable(BigDecimal totalPayable) {
+		this.totalPayable = totalPayable;
 	}
 
 	public String getStatusStr() {
@@ -220,6 +230,9 @@ public class UserOrderInfoDTO implements Serializable{
 
 	public void setTotalMoney(BigDecimal totalMoney) {
 		this.totalMoney = totalMoney;
+		if(null != totalMoney && null != postage){
+			this.totalPayable = totalMoney.add(postage);
+		}
 	}
 
 	public void setDiscount(Float discount) {
@@ -256,6 +269,9 @@ public class UserOrderInfoDTO implements Serializable{
 
 	public void setPostage(BigDecimal postage) {
 		this.postage = postage;
+		if(null != totalMoney && null != postage){
+			this.totalPayable = totalMoney.add(postage);
+		}
 	}
 
 	public void setUserName(String userName) {

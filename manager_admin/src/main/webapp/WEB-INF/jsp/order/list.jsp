@@ -37,8 +37,7 @@
 										<option value="">-请选择-</option>
 										<option value="1">未付款</option>
 										<option value="2">已付款</option>
-										<option value="3">已完成</option>
-										<option value="4">已取消</option>
+										<option value="3">已取消</option>
 									</select>
 									<button type="button" name="search" onclick="search()" class="btn btn-primary">查询</button>
 							</div>
@@ -48,18 +47,19 @@
 							<input type="hidden" id="pageNum" value="${page.pageNum}">
 							<input type="hidden" id="pageSize" value="${page.pageSize}">
 							<input type="hidden" id="pages" value="${page.pages}">
-							<table id="table1" class="table table-bordered  table-striped table-hover" style="min-width:3500px;">
+							<table id="table1" class="table table-bordered  table-striped table-hover" style="min-width:4000px;">
 								<thead>
-									<tr>
+									<tr >
 										<th>订单号</th>
 										<th>订单状态</th>
 										<th>创建时间</th>
 										<th>账户名</th>
 										<th>商品总金额</th>
-										<th>折扣</th>
-										<th>商品折扣价</th>
 										<th>邮费</th>
 										<th>订单应付金额</th>
+										<th>折扣</th>
+										<th>商品折扣价</th>
+										<th>订单实付金额</th>
 										<th>付款方式</th>
 										<th>RMB金额</th>
 										<th>余额抵扣</th>
@@ -78,82 +78,53 @@
 								<tbody id="tbody">
 									<c:forEach var="order" items="${page.list}" >
 										<tr>
-											<td width="2%" align="center" valign="middle" rowspan="${fn:length(order.products)}">${order.orderId}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.statusStr}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}"><fmt:formatDate value="${order.createTime}" pattern="yyyy-MM-dd　HH：mm"/></td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.amountPhone}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.totalMoney}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.discount==null?"暂无":order.discount}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.discountMoney!=null?order.discountMoney:order.totalMoney}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.postage}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.totalPay}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.status==1?"点卡":(order.status==3?"支付宝":"微信")}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.rmb!=null?order.rmb:0}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.cornMoney!=null?order.cornMoney:0}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}"><fmt:formatDate value="${order.payTime}" pattern="yyyy-MM-dd　HH：mm"/></td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.userName}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.phone}</td>
-											<td width="2%" rowspan="${fn:length(order.products)}">${order.address}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.orderId}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.statusStr}</td>
+											<td width="2%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}"><fmt:formatDate value="${order.createTime}" pattern="yyyy-MM-dd HH:mm:ss"/></td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.amountPhone}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.totalMoney}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.postage}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.totalPayable}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.discount==null?"暂无":order.discount}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.discountMoney!=null?order.discountMoney:order.totalMoney}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.totalPay}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.payType==1?"点卡":(order.payType==3?"支付宝":"微信")}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.rmb!=null?order.rmb:0}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.cornMoney!=null?order.cornMoney:0}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}"><fmt:formatDate value="${order.payTime}" pattern="yyyy-MM-dd HH:mm:ss"/></td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.userName}</td>
+											<td width="1%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.phone}</td>
+											<td width="3%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">${order.address}</td>
 											<c:forEach var="product" items="${order.products}" varStatus="p">
 												<c:choose>
 													<c:when test="${p.index ==0 }">
-														 <c:if test="${fn:length(product.productName)>12 }">
-															<td width="4%" >${fn:substring(product.productName, 0, 12)}...</td>
-										                   </c:if>
-										                 <c:if test="${fn:length(product.productName)<=12 }">
-															<td width="4%" >${product.productName}</td>
-										                 </c:if>
-															<td width="4%" ><img src="${product.img}" height="30px" width="30px"></td>
-															<td width="4%" >${product.productPrice}</td>
-															<td width="4%" >${product.amount}</td>
-															<td width="4%" >${product.total}</td>
+															<td style="vertical-align: middle;" width="3%" >${product.productName}</td>
+															<td style="vertical-align: middle;" width="1%" ><img src="${product.img}" height="40px" width="40px"></td>
+															<td style="vertical-align: middle;" width="1%" >${product.productPrice}</td>
+															<td style="vertical-align: middle;" width="1%" >${product.amount}</td>
+															<td style="vertical-align: middle;" width="1%" >${product.total}</td>
+														<td width="3%" style="vertical-align: middle;" rowspan="${fn:length(order.products)}">测试列</td>
 													</c:when>
 													<c:otherwise>
 														<tr>
-															 <c:if test="${fn:length(product.productName)>12 }">
-																<td width="4%" >${fn:substring(product.productName, 0, 12)}...</td>
-											                   </c:if>
-											                 <c:if test="${fn:length(product.productName)<=12 }">
-																<td width="4%" >${product.productName}</td>
-											                 </c:if>
-																<td width="4%" ><img src="${product.img}" height="30px" width="30px"></td>
-																<td width="4%" >${product.productPrice}</td>
-																<td width="4%" >${product.amount}</td>
-																<td width="4%" >${product.total}</td>
+															<td style="vertical-align: middle;" width="3%" >${product.productName}</td>
+															<td style="vertical-align: middle;" width="1%" ><img src="${product.img}" height="40px" width="40px"></td>
+															<td style="vertical-align: middle;" width="1%" >${product.productPrice}</td>
+															<td style="vertical-align: middle;" width="1%" >${product.amount}</td>
+															<td style="vertical-align: middle;" width="1%" >${product.total}</td>
 														</tr>
 													</c:otherwise>
 												</c:choose>
 											</c:forEach>
-											
-											<td width="20%">
-												<button class="btn btn-primary btn-sm"
-													onclick="detailUserInfo('${user.uid }')">详情</button>
-											<c:choose>
-												<c:when test="${user.status == 0}">
-													<button class="btn btn-danger btn-sm" 
-														onclick="setUserStatus('${user.uid }','1')">冻结</button>
-												</c:when>
-												<c:otherwise>
-													<button class="btn btn-warning btn-sm" 
-														onclick="setUserStatus('${user.uid }','4')">解冻</button>
-												</c:otherwise>
-											</c:choose>
-												<button class="btn btn-info btn-sm"
-													onclick="setUserStatus('${user.uid }','2')">升为管理员</button>
-												<button class="btn btn-warning btn-sm"
-													onclick="setUserStatus('${user.uid }','3')">手动添加vip</button>
-											</td>
 										</tr>
 									</c:forEach>
 								</tbody>
 										<tr>
-											<td colspan="2">统计</td>
+											<td colspan="6">统计</td>
 											<td id="countTotalMoney">${count.totalMoney}(元)</td>
-											<td id="countTotalCardMoney">${count.totalCardMoney}(元)</td>
-											<td id="countTotalCommission">${count.totalCommission}(元)</td>
 											<td ></td>
-											<td colspan="2"></td>
-											<td id="countUserAmount">${count.vipNum}人/${count.amount}人</td>
+											<td ></td>
+											<td id="countTotalPay">${count.totalPay}(元)</td>
 										</tr>
 							</table>
 							<tr><div id="page"></div> </tr>

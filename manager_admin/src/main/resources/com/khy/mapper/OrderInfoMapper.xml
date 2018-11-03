@@ -62,18 +62,49 @@
 			AND toi.status = 1 AND toi.pay_status =1
 		</if>	
 		<if test="status == 2">
-			AND toi.status = 1 AND toi.pay_status =2
+			 AND toi.pay_status in (2,4)
 		</if>	
 		<if test="status == 3">
-			AND toi.status = 2 AND toi.pay_status in (2,4)
-		</if>	
-		<if test="status == 4">
 			AND toi.status = 2 AND toi.pay_status = 3
 		</if>	
 	</if>
 	ORDER BY toi.create_time DESC
   </select>
-  	
+  
+  <select id="countOrderMoney" parameterType="com.khy.mapper.dto.UserCommonDTO" resultType="com.alibaba.fastjson.JSONObject">
+  	SELECT
+		SUM(toi.total_money) + SUM(toi.postage) totalMoney,
+		SUM(toi.total_pay) totalPay
+	FROM
+		t_order_info toi,
+		t_user tu
+	WHERE
+		toi.uid = tu.uid
+	AND toi.order_type = 4
+  <if test="null != orderId and orderId != '' ">
+	AND toi.order_id = #{orderId}
+	</if>
+	<if test="null != phone and phone != '' ">
+	AND tu.phone = #{phone}
+	</if>
+	<if test="null != startDate and startDate != '' ">
+		AND DATE_FORMAT(toi.create_time,'%Y-%m-%d') >= #{startDate}
+	</if>
+	<if test="null != endDate and endDate != '' ">
+	   <![CDATA[AND DATE_FORMAT(toi.create_time,'%Y-%m-%d') <= #{endDate}]]>
+	</if>
+	<if test="null != status">
+		<if test="status == 1">
+			AND toi.status = 1 AND toi.pay_status =1
+		</if>	
+		<if test="status == 2">
+			 AND toi.pay_status in (2,4)
+		</if>	
+		<if test="status == 3">
+			AND toi.status = 2 AND toi.pay_status = 3
+		</if>	
+	</if>
+  </select>
   
   
 </mapper> 

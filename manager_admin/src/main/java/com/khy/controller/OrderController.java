@@ -25,15 +25,21 @@ public class OrderController {
 	public ModelAndView toOnline(UserCommonDTO dto){
 		ModelAndView model = new ModelAndView("order/list");
 		PageInfo<UserOrderInfoDTO> page =  orderService.page(dto);
+		JSONObject json = orderService.countOrderMoney(dto);
 		model.addObject("page", page);
+		model.addObject("count", json);
 		return model;
 	}
 	
 	@RequestMapping("/dataList")
 	@ResponseBody
 	public String dateList(@RequestBody UserCommonDTO dto){
+		JSONObject ret = new JSONObject();
 		PageInfo<UserOrderInfoDTO> page =  orderService.page(dto);
-		return JSON.toJSONString(page);
+		JSONObject json = orderService.countOrderMoney(dto);
+		ret.put("page", page);
+		ret.put("count", json);
+		return ret.toString();
 	}
 	
 }
