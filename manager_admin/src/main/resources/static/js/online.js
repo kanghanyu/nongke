@@ -38,8 +38,8 @@ $(function(){
     					 htmlStr += "<tr>";
     					 htmlStr += '<td width="3%">'+item.id+'</td>';
     					 htmlStr += '<td width="9%">'+item.title+'</td>';
-    					 htmlStr += '<td width="10%">'+item.description+'</td>';
-    				     htmlStr += '<td width="40%">'+content+'</td>';
+    					 htmlStr += '<td width="20%">'+item.description+'</td>';
+    				     htmlStr += '<td width="20%">'+content+'</td>';
     				     htmlStr += '<td width="7%">'+item.createTimeStr+'</td>';
     					 htmlStr += '<td width="30%">';
     					 htmlStr += '<button class="btn btn-primary btn-sm" onclick="detail(\''+item.title+'\')"> <i class="glyphicon glyphicon-edit">详情</i></button> '
@@ -83,8 +83,8 @@ function search(){
 					 htmlStr += "<tr>";
 					 htmlStr += '<td width="3%">'+item.id+'</td>';
 					 htmlStr += '<td width="9%">'+item.title+'</td>';
-					 htmlStr += '<td width="10%">'+item.description+'</td>';
-				     htmlStr += '<td width="40%">'+content+'</td>';
+					 htmlStr += '<td width="20%">'+item.description+'</td>';
+				     htmlStr += '<td width="20%">'+content+'</td>';
 				     htmlStr += '<td width="7%">'+item.createTimeStr+'</td>';
 					 htmlStr += '<td width="30%">';
 						 htmlStr += '<button class="btn btn-primary btn-sm" onclick="detail(\''+item.title+'\')"> <i class="glyphicon glyphicon-edit">详情</i></button> '

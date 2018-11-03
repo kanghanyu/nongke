@@ -57,8 +57,8 @@
 										<tr>
 											<td width="3%">${entity.id}</td>
 											<td width="9%">${entity.title}</td>
-											<td width="10%">${entity.description}</td>
-											<td width="40%">
+											<td width="20%">${entity.description}</td>
+											<td width="20%">
 												<c:if test="${fn:length(entity.content)>50 }">                         
 													${fn:substring(entity.content, 0, 50)}...                   
 												</c:if>                  
