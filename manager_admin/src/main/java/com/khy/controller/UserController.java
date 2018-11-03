@@ -309,7 +309,4 @@ public class UserController {
 		JSONObject json = uesrService.auditUserCash(dto);
 		return json.toJSONString();
 	}
-	
-	
-
 }

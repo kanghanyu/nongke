@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 public class OrderInfo extends BaseEntity implements Serializable {
+	private String amountPhone;
+	
 	private Long id;
 
 	private String orderId;
@@ -66,6 +68,14 @@ public class OrderInfo extends BaseEntity implements Serializable {
 
 	public Long getId() {
 		return id;
+	}
+
+	public String getAmountPhone() {
+		return amountPhone;
+	}
+
+	public void setAmountPhone(String amountPhone) {
+		this.amountPhone = amountPhone;
 	}
 
 	public BigDecimal getTotalCost() {

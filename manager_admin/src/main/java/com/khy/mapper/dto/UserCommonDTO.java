@@ -12,6 +12,14 @@ public class UserCommonDTO extends BaseEntity implements Serializable{
 	private String phone;
 	private Integer status;
 	private Integer type;
+	private String orderId;
+	
+	public String getOrderId() {
+		return orderId;
+	}
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
 	public String getUid() {
 		return uid;
 	}

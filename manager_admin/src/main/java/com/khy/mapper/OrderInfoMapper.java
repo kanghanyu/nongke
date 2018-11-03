@@ -3,34 +3,13 @@ package com.khy.mapper;
 import java.util.List;
 
 import com.khy.entity.OrderInfo;
+import com.khy.mapper.dto.UserCommonDTO;
+import com.khy.mapper.dto.UserOrderInfoDTO;
 
 public interface OrderInfoMapper {
-	int insert(OrderInfo info);
-	
-	OrderInfo getPayOrder(OrderInfo info);
-	
-	int update(OrderInfo info);
-
-	List<String> getNotPayOrder();
-
 	List<OrderInfo> getUserBill(String uid);
 
 	List<OrderInfo> listOrderInfo(OrderInfo info);
 
-	List<OrderInfo> getNotConfirmOrder();
-
-	List<OrderInfo> listNotBillOrder();
-
-	List<String> noRechargeOrder();
-
-	OrderInfo getNotPayOrderById(String orderId);
-
-	OrderInfo noRechargeOrderById(String orderId);
-
-	List<String> notCommissionOrder();
-
-	OrderInfo notCommissionOrderById(String orderId);
-
-	OrderInfo notSaveBillOrder(OrderInfo orderInfo);
-
+	List<OrderInfo> list(UserCommonDTO dto);
 }

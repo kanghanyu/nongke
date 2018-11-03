@@ -8,7 +8,7 @@ import java.util.List;
 public class UserOrderInfoDTO implements Serializable{
 
 	private static final long serialVersionUID = -3452886345205097080L;
-
+	private String amountPhone;
 	/**订单id*/
 	private String orderId;
 
@@ -86,6 +86,14 @@ public class UserOrderInfoDTO implements Serializable{
 		return statusStr;
 	}
 
+	public String getAmountPhone() {
+		return amountPhone;
+	}
+
+	public void setAmountPhone(String amountPhone) {
+		this.amountPhone = amountPhone;
+	}
+
 	public void setStatus(Integer status) {
 		this.status = status;
 		if(null != status && null != payStatus){
@@ -99,7 +107,7 @@ public class UserOrderInfoDTO implements Serializable{
 			ret="未付款";
 		}else if(status == 1 && payStatus == 2){
 			ret="已付款";
-		}else if(status == 2 && payStatus == 4){
+		}else if(status == 2 && (payStatus == 2 || payStatus == 4)){
 			ret="已完成";
 		}else if(status == 2 && payStatus == 3){
 			ret="已取消";

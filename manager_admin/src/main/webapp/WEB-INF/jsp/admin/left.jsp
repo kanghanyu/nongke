@@ -29,6 +29,9 @@
 					<li><a href="${pageContext.request.contextPath }/product/toProductList?pageSize=10&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i> 商品管理</a></li>
 				</ul>
 				<ul class="treeview-menu">
+					<li><a href="${pageContext.request.contextPath }/order/toOrderList?pageSize=3&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>订单管理</a></li>
+				</ul>
+				<ul class="treeview-menu">
 					<li><a href="${pageContext.request.contextPath }/user/toUserCash?pageSize=10&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>用户提现</a></li>
 				</ul>
 				<ul class="treeview-menu">
