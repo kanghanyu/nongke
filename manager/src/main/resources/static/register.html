@@ -136,8 +136,9 @@
 					dataType : "json",
 					contentType : 'application/json',
 					success : function(data) {
-						if(null != data && data.code == 10000){
-							alert("注册成功去官网下载app体验");
+						if(null != data && data.retCode == 10000){
+							var url =data.extra.url;
+							window.location.href = url;
 						}else{
 							alert(data.retDesc);
 						}

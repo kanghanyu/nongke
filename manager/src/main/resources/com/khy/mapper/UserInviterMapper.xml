@@ -32,7 +32,7 @@
   	SELECT
 		tui.uid,
 		tui.invited_uid,
-		tui.create_time,
+		tu.create_time,
 		tu.phone,
 		tu.commission,
 		tu.img,

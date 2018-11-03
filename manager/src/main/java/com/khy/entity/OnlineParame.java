@@ -11,33 +11,36 @@ public class OnlineParame implements Serializable {
     private String title;
 
     private String content;
+    
+    private String description;
 
     private Date createTime;
     
-    private String createTimeStr;
     
     private static final long serialVersionUID = 1L;
 
     public Long getId() {
         return id;
     }
+    public String getDescription() {
+		return description;
+	}
 
-    public void setId(Long id) {
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	public void setId(Long id) {
         this.id = id;
     }
-
 
     public Date getCreateTime() {
         return createTime;
     }
-
-    public String getCreateTimeStr() {
-		return createTimeStr;
-	}
-
-	public void setCreateTimeStr(String createTimeStr) {
-		this.createTimeStr = createTimeStr;
-	}
 
     public String getTitle() {
 		return title;

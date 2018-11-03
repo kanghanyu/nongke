@@ -3,7 +3,7 @@
 <mapper namespace="com.khy.mapper.OnlineParameMapper">
 
   <sql id="Base_Column_List">
-    id, title, content ,create_time
+    id, title, content ,create_time,description
   </sql>
   
   <select id="list" resultType="com.khy.entity.OnlineParame">

@@ -26,6 +26,12 @@ public class PreOrderResultDTO implements Serializable {
 
 	@ApiModelProperty(value="总金额没有折扣的")
 	private BigDecimal totalMoney;
+	
+	@ApiModelProperty(value="微信/支付宝支付含有邮费总付金额")
+	private BigDecimal totalPay;
+	
+	@ApiModelProperty(value="点卡支付含有邮费总付金额")
+	private BigDecimal totalCardPay;
 
 	@ApiModelProperty(value="折扣88折--> 0.88")
 	private Float discount;
@@ -58,6 +64,18 @@ public class PreOrderResultDTO implements Serializable {
 	}
 	public BigDecimal getTotalCardMoney() {
 		return totalCardMoney;
+	}
+	public BigDecimal getTotalPay() {
+		return totalPay;
+	}
+	public BigDecimal getTotalCardPay() {
+		return totalCardPay;
+	}
+	public void setTotalPay(BigDecimal totalPay) {
+		this.totalPay = totalPay;
+	}
+	public void setTotalCardPay(BigDecimal totalCardPay) {
+		this.totalCardPay = totalCardPay;
 	}
 	public Integer getOrderType() {
 		return orderType;

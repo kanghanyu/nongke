@@ -63,6 +63,12 @@ public class User extends BaseEntity implements Serializable{
 	@ApiModelProperty(value="登录返回的token值")
 	private String token;
 	
+	public User() {
+	}
+	public User(String uid, String phone) {
+		this.uid = uid;
+		this.phone = phone;
+	}
 	public String getToken() {
 		return token;
 	}

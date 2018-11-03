@@ -3,10 +3,10 @@ package com.khy.service.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -264,6 +264,12 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		int flag = userMapper.insert(user);
 		if(flag >= 1){
 			cacheService.delKey(key);
+			Map<String, String> online = getOnline();
+			if(null != online){
+				Map<String, Object> extra = new HashMap<String, Object>();
+				extra.put("url", online.get(Constants.REGISTER_REDIRECT_URL));
+				jsonResponse.setExtra(extra );
+			}
 			jsonResponse.success(true);
 		}
 		logger.info("注册接口响应的参数内容"+JSON.toJSONString(jsonResponse));
@@ -779,7 +785,6 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		List<OrderInfo> list = orderInfoMapper.getUserBill(uid);
 		List<UserBillDTO>ret = new ArrayList<>();
 		if(CollectionUtils.isNotEmpty(list)){
-			ret = new ArrayList<>();
 			for (OrderInfo info : list) {
 				UserBillDTO dto = new UserBillDTO();
 				Integer orderType = info.getOrderType();
@@ -810,7 +815,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			jsonResponse.setRetDesc("请重新登录");
 			return jsonResponse;
 		}
-		//账单从订单过来---> vip订单/点卡购买订单
+		//账单从订单过来---> 商品订单来
 		String uid = user.getUid();
 		OrderInfo info = new OrderInfo();
 		info.setUid(uid);

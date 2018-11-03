@@ -140,6 +140,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				ret.setDiscountMoney(b1.multiply(new BigDecimal(discountRet)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP));//获取两位以内容的
 			}
 			BigDecimal totalCardMoney ;
+			BigDecimal totalPay ;
 			String cartDiscount = online.get(Constants.CARD_DISCOUNT);
 			if(StringUtils.isBlank(cartDiscount)){
 				jsonResponse.setRetDesc("点卡折扣异常请您联系管理员稍后再试");
@@ -152,12 +153,15 @@ public class PayServiceImpl extends BaseService implements PayService {
 			}
 			ret.setPostage(new BigDecimal(postage));
 			if(null != ret.getDiscountMoney()){
+				totalPay = ret.getDiscountMoney();
 				totalCardMoney = ret.getDiscountMoney().multiply(new BigDecimal(cartDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
 			}else{
 				totalCardMoney =ret.getTotalMoney().multiply(new BigDecimal(cartDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
+				totalPay = ret.getTotalMoney();
 			}
 			ret.setTotalCardMoney(totalCardMoney);
-			
+			ret.setTotalCardPay(totalCardMoney.add(ret.getPostage()));
+			ret.setTotalPay(totalPay.add(ret.getPostage()));
 			Calendar calendar = Calendar.getInstance();
 			Date now = calendar.getTime();
 			calendar.add(Calendar.MINUTE, 30);
@@ -550,7 +554,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				return json;
 			}
 			info.setProductDetail("点卡购买");
-			info.setProductDetail("用户购买"+totalPay+":元的点卡");
+			info.setDescription("用户购买"+totalPay+":元的点卡");
 		}else if(orderType == Constants.PAY_PHONE){//话费充值
 			if(payType != Constants.ALIPAY && payType != Constants.WEIXIN_PAY ){
 				json.put("msg","话充值只能支付宝/微信支付");
@@ -739,7 +743,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				updateOrder.setTradeNo(trade_no);
 				orderInfoMapper.update(updateOrder);
 				
-				//更新用户的余额内容
+				//更新用户的点卡内容
 				BigDecimal totalMoney = orderInfo.getTotalMoney();
 				User user = userMapper.getUserByUid(uid);
 				BigDecimal cardMoney = user.getCardMoney();
