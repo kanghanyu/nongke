@@ -28,7 +28,7 @@
 					<div class="box">
 						<div class="box-body">
 							<div class="row">
-									title名称: <input placeholder="key名称" type="text" maxlength="50"  id="title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									title名称: <input type="text" maxlength="50"  id="title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 									状态:
 									<button type="button" name="search" onclick="search()" class="btn btn-primary">查询</button>
 									<button type="button" id="add" onclick="add()"

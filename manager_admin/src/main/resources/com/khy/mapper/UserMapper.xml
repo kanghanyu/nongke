@@ -34,10 +34,10 @@
 			t_user
 		<where>
 			<if test="null != phone and phone != '' ">
-				phone = #{phone}
+				AND phone like concat('%',#{phone},'%')
 			</if>
 			<if test="null != inviterPhone and inviterPhone != '' ">
-				AND inviter_phone = #{inviterPhone}
+				AND inviter_phone like concat('%',#{inviterPhone},'%')
 			</if>
 			<if test="null != isManager">
 				AND is_manager = #{isManager}
@@ -56,19 +56,19 @@
 	
 	<select id="getUserCount" parameterType="com.khy.entity.User" resultType="com.khy.mapper.dto.UserCountDTO">
 	SELECT
-		SUM(money)  totalMoney,
-		SUM(card_money)  totalCardMoney,
-		SUM(commission)  totalCommission,
+		IFNULL(SUM(money),0)  totalMoney,
+		IFNULL(SUM(card_money),0)  totalCardMoney,
+		IFNULL(SUM(commission),0)  totalCommission,
 		COUNT(*) amount ,
 		COUNT(CASE WHEN is_vip = 1 THEN 1 ELSE NULL END) vipNum
 	FROM
 		t_user
 		<where>
 			<if test="null != phone and phone != '' ">
-				phone = #{phone}
+				AND phone like concat('%',#{phone},'%')
 			</if>
 			<if test="null != inviterPhone and inviterPhone != '' ">
-				AND inviter_phone = #{inviterPhone}
+				AND inviter_phone like concat('%',#{inviterPhone},'%')
 			</if>
 			<if test="null != isManager">
 				AND is_manager = #{isManager}

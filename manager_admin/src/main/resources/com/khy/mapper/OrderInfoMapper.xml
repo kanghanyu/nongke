@@ -73,8 +73,8 @@
   
   <select id="countOrderMoney" parameterType="com.khy.mapper.dto.UserCommonDTO" resultType="com.alibaba.fastjson.JSONObject">
   	SELECT
-		SUM(toi.total_money) + SUM(toi.postage) totalMoney,
-		SUM(toi.total_pay) totalPay
+		IFNULL(SUM(toi.total_money), 0) + IFNULL(SUM(toi.postage), 0) totalMoney,
+		IFNULL(SUM(toi.total_pay), 0) totalPay
 	FROM
 		t_order_info toi,
 		t_user tu
