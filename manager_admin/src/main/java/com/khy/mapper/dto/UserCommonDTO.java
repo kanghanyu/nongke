@@ -12,6 +12,7 @@ public class UserCommonDTO extends BaseEntity implements Serializable{
 	private String phone;
 	private Integer status;
 	private Integer type;
+	private Integer billType;
 	private String orderId;
 	
 	public String getOrderId() {
@@ -27,6 +28,12 @@ public class UserCommonDTO extends BaseEntity implements Serializable{
 		return phone;
 	}
 	
+	public Integer getBillType() {
+		return billType;
+	}
+	public void setBillType(Integer billType) {
+		this.billType = billType;
+	}
 	public Integer getType() {
 		return type;
 	}

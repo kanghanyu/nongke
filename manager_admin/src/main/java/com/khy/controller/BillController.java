@@ -1,5 +1,7 @@
 package com.khy.controller;
 
+import java.math.BigDecimal;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,56 +13,36 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.khy.entity.OnlineParame;
-import com.khy.service.OnlineParameService;
+import com.khy.entity.UserBill;
+import com.khy.mapper.dto.UserCommonDTO;
+import com.khy.service.BillService;
 
 @Controller
 @RequestMapping("/bill")
 public class BillController {
 	
 	@Autowired
-	private OnlineParameService onlineParameService;
-	@RequestMapping("/toOnline")
-	public ModelAndView toOnline(OnlineParame onlineParame){
-		ModelAndView model = new ModelAndView("online/list");
-		PageInfo<OnlineParame> page =  onlineParameService.page(onlineParame);
+	private BillService billService;
+	@RequestMapping("/toBill")
+	public ModelAndView toBill(UserCommonDTO dto){
+		ModelAndView model = new ModelAndView("bill/list");
+		PageInfo<UserBill> page =  billService.page(dto);
+		BigDecimal amount = billService.sumAmount(dto);
 		model.addObject("page", page);
+		model.addObject("amount", amount);
 		return model;
 	}
 	
 	@RequestMapping("/dataList")
 	@ResponseBody
-	public String dateList(@RequestBody OnlineParame onlineParame){
-		PageInfo<OnlineParame> page =  onlineParameService.page(onlineParame);
-		return JSON.toJSONString(page);
-	}
-	@RequestMapping("/findByKey")
-	@ResponseBody
-	public String findByKey(@RequestBody OnlineParame onlineParame){
-		JSONObject json =  onlineParameService.findByKey(onlineParame);
+	public String dateList(@RequestBody UserCommonDTO dto){
+		PageInfo<UserBill> page =  billService.page(dto);
+		BigDecimal amount = billService.sumAmount(dto);
+		JSONObject json = new JSONObject();
+		json.put("page",page);
+		json.put("amount",amount);
 		return json.toString();
 	}
-	
-	@RequestMapping("/saveOnlineParame")
-	@ResponseBody
-	public String saveOnlineParame(@RequestBody OnlineParame onlineParame){
-		JSONObject json = onlineParameService.saveOnlineParame(onlineParame);
-		return json.toString();
-	}
-	
-	@RequestMapping("/updateOnlineParame")
-	@ResponseBody
-	public String updateOnlineParame(@RequestBody OnlineParame onlineParame){
-		JSONObject json = onlineParameService.updateOnlineParame(onlineParame);
-		return json.toString();
-	}
-	
-	@RequestMapping("/deleteOnlineParame")
-	@ResponseBody
-	public String deleteOnlineParame(@RequestBody OnlineParame onlineParame){
-		JSONObject json = onlineParameService.deleteOnlineParame(onlineParame);
-		return json.toString();
-	}
-	
 	
 }
 

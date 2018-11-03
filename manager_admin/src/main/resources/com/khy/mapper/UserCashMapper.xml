@@ -65,7 +65,7 @@
 	WHERE
 		tuc.uid =tu.uid
 	<if test="null != phone and phone != '' ">
-		AND tu.phone = #{phone}
+		AND tu.phone like concat('%',#{phone},'%')
 	</if>
 	<if test="null != status">
 		AND tuc.status=#{status}

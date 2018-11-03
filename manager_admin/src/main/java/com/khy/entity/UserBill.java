@@ -32,7 +32,17 @@ public class UserBill implements Serializable {
     private String info;
 
     private Date createTime;
-    private static final long serialVersionUID = 1L;
+    
+    private String phone;
+    
+    public String getPhone() {
+		return phone;
+	}
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	private static final long serialVersionUID = 1L;
 
     public Long getId() {
         return id;
