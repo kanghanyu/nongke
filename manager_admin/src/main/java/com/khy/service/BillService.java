@@ -12,4 +12,6 @@ public interface BillService {
 
 	BigDecimal sumAmount(UserCommonDTO dto);
 
+	UserBill getEntityById(UserCommonDTO dto);
+
 }

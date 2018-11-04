@@ -49,7 +49,7 @@
 	AND toi.order_id = #{orderId}
 	</if>
 	<if test="null != phone and phone != '' ">
-	AND tu.phone like concat('%',#{phone},'%')
+	AND tu.phone = #{phone}
 	</if>
 	<if test="null != startDate and startDate != '' ">
 		AND DATE_FORMAT(toi.create_time,'%Y-%m-%d') >= #{startDate}
@@ -85,7 +85,7 @@
 	AND toi.order_id = #{orderId}
 	</if>
 	<if test="null != phone and phone != '' ">
-	AND tu.phone like concat('%',#{phone},'%')
+	AND tu.phone = #{phone}
 	</if>
 	<if test="null != startDate and startDate != '' ">
 		AND DATE_FORMAT(toi.create_time,'%Y-%m-%d') >= #{startDate}

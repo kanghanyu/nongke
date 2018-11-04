@@ -3,6 +3,13 @@ package com.khy.entity;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.khy.mapper.dto.BillInfoDTO;
 
 public class UserBill implements Serializable {
     private Long id;
@@ -35,7 +42,15 @@ public class UserBill implements Serializable {
     
     private String phone;
     
-    public String getPhone() {
+    private List<BillInfoDTO>bills;
+    
+    public List<BillInfoDTO> getBills() {
+		return bills;
+	}
+	public void setBills(List<BillInfoDTO> bills) {
+		this.bills = bills;
+	}
+	public String getPhone() {
 		return phone;
 	}
 	public void setPhone(String phone) {
@@ -127,6 +142,9 @@ public class UserBill implements Serializable {
 
     public void setInfo(String info) {
         this.info = info == null ? null : info.trim();
+        if(StringUtils.isNotBlank(info)){
+        	this.bills = JSONArray.parseArray(info, BillInfoDTO.class);
+        }
     }
 
     @Override

@@ -14,13 +14,11 @@ $(function(){
         $("#page").bootstrapPaginator(options);
 	
 	
+	///table 页面切换的效果
 	$('#myTab a').click(function (e) {
 		  e.preventDefault()
 		  $(this).tab('show')
-		  alert($(this))
-		  alert(11111);
 	})
-
 })
 
 
@@ -154,114 +152,69 @@ function search(){
 
 
 
-/////////////////切换table 页内容
+////////////////切换table 到出账页面
+
+$(function(){
+	var pages = $("#pagesc").val();
+	var pageNum = $("#pageNumc").val();
+	var pageSize = $("#pageSizec").val();
+	var options={
+            bootstrapMajorVersion:1,    //版本
+            currentPage:pageNum,    //当前页数
+            numberOfPages:5,    //最多显示Page页
+            totalPages:pages,    //所有数据可以显示的页数
+            onPageClicked:function(e,originalEvent,type,page){
+            	addHtmlc(page);
+            }
+        }
+        $("#pagec").bootstrapPaginator(options);
+	
+})
 
 
 
-
-
-
-
-
-
-
-
-
-function setUserStatus(uid,type){
-		var msg = "您真的确定要";
-		var s= "";
-		var data ="";
-		if(type == 1){
-			s = "冻结当前用户";
-			data = {
-		    		 "uid":uid,"status":1
-		    	}
-		}else if(type == 2){
-			s = "升为管理员";			
-			data = {
-					"uid":uid,"isManager":1
-			}
-		}else if(type == 3){
-			s = "手动添加vip";			
-			data = {
-					"uid":uid,"isVip":1
-			}
-		}else if(type == 4){
-			s = "解冻当前用户";			
-			data = {
-					"uid":uid,"status":0
-			}
-		}
-		msg = msg+s+"吗？\n\n请确认！";
-		if (confirm(msg) == true) {
-			$.ajax({
-				type : "post",
-				data : JSON.stringify(data),
-				url : "/user/setUserStatus",
-				dataType : "json",
-				contentType : 'application/json',
-				success : function(data) {
-					if(null != data && data.code == 1000){
-						alert(s+data.msg);
-						window.location.href = "/user/toUserList?pageSize=10&pageNum=1";
-					}
-				}
-			});
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-
-function detailUserInfo(uid){
+function addHtmlc(pageNum){
+	var pageSize = $("#pageSizec").val();
+	var startDate = $("#startDatec").val();
+	var endDate = $("#endDatec").val();
+	var phone = $("#phonec").val();
+	var orderId = $("#orderIdc").val();
+	var billType = $("#billTypec").val();
 	var data = {
-			"uid":uid
+			"pageNum":pageNum,"pageSize":pageSize,"startDate":startDate,"endDate":endDate,
+			"phone":phone,"orderId":orderId,"billType":billType,"type":2
 	}
 	$.ajax({
 		type : "post",
 		data : JSON.stringify(data),
-		url : "/user/getUserInfo",
+		url : "/bill/dataList",
 		dataType : "json",
 		contentType : 'application/json',
 		success : function(data) {
-			if(null != data && data.code == 1000){
-				$('#detailModal').modal('toggle');
-				var user = data.user;
-				if(null != user){
-					$("#uidD").val(user.uid);
-					$("#phoneD").val(user.phone);
-					$("#inviterUidD").val(user.inviterUid);
-					$("#inviterPhoneD").val(user.inviterPhone);
-					$("#moneyD").val(user.money);
-					$("#cardMoneyD").val(user.cardMoney);
-					$("#commissionD").val(user.commission);
-					$("#imgUrlD").val(user.imgUrl);
-					if(null != user.isManager){
-						$("#isManagerD").val(user.isManager==0?"普通用户":"管理员");
-					}
-					if(null != user.isVip){
-						$("#isVipD").val(user.isVip==0?"普通用户":"VIP用户");
-					}
-					if(null != user.img){
-						$("#imgD").attr("src",user.img);
-					}
-				}
-				
-				var bank = data.bank;
-				if(null != bank){
-					$("#bankNameD").val(bank.bankName);
-					$("#bankNumD").val(bank.bankNum);
-					$("#userNameD").val(bank.userName);
-					$("#phoneD1").val(bank.phone);
-					$("#bankAdressD").val(bank.bankAdress);
-				}
-				var address = data.address;
-				if(null != address){
-					$("#userNameDD").val(address.userName);
-					$("#phoneDD").val(address.phone);
-					$("#postCodeDD").val(address.postCode);
-					$("#addressDD").val(address.address);
+			if(data != null&& null != data.page){
+				$("#tbodyc").html("");
+				var htmlStr="";
+				$.each(data.page.list, function (index, item) {
+					var billType = item.billType==3?"话费充值":(item.billType==4?"商品进价":"体现账单")
+					var amount =item.amount!=null?item.amount:"0";
+					htmlStr += "<tr>";
+					htmlStr += '<td width="4%">'+item.uid+'</td>';
+					htmlStr += '<td width="5%">'+item.phone+'</td>';
+					htmlStr += '<td width="5%">'+billType+'</td>';
+					htmlStr += '<td width="5%">'+item.orderId+'</td>';
+					htmlStr += '<td width="5%">'+amount+'</td>';
+					htmlStr += '<td width="7%">'+item.description+'</td>';
+					htmlStr += '<td width="8%">'+timeStamp2String(item.createTime)+'</td>';
+					htmlStr += '<td width="20%">';
+					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailBill('+item.id+')">详情</button>'
+					htmlStr += '</td>'
+					htmlStr += '</tr>';
+				});
+				$("#tbodyc").html(htmlStr);
+				if(null != data.amount){
+					$("#totalAmountc").text(data.amount+"(元)");
+				}else{
+					$("#totalAmountc").text("0(元)");
 				}
 			}
 		}
@@ -269,225 +222,117 @@ function detailUserInfo(uid){
 }
 
 
-function userRecord(uid,type){
+function searchc(){
+	var pages = 0;
+	var pageNum = 1
+	var pageSize = $("#pageSizec").val();
+	var startDate = $("#startDatec").val();
+	var endDate = $("#endDatec").val();
+	var phone = $("#phonec").val();
+	var orderId = $("#orderIdc").val();
+	var billType = $("#billTypec").val();
 	var data = {
-			"uid":uid,"type":type
-		}
-	
-	if(type == 2){
-		$(".modal-title-zz-yj").text("转账记录");
-		$(".daoli").text("稻粒");
-	}else{
-		$(".modal-title-zz-yj").text("佣金记录");
-		$(".daoli").text("佣金");
-	}
-	$.ajax({
-		type : "post",
-		data : JSON.stringify(data),
-		url : "/user/listUserRecord",
-		dataType : "json",
-			contentType : 'application/json',
-		success : function(data) {
-			$("#zzjl_tbody").html("");
-			var htmlStr="";
-			var total =0;
-			$.each(data, function (index, item) {
-				var amount = (item.amount!=null&&item.amount!=0)?item.amount:"0.00";
-				total = total+amount;
-				var type = item.payType ==1?"收入":"支出";
-				htmlStr += "<tr>";
-				htmlStr += '<td width="3%">'+type+'</td>';
-				htmlStr += '<td width="10%">'+item.description+'</td>';
-				if(amount>0){
-					htmlStr += '<td width="4%">+'+amount+'</td>';
-				}else{
-					htmlStr += '<td width="4%">'+amount+'</td>';
-				}
-				htmlStr += '<td width="5%">'+item.createTime+'</td>';
-				htmlStr += "</tr>";
-			});
-			htmlStr += '<tr> <td align="left" valign="middle" colspan="2">总金额</td> <td align="left" valign="middle" colspan="2">'+total+'元</td> </tr>'
-			$("#zzjl_tbody").html(htmlStr);
-			$('#zzjl_Modal').modal('toggle');
-		}
-	})
-}
-
-function userCash(uid){
-	var data = {
-			"uid":uid
+			"pageNum":pageNum,"pageSize":pageSize,"startDate":startDate,"endDate":endDate,
+			"phone":phone,"orderId":orderId,"billType":billType,"type":2
 	}
 	
 	$.ajax({
 		type : "post",
 		data : JSON.stringify(data),
-		url : "/user/listUserCash",
+		url : "/bill/dataList",
 		dataType : "json",
 		contentType : 'application/json',
 		success : function(data) {
-			$('#txjl_Modal').modal('toggle');
-			$("#txjl_tbody").html("");
-			var htmlStr="";
-			var total =0;
-			$.each(data, function (index, item) {
-				var amount = (item.amount!=null&&item.amount!=0)?item.amount:"0.00";
-				total = total+amount;
-				var status = item.status == 1?"未审核":"已通过";
-				htmlStr += "<tr>";
-				htmlStr += '<td width="5%">'+item.applyTime+'</td>';
-				htmlStr += '<td width="4%">'+amount+'</td>';
-				htmlStr += '<td width="3%">'+status+'</td>';
-				htmlStr += "</tr>";
-			});
-			htmlStr += '<tr> <td align="left" valign="middle">总金额</td> <td align="left" valign="middle" colspan="2">'+total+'元</td> </tr>'
-			$("#txjl_tbody").html(htmlStr);
-		}
-	})
-}
-
-
-function userInviter(uid,num){
-	var data = {
-			"uid":uid
-	}
-	if(num <4){
-		num = num+1;
-		$.ajax({
-			type : "post",
-			data : JSON.stringify(data),
-			url : "/user/listUserInviter",
-			dataType : "json",
-			contentType : 'application/json',
-			success : function(data) {
-				if(num == 2){
-					$('#txl_Modal').modal('toggle');
-				}
-				$("#txl_tbody").html("");
+			if(data != null && null != data.page){
+				pageNum = data.page.pageNum
+				pages = data.page.pages;
+				$("#tbodyc").html("");
 				var htmlStr="";
-				var total =0;
-				$.each(data, function (index, item) {
-					var commission = (item.commission!=null&&item.commission!=0)?item.commission:"0.00";
-					total = total+1;
+				$.each(data.page.list, function (index, item) {
+					var billType = item.billType==3?"话费充值":(item.billType==4?"商品进价":"体现账单")
+					var amount =item.amount!=null?item.amount:"0";
 					htmlStr += "<tr>";
-					htmlStr += '<td width="5%"><img src="'+item.img+'" height="60px" width="60px" onclick="userInviter('+item.invitedUid+','+num+')" ></td>';
-					htmlStr += '<td width="5%">账号 : '+item.phone+'</br>注册时间: '+item.createTime+'</br>佣金: '+commission+'(元)</td>';
-					htmlStr += '<td width="3%">'+item.isVip+'</td>';
-					htmlStr += "</tr>";
+					htmlStr += '<td width="4%">'+item.uid+'</td>';
+					htmlStr += '<td width="5%">'+item.phone+'</td>';
+					htmlStr += '<td width="5%">'+billType+'</td>';
+					htmlStr += '<td width="5%">'+item.orderId+'</td>';
+					htmlStr += '<td width="5%">'+amount+'</td>';
+					htmlStr += '<td width="7%">'+item.description+'</td>';
+					htmlStr += '<td width="8%">'+timeStamp2String(item.createTime)+'</td>';
+					htmlStr += '<td width="20%">';
+					htmlStr += '<button class="btn btn-primary btn-sm" onclick="detailBill('+item.id+')">详情</button>'
+					htmlStr += '</td>'
+					htmlStr += '</tr>';
 				});
-				$(".modal-title_fs").text("粉丝:"+total+"人数");
-				$("#txl_tbody").html(htmlStr);
+				$("#tbodyc").html(htmlStr);
+				if(null != data.amount){
+					$("#totalAmountc").text(data.amount+"(元)");
+				}else{
+					$("#totalAmountc").text("0(元)");
+				}
 			}
-		})
-		
-	}
+			var options={
+		            bootstrapMajorVersion:1,    //版本
+		            currentPage:pageNum,    //当前页数
+		            numberOfPages:5,    //最多显示Page页
+			        totalPages:pages,    //所有数据可以显示的页数
+		            onPageClicked:function(e,originalEvent,type,page){
+		            	addHtmlc(page);
+		            }
+		        }
+			if(pages >0){
+				$("#pagec").bootstrapPaginator(options);
+				$("#pagec").show();
+			}else{
+				$("#pagec").hide();
+			}
+		}
+	});
 }
 
+///////////////////////////////////
 
-function userBill(uid){
+function detailBill(id){
 	var data = {
-			"uid":uid
+			"id":id
 	}
-	
 	$.ajax({
 		type : "post",
 		data : JSON.stringify(data),
-		url : "/user/listUserBill",
+		url : "/bill/getEntityById",
 		dataType : "json",
 		contentType : 'application/json',
 		success : function(data) {
-			$('#zd_Modal').modal('toggle');
-			$("#zd_tbody").html("");
-			var htmlStr="";
-			var total =0;
-			$.each(data, function (index, item) {
-				var amount = (item.amount!=null&&item.amount!=0)?item.amount:"0.00";
-				total = total+amount;
-				htmlStr += "<tr>";
-				htmlStr += '<td width="5%">'+item.time+'</td>';
-				htmlStr += '<td width="4%">'+item.totalDesc+'</td>';
-				htmlStr += '<td width="3%">'+item.description+'</td>';
-				htmlStr += "</tr>";
-			});
-			htmlStr += '<tr> <td align="left" valign="middle">总金额</td> <td align="left" valign="middle" colspan="2">'+total+'元</td> </tr>'
-			$("#zd_tbody").html(htmlStr);
+			if(null != data && data.code == 1000){
+				$('#detailModal').modal('toggle');
+				var bill = data.bill;
+				if(null != bill){
+					$("#uidD").val(bill.uid);
+					$("#phoneD").val(bill.phone);
+					$("#typeD").val(bill.type==1?"进账":"出账");
+					$("#billTypeD").val(bill.billType==1?"VIP账单":(bill.billType==2?"点卡":(bill.billType==3?"话费充值":((bill.billType==4&&bill.type==1)?"购物消费":(bill.billType==4&&bill.type==2)?"商品进价":"体现账单"))));
+					$("#orderIdD").val(bill.orderId);
+					$("#amountD").val(bill.amount);
+					$("#descriptionD").val(bill.description);
+					$("#postageD").val(bill.postage);
+					$("#discountD").val(bill.discount);
+					$("#createTimeD").val(timeStamp2String(bill.createTime));
+					if(bill.bills!= null){
+						var htmlStr="";
+						$.each(bill.bills, function (index, dto) {
+							htmlStr += "<tr>";
+							htmlStr += '<td width="5%">'+dto.productName+'</td>';
+							htmlStr += '<td width="4%">'+dto.productType+'</td>';
+							htmlStr += '<td width="3%">'+dto.price+'</td>';
+							htmlStr += '<td width="3%">'+dto.amount+'</td>';
+							htmlStr += '<td width="3%">'+dto.total+'</td>';
+							htmlStr += '<td width="5%">'+dto.description+'</td>';
+							htmlStr += "</tr>";
+						});
+						$("#zd_tbody").html(htmlStr);
+					}
+				}
+			}
 		}
-	})
+	});																																																																												
 }
-
-
-function userPhoneRecord(uid){
-	var data = {
-			"uid":uid
-	}
-	
-	$.ajax({
-		type : "post",
-		data : JSON.stringify(data),
-		url : "/user/listUserPhoneRecord",
-		dataType : "json",
-		contentType : 'application/json',
-		success : function(data) {
-			$('#hf_Modal').modal('toggle');
-			$("#hf_tbody").html("");
-			var htmlStr="";
-			var total =0;
-			$.each(data, function (index, item) {
-				var amount = (item.totalMoney!=null&&item.totalMoney!=0)?item.totalMoney:"0.00";
-				total = total+amount;
-				htmlStr += "<tr>";
-				htmlStr += '<td width="5%">'+item.createTime+'</td>';
-				htmlStr += '<td width="5%">'+item.phone+'</td>';
-				htmlStr += '<td width="4%">'+item.totalMoney+'</td>';
-				htmlStr += '<td width="4%">'+item.discountMoney+'</td>';
-				htmlStr += '<td width="3%">'+item.status+'</td>';
-				htmlStr += "</tr>";
-			});
-			htmlStr += '<tr> <td align="left" valign="middle">总金额</td> <td align="left" valign="middle" colspan="2">'+total+'元</td> </tr>'
-			$("#hf_tbody").html(htmlStr);
-		}
-	})
-}
-
-
-function userOrder(uid){
-	var data = {
-			"uid":uid
-	}
-	
-	$.ajax({
-		type : "post",
-		data : JSON.stringify(data),
-		url : "/user/listUserOrderInfo",
-		dataType : "json",
-		contentType : 'application/json',
-		success : function(data) {
-			$('#dd_Modal').modal('toggle');
-			$("#dd_tbody").html("");
-			var htmlStr="";
-			var total =0;
-			$.each(data, function (index, item) {
-				var amount = (item.totalMoney!=null&&item.totalMoney!=0)?item.totalMoney:"0.00";
-				total = total+amount;
-				htmlStr += "<tr class=info>";
-				htmlStr += '<td width="5%">订单id:'+item.orderId+'</td>';
-				htmlStr += '<td width="5%">创建时间:'+item.createTime+'</td>';
-				htmlStr += '<td width="4%">状态:'+item.statusStr+'</td>';
-				htmlStr += "</tr>";
-				var num=0;
-				var discount = (item.discount!= null&&item.discount!=0)?(item.discount)*100:"暂无";
-				$.each(item.products, function (index, product) {
-					htmlStr += "<tr>";
-					htmlStr += '<td width="5%"><img src="'+product.img+'" height="60px" width="60px"></td>';
-					htmlStr += '<td width="5%">'+product.productName+'</td>';
-					htmlStr += '<td width="4%">￥'+product.productPrice+'&nbsp;&nbsp;X&nbsp;&nbsp;'+product.amount+'<br/>总价格:&nbsp;&nbsp;'+product.total+'(元)</td>';
-					htmlStr += "</tr>";
-					num++;
-				});
-				htmlStr += '<tr><td align="left" valign="middle" colspan="3">共计&nbsp;&nbsp;'+num+'&nbsp;&nbsp;件商品合计:&nbsp;&nbsp;￥'+item.totalMoney+'<br/>享受&nbsp;&nbsp;'+discount+'&nbsp;&nbsp;折扣;&nbsp;&nbsp;&nbsp;&nbsp;折后价:&nbsp;&nbsp;￥'+item.discountMoney+'&nbsp;&nbsp;&nbsp;&nbsp;运费:&nbsp;&nbsp;￥'+item.postage+'</td></tr>'
-			});
-			$("#dd_tbody").html(htmlStr);
-		}
-	})
-}
-
-

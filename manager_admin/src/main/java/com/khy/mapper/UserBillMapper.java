@@ -15,4 +15,6 @@ public interface UserBillMapper {
 
 	BigDecimal sumAmount(UserCommonDTO dto);
 
+	UserBill getEntityById(UserCommonDTO dto);
+
 }

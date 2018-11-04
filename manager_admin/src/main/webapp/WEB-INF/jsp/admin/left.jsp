@@ -35,7 +35,7 @@
 					<li><a href="${pageContext.request.contextPath }/user/toUserCash?pageSize=10&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>用户提现</a></li>
 				</ul>
 				<ul class="treeview-menu">
-					<li><a href="${pageContext.request.contextPath }/bill/toBill?type=1&pageSize=2&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>账单管理</a></li>
+					<li><a href="${pageContext.request.contextPath }/bill/toBill?pageSize=10&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>账单管理</a></li>
 				</ul>
 				<ul class="treeview-menu">
 					<li><a href="${pageContext.request.contextPath }/online/toOnline?pageSize=10&pageNum=1" target="mainFrame"><i class="fa fa-circle-o"></i>在线参数管理</a></li>

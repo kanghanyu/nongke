@@ -35,4 +35,9 @@ public class BillServiceImpl implements BillService {
 	public BigDecimal sumAmount(UserCommonDTO dto) {
 		return userBillMapper.sumAmount(dto);
 	}
+
+	@Override
+	public UserBill getEntityById(UserCommonDTO dto) {
+		return userBillMapper.getEntityById(dto);
+	}
 }
