@@ -3,7 +3,7 @@
 <mapper namespace="com.khy.mapper.UserBillMapper">
   
   <sql id="Base_Column_List">
-    id, uid, type, bill_type, order_id, amount, create_time, description,info
+    id, uid, type, bill_type, order_id, amount,discount, postage,create_time, description,info
   </sql>
   
    <select id="list" parameterType="com.khy.mapper.dto.UserCommonDTO" resultType="com.khy.entity.UserBill">
