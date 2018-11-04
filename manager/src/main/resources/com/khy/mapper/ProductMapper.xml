@@ -14,9 +14,11 @@
   		FROM
   			t_product
   		<where>
+  			status = 1
   			<if test="null != productName and productName != '' ">
-  				product_name like concat('%',#{productName},'%')
+  				and product_name like concat('%',#{productName},'%')
   			</if>
+  			
   		</where>
   		<if test="null != orderBy and orderBy != '' and null != orderType and orderType != '' ">
   			ORDER BY ${orderBy} ${orderType}
@@ -31,6 +33,7 @@
   			t_product
   		WHERE
   			is_hot = 1
+  		and status = 1
   		ORDER BY create_time desc
   	</select>
   	
@@ -41,6 +44,7 @@
   			t_product
   		WHERE
   			product_id = #{productId}
+  		and status = 1	
   		ORDER BY create_time DESC
   		LIMIT 1;
   	</select>

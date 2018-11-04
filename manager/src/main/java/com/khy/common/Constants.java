@@ -154,7 +154,7 @@ public class Constants {
     public static final String VERSION = "1.0";
     public static final String SIGN_TYPE_RSA2 = "RSA2";
     public static final String NOTIFY_URL = "https://www.nongke365.com:8081/pay/alipay/notify";
-    public static final String TIMEOUT_EXPRESS = "20m";
+    public static final String TIMEOUT_EXPRESS = "30m";
     public static final String AES_KEY = "qNbuDK656ziShag3287ujA==";
     public static final String AES_FULLALG = "AES/CBC/PKCS5Padding";
     

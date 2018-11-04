@@ -121,7 +121,7 @@ public class PayUtil {
 		String result = "";
 		if(StringUtils.isNotBlank(sign)){
 			result = getSignEncodeUrl(param,sign,Constants.CHARSET_UTF8);
-			logger.info("支付宝验签生成的全部信息结果ret={}",ret);		
+			logger.info("支付宝验签生成的全部信息结果ret={}",result);		
 		}
 		return result;
 	}

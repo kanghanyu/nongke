@@ -306,7 +306,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				userMapper.updateUser(userDb);
 
 				// 更新用户的账务流水
-				String descr = "购买商品花费点卡" + dto.getTotalPay() + ":元";
+				String descr = "购买商品花费点卡" + dto.getTotalPay() + "元";
 				saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_CARD_MONEY, dto.getTotalPay(), cardMoney,
 						orderId, descr, now);
 				// 更新商品的数量内容
@@ -326,7 +326,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 					userMapper.updateUser(userDb);
 
 					// 更新用户的账务流水
-					String descr = "购买订单余额抵扣" + dto.getCornMoney() + ":元";
+					String descr = "购买订单余额抵扣" + dto.getCornMoney() + "元";
 					saveUserRecord(uid, Constants.RECORD_PAY, Constants.RECORD_MONEY, dto.getCornMoney(), money,
 							orderId, descr, now);
 					// 更新商品的数量内容
@@ -533,7 +533,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				return json;
 			}
 			info.setProductDetail("VIP升级");
-			info.setDescription(totalPay+":元(充到余额"+toMoney+":元)");
+			info.setDescription(totalPay+"元(充到余额"+toMoney+"元)");
 			info.setDiscountMoney(new BigDecimal(toMoney));
 		}else if(orderType == Constants.PAY_CARD){
 			if(totalMoney.intValue() %100 != 0 ){
@@ -554,7 +554,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				return json;
 			}
 			info.setProductDetail("点卡购买");
-			info.setDescription("用户购买"+totalPay+":元的点卡");
+			info.setDescription("用户购买"+totalPay+"元的点卡");
 		}else if(orderType == Constants.PAY_PHONE){//话费充值
 			if(payType != Constants.ALIPAY && payType != Constants.WEIXIN_PAY ){
 				json.put("msg","话充值只能支付宝/微信支付");
@@ -603,7 +603,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 					return json;
 				}
 				if((accumulatePrice.add(totalMoney)).compareTo(new BigDecimal(phoneRecharge)) > 0){
-					json.put("msg", "您当月VIP已经优惠充值了"+accumulate+":元,现在充值"+totalMoney+":元,已超出优惠额度");
+					json.put("msg", "您当月VIP已经优惠充值了"+accumulate+"元,现在充值"+totalMoney+"元,已超出优惠额度");
 					return json;
 				}
 				info.setDiscount(Float.valueOf(vipDiscount)/100);
@@ -649,12 +649,6 @@ public class PayServiceImpl extends BaseService implements PayService {
 		long amount = 0;
 		try {
 			Date now = new Date();
-			//针对该内容加锁处理--->防止多次回调都会执行内容
-			boolean lock = cacheService.lock(Constants.LOCK_NOTIFY_ORDER.concat(orderId), Constants.LOCK, Constants.FIVE_MINUTE);
-			if(lock){
-				jsonResponse.setRetDesc("异步回调加锁失败");//可以直接返回成功;
-				return jsonResponse;
-			};
 			if(payType.equals("alipay")){
 				if (!"TRADE_SUCCESS".equals(request.getParameter("trade_status"))) {
 					jsonResponse.setRetDesc("异步回调接口验签失败--->付款状态trade_statu="+request.getParameter("trade_status"));
@@ -688,16 +682,22 @@ public class PayServiceImpl extends BaseService implements PayService {
 			info.setOrderId(orderId);
 			orderInfo = orderInfoMapper.getPayOrder(info);
 			if(null == orderInfo){
-				jsonResponse.setRetDesc("未查询到当前订单信息");
-				return jsonResponse;
-			}
-			if(new BigDecimal(total_amount).compareTo(orderInfo.getRmb())!=0){
-				//说明前后的钱不一致
-				jsonResponse.setRetDesc("付款金额不对");
+				jsonResponse.setRetDesc("未查询到当前订单信息orderId="+orderId);
 				return jsonResponse;
 			}
 			if(orderInfo.getPayStatus() != Constants.ORDER_PAYSTATUS_WFK){
 				jsonResponse.success(true);
+				return jsonResponse;
+			}
+			if(new BigDecimal(total_amount).compareTo(orderInfo.getRmb())!=0){
+				//说明前后的钱不一致
+				jsonResponse.setRetDesc("付款金额不对orderId="+orderId);
+				return jsonResponse;
+			}
+			//针对该内容加锁处理--->防止多次回调都会执行内容
+			boolean lock = cacheService.lock(Constants.LOCK_NOTIFY_ORDER.concat(orderId), Constants.LOCK, Constants.FIVE_MINUTE);
+			if(lock){
+				jsonResponse.setRetDesc("异步回调加锁失败orderId="+orderId);//可以直接返回成功;
 				return jsonResponse;
 			}
 			Integer orderType = orderInfo.getOrderType();

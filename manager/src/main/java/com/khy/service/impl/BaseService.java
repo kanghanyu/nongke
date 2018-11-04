@@ -140,7 +140,7 @@ public class BaseService {
 		}
 		Product product = productMapper.findProduct(productId);
 		if(null == product){
-			json.put("msg","当前商品不存在/库存不足");
+			json.put("msg","当前商品已下架/库存不足");
 			return json;
 		}
 		json.put("code",2000);

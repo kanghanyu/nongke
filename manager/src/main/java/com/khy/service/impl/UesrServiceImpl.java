@@ -712,7 +712,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 			BigDecimal cardMoneyOther = userOther.getCardMoney()!=null ?userOther.getCardMoney():ZERO;
 			userOther.setCardMoney(cardMoneyOther.add(amount));
 			userMapper.updateUser(userOther);
-			String description =phone+"给您账户点卡转账"+amount+":元";
+			String description =phone+"给您账户点卡转账"+amount+"元";
 			saveUserRecord(userOther.getUid(),Constants.RECORD_INCOME,Constants.RECORD_CARD_MONEY,amount,cardMoneyOther,user.getPhone(),description,now);
 			jsonResponse.success(true);
 		} catch (Exception e) {
@@ -794,7 +794,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 					dto.setTotalDesc(info.getDescription());
 				}else{
 					BigDecimal totalPay = info.getTotalPay();
-					dto.setTotalDesc(totalPay.toString()+":元");
+					dto.setTotalDesc(totalPay.toString()+"元");
 				}
 				ret.add(dto);
 			}

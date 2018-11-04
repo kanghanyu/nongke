@@ -50,7 +50,7 @@ public class CartServiceImpl implements CartService {
 		Long productId = dto.getProductId();
 		Product product = productMapper.findProduct(productId);
 		if(null == product){
-			jsonResponse.setRetDesc("该商品已下架");
+			jsonResponse.setRetDesc("该商品库存不足/已下架");
 			return jsonResponse;
 		}
 		String uid = user.getUid();
@@ -112,7 +112,7 @@ public class CartServiceImpl implements CartService {
 		Long productId = dto.getProductId();
 		Product product = productMapper.findProduct(productId);
 		if(null == product){
-			jsonResponse.setRetDesc("该商品已下架");
+			jsonResponse.setRetDesc("该商品库存不足/已下架");
 			return jsonResponse;
 		}
 		String uid = user.getUid();
