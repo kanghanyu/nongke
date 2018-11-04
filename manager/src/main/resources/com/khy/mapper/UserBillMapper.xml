@@ -3,7 +3,7 @@
 <mapper namespace="com.khy.mapper.UserBillMapper">
   
   <sql id="Base_Column_List">
-    id, uid, type, bill_type, order_id, amount, create_time, description,info
+    id, uid, type, bill_type, order_id, amount,discount, postage,create_time, description,info
   </sql>
   
    
@@ -22,8 +22,14 @@
       <if test="billType != null">
         bill_type,
       </if>
+      <if test="discount != null">
+        discount,
+      </if>
       <if test="orderId != null">
         order_id,
+      </if>
+      <if test="postage != null">
+        postage,
       </if>
       <if test="amount != null">
         amount,
@@ -45,14 +51,20 @@
       <if test="type != null">
         #{type,jdbcType=INTEGER},
       </if>
-      <if test="billType != null">
-        #{billType,jdbcType=INTEGER},
+      <if test="discount != null">
+        #{discount},
+      </if>
+      <if test="orderId != null">
+        #{orderId,jdbcType=VARCHAR},
       </if>
       <if test="orderId != null">
         #{orderId,jdbcType=VARCHAR},
       </if>
       <if test="amount != null">
         #{amount,jdbcType=DECIMAL},
+      </if>
+      <if test="postage != null">
+        #{postage,jdbcType=DECIMAL},
       </if>
       <if test="createTime != null">
         #{createTime,jdbcType=TIMESTAMP},

@@ -714,7 +714,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				orderInfoMapper.update(updateOrder);
 				//更新商品的库存/销量
 				String productDetail = orderInfo.getProductDetail();
-				batchUpdateProduct(productDetail);
+				batchUpdateProduct(productDetail,uid);
 				//如果含有余额抵扣的扣除余额-->生成订单已经更新
 				//设置账单内容-->定时处理
 				//设置分佣内容-->定时/用户确认收款设置
@@ -785,7 +785,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 	}
 
 
-	private void batchUpdateProduct(String productDetail) {
+	private void batchUpdateProduct(String productDetail,String uid) {
 		if(StringUtils.isNotBlank(productDetail)){
 			List<PayProductDetailDTO> productList = JSONArray.parseArray(productDetail, PayProductDetailDTO.class);
 			if(CollectionUtils.isNotEmpty(productList)){
@@ -801,6 +801,8 @@ public class PayServiceImpl extends BaseService implements PayService {
 						Product findProduct = json.getObject("product",Product.class);
 						findProduct.setSalesAmount(findProduct.getSalesAmount()+amount);
 						findProduct.setStockAmount(findProduct.getStockAmount()-amount);
+						productMapper.updateProduct(findProduct);
+						cartMapper.delete(productId, uid);//购物车暂时不删除商品
 					} catch (Exception e) {
 						logger.error("异步回调更新商品失败内容");
 						throw new BusinessException(e.getMessage());
@@ -910,7 +912,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 			updateProduct.setSalesAmount(findProduct.getSalesAmount()+dto1.getAmount());
 			updateProduct.setStockAmount(findProduct.getStockAmount()-dto1.getAmount());
 			if(updateProduct.getStockAmount().intValue() == 0){
-				updateProduct.setStatus(Constants.PRODUCT_STATUS_WSJ);
+//				updateProduct.setStatus(Constants.PRODUCT_STATUS_WSJ);
 			}
 			listProduct.add(updateProduct);
 			
@@ -1044,7 +1046,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 			detail.setAmount(amount);
 			detail.setTotal(productDb.getProductPrice().multiply(new BigDecimal(amount)).doubleValue());
 			dtos.add(detail);
-			cartMapper.delete(productId, ret.getUid());
+//			cartMapper.delete(productId, ret.getUid());//购物车暂时不删除商品
 		}
 		ret.setList(dtos);
 		if(list.size() == ret.getList().size()){
