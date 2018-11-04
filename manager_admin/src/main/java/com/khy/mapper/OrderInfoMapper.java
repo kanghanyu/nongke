@@ -14,4 +14,6 @@ public interface OrderInfoMapper {
 	List<OrderInfo> list(UserCommonDTO dto);
 
 	JSONObject countOrderMoney(UserCommonDTO dto);
+
+	OrderInfo getEntityById(UserCommonDTO dto);
 }

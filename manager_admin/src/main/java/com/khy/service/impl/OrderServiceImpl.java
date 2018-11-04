@@ -60,4 +60,19 @@ public class OrderServiceImpl implements OrderService {
 		}
 		return orderInfoMapper.countOrderMoney(dto);
 	}
+
+	@Override
+	public UserOrderInfoDTO getEntityById(UserCommonDTO dto) {
+		UserOrderInfoDTO ret = new UserOrderInfoDTO();
+		OrderInfo info = orderInfoMapper.getEntityById(dto);
+		if(null != info){
+			BeanUtils.copyProperties(info, ret);
+			String productDetail = info.getProductDetail();
+			if(StringUtils.isNotBlank(productDetail)){
+				List<UserOrderProductDTO> products = JSONArray.parseArray(productDetail, UserOrderProductDTO.class);
+				ret.setProducts(products);
+			}
+		}
+		return ret;
+	}
 }

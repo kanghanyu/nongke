@@ -11,4 +11,6 @@ public interface OrderService {
 
 	JSONObject countOrderMoney(UserCommonDTO dto);
 
+	UserOrderInfoDTO getEntityById(UserCommonDTO dto);
+
 }

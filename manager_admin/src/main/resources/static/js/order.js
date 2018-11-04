@@ -48,41 +48,24 @@ function addHtml(pageNum){
 					var payTime = order.payTime != null ?timeStamp2String(order.payTime):"";
 					
 					htmlStr += "<tr>";
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.orderId+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.statusStr+'</td>';
-					htmlStr += '<td width="2%" style="vertical-align: middle;" rowspan="'+num+'">'+timeStamp2String(order.createTime)+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.amountPhone+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.totalMoney+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.postage+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.totalPayable+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+discount+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+discountMoney+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.totalPay+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+payType+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+rmb+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+cornMoney+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+payTime+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.userName+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.phone+'</td>';
-					htmlStr += '<td width="3%" style="vertical-align: middle;" rowspan="'+num+'">'+order.address+'</td>';
-					$.each(order.products, function (index, product) {
-						if(index ==0 ){
-							htmlStr += '<td style="vertical-align: middle;" width="3%" >'+product.productName+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" ><img src="'+product.img+'" height="40px" width="40px"></td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.productPrice+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.amount+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.total+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="3%" rowspan="'+num+'">测试列</td>';
-						}else{
-							htmlStr += "<tr>";
-							htmlStr += '<td style="vertical-align: middle;" width="3%" >'+product.productName+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" ><img src="'+product.img+'" height="40px" width="40px"></td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.productPrice+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.amount+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.total+'</td>';
-							htmlStr += '</tr>';
-						}
-					});
+					htmlStr += '<td width="1%">'+order.orderId+'</td>';
+					htmlStr += '<td width="1%">'+order.statusStr+'</td>';
+					htmlStr += '<td width="2%">'+timeStamp2String(order.createTime)+'</td>';
+					htmlStr += '<td width="1%">'+order.amountPhone+'</td>';
+					htmlStr += '<td width="1%">'+order.totalMoney+'</td>';
+					htmlStr += '<td width="1%">'+order.postage+'</td>';
+					htmlStr += '<td width="1%">'+order.totalPayable+'</td>';
+					htmlStr += '<td width="1%">'+discount+'</td>';
+					htmlStr += '<td width="1%">'+discountMoney+'</td>';
+					htmlStr += '<td width="1%">'+order.totalPay+'</td>';
+					htmlStr += '<td width="1%">'+payType+'</td>';
+					htmlStr += '<td width="1%">'+rmb+'</td>';
+					htmlStr += '<td width="1%">'+cornMoney+'</td>';
+					htmlStr += '<td width="1%">'+payTime+'</td>';
+					htmlStr += '<td width="1%">'+order.userName+'</td>';
+					htmlStr += '<td width="1%">'+order.phone+'</td>';
+					htmlStr += '<td width="3%">'+order.address+'</td>';
+					htmlStr += '<td width="2%" ><button class="btn btn-primary btn-sm" onclick="detailOrder('+order.orderId+')">详情</button></td>';
 					htmlStr += '</tr>';
 				});
 				$("#tbody").html(htmlStr);
@@ -144,41 +127,24 @@ function search(){
 					var cornMoney =(order.cornMoney!=null&&order.cornMoney!=0)?order.cornMoney:"0";
 					var payTime = order.payTime != null ?timeStamp2String(order.payTime):"";
 					htmlStr += "<tr>";
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.orderId+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.statusStr+'</td>';
-					htmlStr += '<td width="2%" style="vertical-align: middle;" rowspan="'+num+'">'+timeStamp2String(order.createTime)+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.amountPhone+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.totalMoney+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.postage+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.totalPayable+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+discount+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+discountMoney+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.totalPay+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+payType+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+rmb+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+cornMoney+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+payTime+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.userName+'</td>';
-					htmlStr += '<td width="1%" style="vertical-align: middle;" rowspan="'+num+'">'+order.phone+'</td>';
-					htmlStr += '<td width="3%" style="vertical-align: middle;" rowspan="'+num+'">'+order.address+'</td>';
-					$.each(order.products, function (index, product) {
-						if(index ==0 ){
-							htmlStr += '<td style="vertical-align: middle;" width="3%" >'+product.productName+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" ><img src="'+product.img+'" height="40px" width="40px"></td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.productPrice+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.amount+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.total+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="3%" rowspan="'+num+'">测试列</td>';
-						}else{
-							htmlStr += "<tr>";
-							htmlStr += '<td style="vertical-align: middle;" width="3%" >'+product.productName+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" ><img src="'+product.img+'" height="40px" width="40px"></td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.productPrice+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.amount+'</td>';
-							htmlStr += '<td style="vertical-align: middle;" width="1%" >'+product.total+'</td>';
-							htmlStr += '</tr>';
-						}
-					});
+					htmlStr += '<td width="1%">'+order.orderId+'</td>';
+					htmlStr += '<td width="1%">'+order.statusStr+'</td>';
+					htmlStr += '<td width="2%">'+timeStamp2String(order.createTime)+'</td>';
+					htmlStr += '<td width="1%">'+order.amountPhone+'</td>';
+					htmlStr += '<td width="1%">'+order.totalMoney+'</td>';
+					htmlStr += '<td width="1%">'+order.postage+'</td>';
+					htmlStr += '<td width="1%">'+order.totalPayable+'</td>';
+					htmlStr += '<td width="1%">'+discount+'</td>';
+					htmlStr += '<td width="1%">'+discountMoney+'</td>';
+					htmlStr += '<td width="1%">'+order.totalPay+'</td>';
+					htmlStr += '<td width="1%">'+payType+'</td>';
+					htmlStr += '<td width="1%">'+rmb+'</td>';
+					htmlStr += '<td width="1%">'+cornMoney+'</td>';
+					htmlStr += '<td width="1%">'+payTime+'</td>';
+					htmlStr += '<td width="1%">'+order.userName+'</td>';
+					htmlStr += '<td width="1%">'+order.phone+'</td>';
+					htmlStr += '<td width="3%">'+order.address+'</td>';
+					htmlStr += '<td width="2%" ><button class="btn btn-primary btn-sm" onclick="detailOrder('+order.orderId+')">详情</button></td>';
 					htmlStr += '</tr>';
 				});
 				$("#tbody").html(htmlStr);
@@ -205,6 +171,48 @@ function search(){
 		}
 	});
 }
+
+
+function detailOrder(orderId){
+	var data = {
+			"orderId":orderId
+	}
+	$.ajax({
+		type : "post",
+		data : JSON.stringify(data),
+		url : "/order/getEntityById",
+		dataType : "json",
+		contentType : 'application/json',
+		success : function(data) {
+			if(null != data && data.code == 1000){
+				$('#detailModal').modal('toggle');
+				var order = data.order;
+				if(null != order){
+					if(order.products!=null){
+						var total = 0;
+						var htmlStr="";
+						$.each(order.products, function (index, product) {
+							total = total + product.total;
+							htmlStr += "<tr>";
+							htmlStr += '<td width="3%" >'+product.productName+'</td>';
+							htmlStr += '<td width="1%" ><img src="'+product.img+'" height="40px" width="40px"></td>';
+							htmlStr += '<td width="1%" >'+product.productPrice+'</td>';
+							htmlStr += '<td width="1%" >'+product.amount+'</td>';
+							htmlStr += '<td width="1%" >'+product.total+'</td>';
+							htmlStr += '</tr>';
+						});
+						htmlStr += '<tr> <td align="left" valign="middle">统计</td> <td></td> <td></td><td></td><td align="left" valign="middle">'+total+'元</td> </tr>'
+						$("#txl_tbody").html(htmlStr);	
+					}
+				}
+			}
+		}
+	});																																																																												
+}
+
+
+
+
 
 
 function setUserStatus(uid,type){

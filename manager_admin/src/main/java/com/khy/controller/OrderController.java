@@ -41,6 +41,18 @@ public class OrderController {
 		ret.put("count", json);
 		return ret.toString();
 	}
+	@RequestMapping("/getEntityById")
+	@ResponseBody
+	public String getEntityById(@RequestBody UserCommonDTO dto){
+		JSONObject ret = new JSONObject();
+		ret.put("code",2000);
+		UserOrderInfoDTO order =  orderService.getEntityById(dto);
+		if(null != order){
+			ret.put("code",1000);
+		}
+		ret.put("order", order);
+		return ret.toString();
+	}
 	
 }
 
