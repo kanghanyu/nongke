@@ -49,6 +49,7 @@ public class LoginInterceptor extends WebMvcConfigurerAdapter{
 		add("/user/getOnlineParame");
 		add("/user/listMessage");
 		add("/user/validate/img");
+		add("/test/test");
 		add("/product/pageProduct");
 		add("/product/getProduct");
 		add("/product/getBannerProduct");

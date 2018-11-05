@@ -535,12 +535,16 @@ public class PayServiceImpl extends BaseService implements PayService {
 			info.setDescription(totalPay+"元(充到余额"+toMoney+"元)");
 			info.setDiscountMoney(new BigDecimal(toMoney));
 		}else if(orderType == Constants.PAY_CARD){
-			if(totalMoney.intValue() %100 != 0 ){
-				json.put("msg","点卡充值金额必须是100的整倍数");
+//			if(totalMoney.intValue() %100 != 0 ){
+//				json.put("msg","点卡充值金额必须是100的整倍数");
+//				return json;
+//			}
+			if(totalMoney.compareTo(ZERO)<0 ){
+				json.put("msg","点卡充值金额必须大于零");
 				return json;
 			}
 			if(totalMoney.compareTo(totalPay)!=0){
-				json.put("msg","点卡充值金额金和点卡总价不一致");
+				json.put("msg","点卡充值金额和点卡总价不一致");
 				return json;
 			}
 			if(payType != Constants.MONEY_PAY && payType != Constants.ALIPAY && payType != Constants.WEIXIN_PAY ){
@@ -559,8 +563,12 @@ public class PayServiceImpl extends BaseService implements PayService {
 				json.put("msg","话充值只能支付宝/微信支付");
 				return json;
 			}
-			if(totalMoney.intValue() %50 != 0 ){
-				json.put("msg","当前充值金额必须是50的整倍数");
+//			if(totalMoney.intValue() %50 != 0 ){
+//				json.put("msg","当前充值金额必须是50的整倍数");
+//				return json;
+//			}
+			if(totalMoney.compareTo(ZERO)<0 ){
+				json.put("msg","当前充值金额必须大于零");
 				return json;
 			}
 			String phone = user.getPhone();
@@ -689,6 +697,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 			OrderInfo info = new OrderInfo();
 			info.setOrderId(orderId);
 			orderInfo = orderInfoMapper.getPayOrder(info);
+			logger.info("异步回调的订单的内容信息order={}",JSON.toJSON(orderInfo));
 			if(null == orderInfo){
 				jsonResponse.setRetDesc("未查询到当前订单信息orderId="+orderId);
 				return jsonResponse;
@@ -735,12 +744,12 @@ public class PayServiceImpl extends BaseService implements PayService {
 				updateOrder.setPayTime(now);
 				updateOrder.setTradeNo(trade_no);
 				orderInfoMapper.update(updateOrder);
-				if(orderInfo.getTotalMoney().compareTo(orderInfo.getTotalPay()) != 0){
-					key = getKey(uid);
-					amount = orderInfo.getTotalMoney().longValue();
-					cacheService.incr(key, orderInfo.getTotalMoney().longValue(), Constants.ONE_MONTH);	
-					//订单更新之后全部开始定时器配置内容;
-				}
+				
+				key = getKey(uid);
+				amount = orderInfo.getTotalMoney().longValue();
+				logger.info("话费充值订单支付完成进行累计操作amount={},order={}",amount,JSON.toJSON(orderInfo));
+				cacheService.incr(key, amount, Constants.ONE_MONTH);	
+				//订单更新之后全部开始定时器配置内容;
 			}else if(orderType == Constants.PAY_CARD){
 				OrderInfo updateOrder = new OrderInfo();
 				updateOrder.setOrderId(orderId);
@@ -1082,7 +1091,10 @@ public class PayServiceImpl extends BaseService implements PayService {
 	
 	public static void main(String[] args) {
 		String discount="88";
-		BigDecimal b1 = new BigDecimal("1.19");
+		BigDecimal b1 = new BigDecimal("1");
+		
+		long longValue = b1.longValue();
+		System.out.println(longValue);
 		BigDecimal b2 = new BigDecimal("1.19");
 		BigDecimal b3 = new BigDecimal("1.19");
 		System.out.println(b1.add(b2).add(b3).multiply(new BigDecimal(discount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP));

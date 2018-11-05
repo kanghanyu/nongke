@@ -43,7 +43,7 @@ public class BillTask extends BaseService{
 					continue;
 				}
 			}
-			logger.info("处理出账的订单内容异常订单的num={}",num);
+			logger.info("处理出账的订单内容订单数量num={}",num);
 		}
 	}
 	 

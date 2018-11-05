@@ -52,8 +52,6 @@ public class UserController {
 	private UesrService uesrService;
 	@Autowired
 	private SmsUtils SmsUtils;
-	@Autowired
-	private PhoneUtils PhoneUtils;
 	
 	@RequestMapping(value = "getMessageCode", method = RequestMethod.POST)
 	@ApiOperation(notes = "获取手机短信验证码的接口",value = "获取手机短信验证码的接口")
@@ -254,16 +252,6 @@ public class UserController {
 		JsonResponse<Boolean> jsonResponse = uesrService.confirmUserOrderInfo(orderId);
 		return jsonResponse;
 	}
-	
-//	
-//	@RequestMapping(value = "/test")
-//	public String test(String phone,Integer cardnum) {
-//		JSONObject jsonObject = PhoneUtils.checkPhoneNum(phone, cardnum);
-//		JSONObject yuE = PhoneUtils.yuE();
-//		JSONObject json = PhoneUtils.onlineOrder("156520097051", 1, "1111111111");
-//		return jsonObject.toJSONString();
-//	}
-//	
 	
 	@RequestMapping(value = "/validate/img",method = RequestMethod.POST)
 	public void img(HttpServletRequest request, HttpServletResponse response) throws IOException {
