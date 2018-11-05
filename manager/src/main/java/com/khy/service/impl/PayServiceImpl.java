@@ -574,41 +574,39 @@ public class PayServiceImpl extends BaseService implements PayService {
 				json.put("msg",checkRet.getString("reason"));
 				return json;
 			}
-			//充值话费总金额和付款总金额是否相同正常充值
-			if(totalMoney.compareTo(totalPay) != 0){
-				//标识会员折扣充值
-				Integer isVip = user.getIsVip();
-				if(isVip == Constants.GENERAL_UER){
-					json.put("msg","您不是会员不享受话费充值优惠");
-					return json;
-				}
-				String vipDiscount = online.get(Constants.VIP_PHONE_DISCOUNT);
-				if (StringUtils.isBlank(vipDiscount)) {
-					json.put("msg", "获取vip充值话费折扣异常请您联系管理员稍后再试");
-					return json;
-				}
-				BigDecimal dicountMoney = totalMoney.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
-				if(dicountMoney.compareTo(totalPay) != 0){ 
-					json.put("msg","VIP充值话费应付金额不等于折扣后价格");
-					return json;
-				}
-				//查询当月vip用户已经充值了多少钱的
-				String key = getKey(user.getUid());
-				String accumulate = cacheService.getString(key);//已经充值的额度incr自增内容
-				BigDecimal accumulatePrice = StringUtils.isNotBlank(accumulate)? new BigDecimal(accumulate):ZERO;
-				String phoneRecharge = online.get(Constants.VIP_PHONE_RECHARGE);
-				if (StringUtils.isBlank(phoneRecharge)) {
-					json.put("msg", "获取vip充值话费每月优惠额度数据折扣异常请您联系管理员稍后再试");
-					return json;
-				}
-				if((accumulatePrice.add(totalMoney)).compareTo(new BigDecimal(phoneRecharge)) > 0){
-					json.put("msg", "您当月VIP已经优惠充值了"+accumulate+"元,现在充值"+totalMoney+"元,已超出优惠额度");
-					return json;
-				}
-				info.setDiscount(Float.valueOf(vipDiscount)/100);
-				info.setDiscountDetail("会员话费充值折扣优惠内容");
-				info.setDiscountMoney(totalPay);
+			//非会员不能充值话费
+			//标识会员折扣充值
+			Integer isVip = user.getIsVip();
+			if(isVip == Constants.GENERAL_UER){
+				json.put("msg","您不是会员不享受话费充值优惠");
+				return json;
 			}
+			String vipDiscount = online.get(Constants.VIP_PHONE_DISCOUNT);
+			if (StringUtils.isBlank(vipDiscount)) {
+				json.put("msg", "获取vip充值话费折扣异常请您联系管理员稍后再试");
+				return json;
+			}
+			BigDecimal dicountMoney = totalMoney.multiply(new BigDecimal(vipDiscount)).divide(ONE_HUNDRED,2, BigDecimal.ROUND_HALF_UP);
+			if(dicountMoney.compareTo(totalPay) != 0){ 
+				json.put("msg","VIP充值话费应付金额不等于折扣后价格");
+				return json;
+			}
+			//查询当月vip用户已经充值了多少钱的
+			String key = getKey(user.getUid());
+			String accumulate = cacheService.getString(key);//已经充值的额度incr自增内容
+			BigDecimal accumulatePrice = StringUtils.isNotBlank(accumulate)? new BigDecimal(accumulate):ZERO;
+			String phoneRecharge = online.get(Constants.VIP_PHONE_RECHARGE);
+			if (StringUtils.isBlank(phoneRecharge)) {
+				json.put("msg", "获取vip充值话费每月优惠额度数据折扣异常请您联系管理员稍后再试");
+				return json;
+			}
+			if((accumulatePrice.add(totalMoney)).compareTo(new BigDecimal(phoneRecharge)) > 0){
+				json.put("msg", "您当月VIP已经优惠充值了"+accumulate+"元,现在充值"+totalMoney+"元,已超出优惠额度");
+				return json;
+			}
+			info.setDiscount(Float.valueOf(vipDiscount)/100);
+			info.setDiscountDetail("会员话费充值折扣优惠内容");
+			info.setDiscountMoney(totalPay);
 			info.setProductDetail("手机话费充值");
 			info.setDescription(user.getPhone());
 		}else{
