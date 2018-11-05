@@ -184,6 +184,11 @@ public class BaseService {
 			String uid = order.getUid();
 			User user = userMapper.getUserByUid(uid);
 			if (null == user || user.getIsVip() == Constants.GENERAL_UER) {
+				OrderInfo updateInfo = new OrderInfo();
+				updateInfo.setOrderId(orderId);
+				updateInfo.setUid(uid);
+				updateInfo.setPayStatus(Constants.ORDER_PAYSTATUS_YFF);
+				orderInfoMapper.update(updateInfo);
 				return;
 			}
 			Integer orderType = order.getOrderType();

@@ -16,7 +16,7 @@ import com.khy.entity.OrderInfo;
 import com.khy.service.OrderService;
 import com.khy.service.impl.BaseService;
 
-@Component
+//@Component
 public class BillTask extends BaseService{
 	public final static Logger logger = LoggerFactory.getLogger(BillTask.class);
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -27,18 +27,19 @@ public class BillTask extends BaseService{
 	
 	//每3分钟跑一次
 	@Scheduled(cron = "0 */3 * * * ?")
+//	@Scheduled(cron = "*/5 * * * * ?")
 	public void setBill(){
 		//先查询所有的符合条件的订单内容
 		List<OrderInfo>list = orderService.listNotBillOrder();
 		if(CollectionUtils.isNotEmpty(list)){
 			logger.info("设置后台出账内容size={}",list.size());
-			int num = 1;
+			int num = 0;
 			for (OrderInfo info : list) {
 				try {
 					orderService.saveBill(info);
 					num ++;
 				} catch (Exception e) {
-					logger.error("处理出账的订单内容异常订单的orderInfo={}",JSON.toJSON(info));
+					logger.error("处理出账的订单内容异常订单的orderInfo={},e={}",JSON.toJSON(info),e.getMessage());
 					continue;
 				}
 			}

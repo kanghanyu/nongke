@@ -57,7 +57,7 @@ public class Task extends BaseService{
 		if(CollectionUtils.isNotEmpty(list)){
 			String orderId = null;
 			logger.info("获取到的用户付款时间超过7天的商品订单size={}",list.size());
-			int num = 1;
+			int num = 0;
 			for (OrderInfo orderInfo : list) {
 				orderId = orderInfo.getOrderId();
 				try {
@@ -83,7 +83,7 @@ public class Task extends BaseService{
 		List<String>list = orderService.noRechargeOrder();
 		if(CollectionUtils.isNotEmpty(list)){
 			logger.info("定时获取到的还未充值的话费订单size={}",list.size());
-			int num = 1;
+			int num = 0;
 			for (String orderId : list) {
 				try {
 					logger.info("获取到的还未充值的话费订单orderId={}",orderId);
@@ -104,11 +104,12 @@ public class Task extends BaseService{
 	
 	
 	@Scheduled(cron = "0 */2 * * * ?")
+//	@Scheduled(cron = "*/5 * * * * ?")
 	public void setOrderCommission(){
 		List<String>list = orderService.getNotCommission();
 		if(CollectionUtils.isNotEmpty(list)){
 			logger.info("定时处理订单分佣的内容size={}",list.size());
-			int num = 1;
+			int num = 0;
 			for (String orderId : list) {
 				try {
 					logger.info("定时处理订单分佣的订单内容orderId={}",orderId);
@@ -117,7 +118,7 @@ public class Task extends BaseService{
 						num++;
 					}
 				} catch (Exception e) {
-					logger.error("定时处理订单分佣的订单内容orderId={}",orderId);
+					logger.error("定时处理订单分佣的订单内容orderId={},e={}",orderId,e.getMessage());
 					continue;
 				}
 			}

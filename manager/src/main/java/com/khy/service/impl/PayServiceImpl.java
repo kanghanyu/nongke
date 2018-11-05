@@ -669,6 +669,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				}
 				boolean signVerified = AlipaySignature.rsaCheckV1(param, Constants.ALI_PUBLIC_KEY,Constants.CHARSET_UTF8,Constants.SIGN_TYPE_RSA2); // 校验签名是否正确
 				if (!signVerified) {
+					logger.error("订支付宝验签没有通过signVerified=" + signVerified); 
 					jsonResponse.setRetDesc("异步回调接口验签失败signVerified="+signVerified);
 					return jsonResponse;
 				} 
@@ -771,14 +772,15 @@ public class PayServiceImpl extends BaseService implements PayService {
 				orderInfoMapper.update(updateOrder);
 				//然后查看vip升级是否还有转成余额的部分
 				BigDecimal discountMoney = orderInfo.getDiscountMoney();
+				User user = userMapper.getUserByUid(uid);
 				if(null != discountMoney && discountMoney.compareTo(ZERO) !=0){
 					//标识含有转换的余额内容
-					User user = userMapper.getUserByUid(uid);
 					BigDecimal money = user.getMoney();
 					user.setMoney(money.add(discountMoney));
-					userMapper.updateUser(user);
 					saveUserRecord(uid, Constants.RECORD_INCOME, Constants.RECORD_MONEY, discountMoney, money, info.getOrderId(), "VIP升级转成余额", now);
 				}
+				user.setIsVip(Constants.VIP_USER);
+				userMapper.updateUser(user);
 			}
 			jsonResponse.success(true);
 		} catch (Exception e) {

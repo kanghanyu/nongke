@@ -81,12 +81,6 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 		info.setUid(uid);
 		info.setIsBill(Constants.ORDER_ISBILL_YCZ);
 		orderInfoMapper.update(info); 
-
-		//设置订单对应的账单内容
-		Integer orderType = orderInfo.getOrderType();
-		if(orderType == Constants.PAY_VIP){
-			info.setPayStatus(Constants.ORDER_PAYSTATUS_YFK);
-		}
 		List<UserBill>list = getBills(orderInfo);
 		if(CollectionUtils.isNotEmpty(list)){
 			//保存账单内容
