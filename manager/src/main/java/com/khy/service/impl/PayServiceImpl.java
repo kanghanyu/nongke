@@ -521,7 +521,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				json.put("msg","获取会员价格请您联系管理员稍后再试");
 				return json;
 			}
-			BigDecimal vipPrice = new BigDecimal(online.get(Constants.VIP_PRICE));
+			BigDecimal vipPrice = new BigDecimal(online.get(Constants.VIP_PRICE).toString());
 			if(totalPay.compareTo(vipPrice) != 0){
 				json.put("msg","VIP价格和应付金额不一致请重新下单");
 				return json;
@@ -640,6 +640,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 	@Override
 	public JsonResponse<Boolean> payNotify(String payType, HttpServletRequest request) {
 		JsonResponse<Boolean>jsonResponse = new JsonResponse<>();
+		jsonResponse.setRspBody(false);
 		OrderInfo orderInfo = null;
 		String orderId = null;
 		String trade_no = null;
@@ -837,7 +838,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				 valueStr = (i == values.length - 1) ? valueStr + values[i]:valueStr + values[i] + ",";
 			 }
 			 //乱码解决，这段代码在出现乱码时使用。如果mysign和sign不相等也可以使用这段代码转化//
-			 valueStr = new String(valueStr.getBytes("ISO-8859-1"), "gbk");
+//			 valueStr = new String(valueStr.getBytes("ISO-8859-1"), "gbk");
 			 params.put(name, valueStr);
 		}
 		return params;
