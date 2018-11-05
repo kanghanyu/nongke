@@ -1,7 +1,6 @@
 package com.khy.mapper.dto;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 import io.swagger.annotations.ApiModelProperty;
 

@@ -3,15 +3,10 @@ package com.khy.utils;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.util.Assert;
-
-import com.khy.entity.UserRecord;
-import com.khy.mapper.dto.UserRecordDTO;
 
 public class BeanUtils extends org.springframework.beans.BeanUtils {
 	public static void copyProperties(Object source, Object target) throws BeansException {

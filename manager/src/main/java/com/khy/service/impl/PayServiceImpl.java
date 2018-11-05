@@ -1,5 +1,6 @@
 package com.khy.service.impl;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -8,8 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -647,40 +646,45 @@ public class PayServiceImpl extends BaseService implements PayService {
 		String key = null;
 		String total_amount = null;
 		long amount = 0;
-		try {
-			Date now = new Date();
-			if(payType.equals("alipay")){
-				if (!"TRADE_SUCCESS".equals(request.getParameter("trade_status"))) {
-					jsonResponse.setRetDesc("异步回调接口验签失败--->付款状态trade_statu="+request.getParameter("trade_status"));
-					return jsonResponse;
-				}
-				orderId = request.getParameter("out_trade_no");
-				if(StringUtils.isBlank(orderId)){
-					jsonResponse.setRetDesc("订单号为空");
-					return jsonResponse;
-				}
+		
+		Date now = new Date();
+		if(payType.equals("alipay")){
+			if (!"TRADE_SUCCESS".equals(request.getParameter("trade_status"))) {
+				jsonResponse.setRetDesc("异步回调接口验签失败--->付款状态trade_statu="+request.getParameter("trade_status"));
+				return jsonResponse;
+			}
+			orderId = request.getParameter("out_trade_no");
+			if(StringUtils.isBlank(orderId)){
+				jsonResponse.setRetDesc("订单号为空");
+				return jsonResponse;
+			}
+			try {
 				//标识支付宝的验签
 				Map<String,String> param = getParam(request);
 				logger.info("订支付宝验签获取的响应参数内容param={}" + JSON.toJSONString(param)); 
-				if(null == param || param.isEmpty()){
+				if(null == param){
 					jsonResponse.setRetDesc("异步回调接口验签失败获取响应参数为空");
 					return jsonResponse;
 				}
-				boolean signVerified = AlipaySignature.rsaCheckV1(param, Constants.ALI_PUBLIC_KEY,Constants.CHARSET_UTF8); // 校验签名是否正确
+				boolean signVerified = AlipaySignature.rsaCheckV1(param, Constants.ALI_PUBLIC_KEY,Constants.CHARSET_UTF8,Constants.SIGN_TYPE_RSA2); // 校验签名是否正确
 				if (!signVerified) {
-					jsonResponse.setRetDesc("异步回调接口验签失败");
+					jsonResponse.setRetDesc("异步回调接口验签失败signVerified="+signVerified);
 					return jsonResponse;
 				} 
 				// TODO 验签成功后
 				logger.info("订单支付宝验签成功signVerified = "+signVerified);
 				trade_no = request.getParameter("trade_no");
 				total_amount = request.getParameter("total_amount");
-
-			}else{
-				//微信的回调内容;
-				
+			} catch (Exception e) {
+				logger.error("支付宝回调解签错误orderId={},e={}",orderId,e.getMessage());
+				throw new BusinessException("支付宝回调解签错误"+e.getMessage());
 			}
+		}else{
+			//微信的回调内容;
 			
+		}
+		
+		try {
 			//先查询该订单是否已付款--->如果已付款说明已经更新过了
 			OrderInfo info = new OrderInfo();
 			info.setOrderId(orderId);
@@ -822,7 +826,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 	}
 
 
-	private Map<String, String> getParam(HttpServletRequest request) {
+	private Map<String, String> getParam(HttpServletRequest request) throws UnsupportedEncodingException {
 		 Map<String,String> params = new HashMap<String,String>();
 		 Map requestParams = request.getParameterMap();
 		 for (Iterator iter = requestParams.keySet().iterator(); iter.hasNext();) {
@@ -833,7 +837,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				 valueStr = (i == values.length - 1) ? valueStr + values[i]:valueStr + values[i] + ",";
 			 }
 			 //乱码解决，这段代码在出现乱码时使用。如果mysign和sign不相等也可以使用这段代码转化//
-//			 valueStr = new String(valueStr.getBytes("ISO-8859-1"), "gbk");
+			 valueStr = new String(valueStr.getBytes("ISO-8859-1"), "gbk");
 			 params.put(name, valueStr);
 		}
 		return params;
@@ -1085,6 +1089,9 @@ public class PayServiceImpl extends BaseService implements PayService {
 		Integer payType=3;
 		if(payType != Constants.ALIPAY){
 			System.out.println("不想等");
+		}
+		if(false || true){
+			System.out.println(11111111);
 		}
 	}
 }

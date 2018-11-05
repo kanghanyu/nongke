@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 public class User extends BaseEntity implements Serializable{
 	private static final long serialVersionUID = -3138377795422632271L;

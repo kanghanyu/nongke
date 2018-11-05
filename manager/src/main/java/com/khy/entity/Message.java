@@ -2,8 +2,6 @@ package com.khy.entity;
 
 import java.util.Date;
 
-import com.khy.utils.Utils;
-
 import io.swagger.annotations.ApiModelProperty;
 
 public class Message{

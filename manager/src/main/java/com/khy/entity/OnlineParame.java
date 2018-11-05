@@ -3,8 +3,6 @@ package com.khy.entity;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.khy.utils.Utils;
-
 public class OnlineParame implements Serializable {
     private Long id;
 

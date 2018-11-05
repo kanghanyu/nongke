@@ -30,7 +30,7 @@ public class Task extends BaseService{
 		List<String>list = orderService.getNotPayOrder();
 		if(CollectionUtils.isNotEmpty(list)){
 			logger.info("获取到过期的用户订单size={}",list.size());
-			int num = 1;
+			int num = 0;
 			for (String orderId : list) {
 				try {
 					logger.info("定时更新用户已过期的订单orderId={}",orderId);

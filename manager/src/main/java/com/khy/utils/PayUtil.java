@@ -1,7 +1,6 @@
 package com.khy.utils;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,7 +21,6 @@ import com.khy.entity.OrderInfo;
 import com.khy.exception.BusinessException;
 import com.khy.mapper.dto.RechargeResultDTO;
 import com.khy.mapper.dto.SubmitOrderDTO;
-import com.khy.mapper.dto.SubmitOrderResultDTO;
 
 public class PayUtil {
 	public final static Logger logger = LoggerFactory.getLogger(PayUtil.class);

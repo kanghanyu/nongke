@@ -3,7 +3,6 @@ package com.khy.mapper;
 import java.util.List;
 
 import com.khy.entity.Product;
-import com.khy.mapper.dto.PayProductDetailDTO;
 import com.khy.mapper.dto.ProductDTO;
 
 public interface ProductMapper {
