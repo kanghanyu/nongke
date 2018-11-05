@@ -1,6 +1,7 @@
 package com.khy.utils;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,15 +48,7 @@ public class PayUtil {
 		orderDescr.put("total_amount", dto.getRmb());
 		orderDescr.put("product_code","QUICK_MSECURITY_PAY");
 		orderDescr.put("goods_type",orderType == 4 ? "1" : "0");
-		//先进行aes加密使用
-		String bizContent = null;
-		try {
-			bizContent = AesUtils.encrypt(Constants.AES_KEY, JSON.toJSONString(orderDescr), Constants.CHARSET_UTF8);
-		} catch (Exception e) {
-			logger.error("生成验签使用AES加密失败"+e.getMessage());
-			throw new BusinessException("生成验签使用AES加密失败"+e.getMessage());
-		}
-		param.put("biz_content", bizContent);
+		param.put("biz_content", JSON.toJSONString(orderDescr));
 		String sign = null;
 		try {
 			sign = 	getSign(param,Constants.CHARSET_UTF8, Constants.SIGN_TYPE_RSA2);
@@ -98,18 +91,10 @@ public class PayUtil {
 		orderDescr.put("out_trade_no", info.getOrderId());
 		orderDescr.put("timeout_express", Constants.TIMEOUT_EXPRESS);
 		orderDescr.put("total_amount", info.getRmb());
+//		orderDescr.put("total_amount",new BigDecimal("0.1"));
 		orderDescr.put("product_code","QUICK_MSECURITY_PAY");
 		orderDescr.put("goods_type",orderType == 4 ? "1" : "0");
-		
-		// 先进行aes加密使用
-		String bizContent = null;
-		try {
-			bizContent = AesUtils.encrypt(Constants.AES_KEY, JSON.toJSONString(orderDescr), Constants.CHARSET_UTF8);
-		} catch (Exception e) {
-			logger.error("生成验签使用AES加密失败" + e.getMessage());
-			throw new BusinessException("生成验签使用AES加密失败" + e.getMessage());
-		}
-		param.put("biz_content", bizContent);
+		param.put("biz_content", JSON.toJSONString(orderDescr));
 		String sign = null;
 		try {
 			sign = 	getSign(param,Constants.CHARSET_UTF8, Constants.SIGN_TYPE_RSA2);

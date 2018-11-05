@@ -16,7 +16,7 @@ import com.khy.entity.OrderInfo;
 import com.khy.service.OrderService;
 import com.khy.service.impl.BaseService;
 
-//@Component
+@Component
 public class BillTask extends BaseService{
 	public final static Logger logger = LoggerFactory.getLogger(BillTask.class);
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -25,7 +25,8 @@ public class BillTask extends BaseService{
 	@Autowired
 	private OrderService orderService;
 	
-	@Scheduled(cron = "*/5 * * * * ?")
+	//每3分钟跑一次
+	@Scheduled(cron = "0 */3 * * * ?")
 	public void setBill(){
 		//先查询所有的符合条件的订单内容
 		List<OrderInfo>list = orderService.listNotBillOrder();

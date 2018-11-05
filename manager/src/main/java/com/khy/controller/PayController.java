@@ -58,11 +58,10 @@ public class PayController{
 	}
 	
 	
-	@RequestMapping(value = "/{payType}/notify",method = RequestMethod.POST)
+	@RequestMapping(value = "/{payType}/notify")
 	@ApiOperation(value = "在线购物支付订单内容")
 	@ApiImplicitParam(name = "memberId", value = "供应商的id", required = true, dataType = "Long", paramType = "path")
 	public String async(@PathVariable(value = "payType", required = true)String payType,HttpServletRequest request){
-		System.out.println(payType);
 		JsonResponse<Boolean> jsonResponse = payService.payNotify(payType,request);
 		if(jsonResponse.getRspBody()){
 			logger.info("支付异步回调成功"+JSON.toJSONString(jsonResponse));

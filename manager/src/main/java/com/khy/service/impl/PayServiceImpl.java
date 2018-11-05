@@ -662,6 +662,10 @@ public class PayServiceImpl extends BaseService implements PayService {
 				//标识支付宝的验签
 				Map<String,String> param = getParam(request);
 				logger.info("订支付宝验签获取的响应参数内容param={}" + JSON.toJSONString(param)); 
+				if(null == param || param.isEmpty()){
+					jsonResponse.setRetDesc("异步回调接口验签失败获取响应参数为空");
+					return jsonResponse;
+				}
 				boolean signVerified = AlipaySignature.rsaCheckV1(param, Constants.ALI_PUBLIC_KEY,Constants.CHARSET_UTF8); // 校验签名是否正确
 				if (!signVerified) {
 					jsonResponse.setRetDesc("异步回调接口验签失败");
@@ -832,7 +836,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 //			 valueStr = new String(valueStr.getBytes("ISO-8859-1"), "gbk");
 			 params.put(name, valueStr);
 		}
-		return null;
+		return params;
 	}
 	
 	private JSONObject checkProductOrderInfo(OrderInfo orderInfo, SubmitOrderDTO dto, User user, Map<String, String> online,List<Product>listProduct) {

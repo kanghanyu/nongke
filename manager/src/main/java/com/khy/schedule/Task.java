@@ -16,7 +16,7 @@ import com.khy.entity.OrderInfo;
 import com.khy.service.OrderService;
 import com.khy.service.impl.BaseService;
 
-//@Component
+@Component
 public class Task extends BaseService{
 	public final static Logger logger = LoggerFactory.getLogger(Task.class);
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -24,7 +24,7 @@ public class Task extends BaseService{
 	@Autowired
 	private OrderService orderService;
 	
-	
+	//每3分钟跑一次
 	@Scheduled(cron = "0 */3 * * * ?")
 	public void updateNotPayOrder(){
 		List<String>list = orderService.getNotPayOrder();
