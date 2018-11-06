@@ -683,6 +683,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				logger.info("订单支付宝验签成功signVerified = "+signVerified);
 				trade_no = request.getParameter("trade_no");
 				total_amount = request.getParameter("total_amount");
+				logger.info("订单支付宝验签成功trade_no = {} total_amount={}",trade_no,total_amount);
 			} catch (Exception e) {
 				logger.error("支付宝回调解签错误orderId={},e={}",orderId,e.getMessage());
 				throw new BusinessException("支付宝回调解签错误"+e.getMessage());
@@ -747,7 +748,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				
 				key = getKey(uid);
 				amount = orderInfo.getTotalMoney().longValue();
-				logger.info("话费充值订单支付完成进行累计操作amount={},order={}",amount,JSON.toJSON(orderInfo));
+				logger.info("话费充值订单支付完成进行累计操作amount={},key={}",amount,key);
 				cacheService.incr(key, amount, Constants.ONE_MONTH);	
 				//订单更新之后全部开始定时器配置内容;
 			}else if(orderType == Constants.PAY_CARD){
@@ -791,13 +792,13 @@ public class PayServiceImpl extends BaseService implements PayService {
 			}
 			jsonResponse.success(true);
 		} catch (Exception e) {
+			if(StringUtils.isNotBlank(key)){
+				cacheService.decr(key,amount);	
+			}
 			logger.error("支付回调接口异常订单orderId={},e={}",orderId,e.getMessage());
 			throw new BusinessException("支付回调接口异常");
 		}finally {
 			cacheService.releaseLock(Constants.LOCK_NOTIFY_ORDER.concat(orderId));
-			if(StringUtils.isNotBlank(key)){
-				cacheService.decr(key,amount);	
-			}
 		}
 		return jsonResponse;
 	}

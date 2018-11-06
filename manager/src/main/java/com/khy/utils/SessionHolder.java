@@ -16,7 +16,7 @@ public class SessionHolder {
   }
 
   public static User currentUser() {
-//	  return new User("10180943", "15501271310");
+//	  return new User("10212014", "15652009705");
     return userStore.get ();
   }
 

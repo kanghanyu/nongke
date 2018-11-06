@@ -13,7 +13,7 @@ public class SubmitOrderDTO implements Serializable {
 	@ApiModelProperty(value="前置订单id")
 	private String orderId;
 
-	@ApiModelProperty(value="1:标识点卡 2标识 支付宝 3标识微信")
+	@ApiModelProperty(value="1:标识点卡 2:标识余额(针对点卡)  3标识 支付宝 4标识微信")
 	private Integer payType;
 	
 	@ApiModelProperty(value="1:标识vip 购买 2:标识点卡购买 3:标识话费充值 4:标识购物内容 ")
