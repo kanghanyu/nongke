@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -53,15 +55,30 @@ public class RedisUtils {
 	
 	public Khy Khy = new Khy();
 	
-	@Bean("jedisPool")
-	public JedisPool getJedisPool() {
-		JedisPoolConfig pool = new JedisPoolConfig();
-		pool.setMaxIdle(maxIdle);
-		pool.setMinIdle(minIdle);
-		pool.setMaxTotal(maxTotal);
-		jedisPool = new JedisPool(pool, host, port);
-		return jedisPool;
+	@PostConstruct
+	private void initTipMap(){
+		 if(null == jedisPool){
+			 synchronized(this){
+				 if(null == jedisPool){
+					JedisPoolConfig pool = new JedisPoolConfig();
+					pool.setMaxIdle(maxIdle);
+					pool.setMinIdle(minIdle);
+					pool.setMaxTotal(maxTotal);
+					jedisPool = new JedisPool(pool, host, port);
+				 }
+			 }
+		 }
 	}
+
+//	@Bean("jedisPool")
+//	public JedisPool getJedisPool() {
+//		JedisPoolConfig pool = new JedisPoolConfig();
+//		pool.setMaxIdle(maxIdle);
+//		pool.setMinIdle(minIdle);
+//		pool.setMaxTotal(maxTotal);
+//		jedisPool = new JedisPool(pool, host, port);
+//		return jedisPool;
+//	}
 	
 	/***
 	 * 获取redis对象
@@ -185,12 +202,6 @@ public class RedisUtils {
 		return retFlag;
 	}
 	
-	
-	
-	
-	
-	
-
 	
 	public class Keys {
 		
