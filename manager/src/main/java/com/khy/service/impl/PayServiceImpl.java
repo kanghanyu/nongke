@@ -697,7 +697,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 		try {
 			//先查询该订单是否已付款--->如果已付款说明已经更新过了
 			OrderInfo info = new OrderInfo();
-			info.setOrderId("181106203702");
+			info.setOrderId(orderId);
 			orderInfo = orderInfoMapper.getPayOrder(info);
 			logger.info("异步回调的订单的内容信息order={}",JSON.toJSON(orderInfo));
 			if(null == orderInfo){
