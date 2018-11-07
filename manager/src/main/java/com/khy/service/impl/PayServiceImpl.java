@@ -708,7 +708,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 				jsonResponse.success(true);
 				return jsonResponse;
 			}
-			if(new BigDecimal("0.88").compareTo(orderInfo.getRmb())!=0){
+			if(new BigDecimal(total_amount).compareTo(orderInfo.getRmb())!=0){
 				//说明前后的钱不一致
 				jsonResponse.setRetDesc("付款金额不对orderId="+orderId);
 				return jsonResponse;
@@ -806,6 +806,7 @@ public class PayServiceImpl extends BaseService implements PayService {
 
 
 	private void batchUpdateProduct(String productDetail,String uid) {
+		logger.info("商品订单回调修改商品信息productDetail={},uid={}",productDetail,uid);
 		if(StringUtils.isNotBlank(productDetail)){
 			List<PayProductDetailDTO> productList = JSONArray.parseArray(productDetail, PayProductDetailDTO.class);
 			if(CollectionUtils.isNotEmpty(productList)){
