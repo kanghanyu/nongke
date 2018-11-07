@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 public class BillInfoDTO {
 
+	/**商品的id*/
+	private Long productId;
 	/**商品的名称*/
 	private String productName;
 	/**商品的类别*/
@@ -33,6 +35,12 @@ public class BillInfoDTO {
 	}
 	public Integer getAmount() {
 		return amount;
+	}
+	public Long getProductId() {
+		return productId;
+	}
+	public void setProductId(Long productId) {
+		this.productId = productId;
 	}
 	public BigDecimal getTotal() {
 		return total;

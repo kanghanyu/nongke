@@ -238,6 +238,7 @@ public class OrderServiceImpl extends BaseService implements OrderService {
 		if(CollectionUtils.isNotEmpty(productList)){
 			for (PayProductDetailDTO product : productList) {
 				BillInfoDTO dto = new BillInfoDTO();
+				dto.setProductId(product.getProductId());
 				dto.setProductName(product.getProductName());
 				dto.setProductType("商品");
 				dto.setAmount(product.getAmount());
