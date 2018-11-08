@@ -157,5 +157,18 @@ public class Constants {
     public static final String TIMEOUT_EXPRESS = "30m";
     public static final String AES_KEY = "qNbuDK656ziShag3287ujA==";
     public static final String AES_FULLALG = "AES/CBC/PKCS5Padding";
+    //微信
+    public static final String WX_APP_ID = "应用id";
+    public static final String WX_KEY = "秘钥";
+    public static final String WX_MCH_ID = "商户id";
+    public static final String WX_PAY_IP = "39.105.127.94";
+    public static final String WX_NOTIFY_URL = "https://www.nongke365.com:8081/pay/weixin/notify";
+    public static final String TRADE_TYPE_APP = "APP";
+    public static final String WX_SIGN_PACKAGE = "Sign=WXPay";
+
+    public static final int WX_HTTP_CONNECT_TIMEOUT_MS = 8000;
+    public static final int WX_HTTP_READ_TIMEOUT_MS = 10000;
+    
+    
     
 }

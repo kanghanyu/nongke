@@ -824,6 +824,7 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 		info.setPageSize(entity.getPageSize());
 		PageHelper.startPage(info.getPageNum(), info.getPageSize());
 		List<OrderInfo> list = orderInfoMapper.listOrderInfo(info);
+		PageInfo<OrderInfo>pageOrderInfo = new PageInfo<OrderInfo>(list);
 		List<UserOrderInfoDTO>ret = new ArrayList<>();
 		if(CollectionUtils.isNotEmpty(list)){
 			UserOrderInfoDTO dto = null;
@@ -838,7 +839,9 @@ public class UesrServiceImpl extends BaseService implements UesrService {
 				ret.add(dto);
 			}
 		}
-		PageInfo <UserOrderInfoDTO>pageInfo = new PageInfo<UserOrderInfoDTO>(ret);
+		PageInfo <UserOrderInfoDTO>pageInfo = new PageInfo<UserOrderInfoDTO>();
+		BeanUtils.copyProperties(pageOrderInfo, pageInfo);
+		pageInfo.setList(ret);
 		jsonResponse.success(pageInfo);
 		return jsonResponse;
 	}

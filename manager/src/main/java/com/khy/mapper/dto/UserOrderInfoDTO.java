@@ -39,8 +39,8 @@ public class UserOrderInfoDTO implements Serializable{
 	@ApiModelProperty(value="余额抵扣的金额")
 	private BigDecimal cornMoney;
 	
-	@ApiModelProperty(value="订单状态描述0:无效订单 1:未付款 2:已付款3:交易成功4:订单已取消")
-	private Integer statusDesc;
+	@ApiModelProperty(value="订单状态描述 ")
+	private String statusDesc;
 	
 	@ApiModelProperty(value="详情商品的内容")
 	private List<UserOrderProductDTO>products;
@@ -86,11 +86,11 @@ public class UserOrderInfoDTO implements Serializable{
 	public String getUid() {
 		return uid;
 	}
-	public Integer getStatusDesc() {
+	public String getStatusDesc() {
 		return statusDesc;
 	}
 
-	public void setStatusDesc(Integer statusDesc) {
+	public void setStatusDesc(String statusDesc) {
 		this.statusDesc = statusDesc;
 	}
 
@@ -225,5 +225,40 @@ public class UserOrderInfoDTO implements Serializable{
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+	public Integer getStatus() {
+		return status;
+	}
+
+	public Integer getPayStatus() {
+		return payStatus;
+	}
+
+	public void setStatus(Integer status) {
+		this.status = status;
+		if(null != status && null != payStatus){
+			this.statusDesc = getStrStatus();
+		}
+	}
+
+	public void setPayStatus(Integer payStatus) {
+		this.payStatus = payStatus;
+		if(null != status && null != payStatus){
+			this.statusDesc = getStrStatus();
+		}
+	}
+
+	private String getStrStatus() {
+		String ret="无效订单";
+		if(status == 1 && payStatus == 1){
+			ret="未付款";
+		}else if(status == 1 && payStatus == 2){
+			ret="已付款";
+		}else if(status == 2 && (payStatus == 2 || payStatus == 4)){
+			ret="已完成";
+		}else if(status == 2 && payStatus == 3){
+			ret="已取消";
+		}
+		return ret;
+	}
+
 }

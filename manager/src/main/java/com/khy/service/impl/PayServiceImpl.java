@@ -340,6 +340,8 @@ public class PayServiceImpl extends BaseService implements PayService {
 						sign = PayUtil.setProductSign(dto);
 					} else if (payType == Constants.WEIXIN_PAY) {
 						// 这个是微信的签名内容
+						
+						
 					}
 					if(StringUtils.isBlank(sign)){
 						jsonResponse.setRetDesc("获取APP支付验签失败");
@@ -689,11 +691,22 @@ public class PayServiceImpl extends BaseService implements PayService {
 				logger.error("支付宝回调解签错误orderId={},e={}",orderId,e.getMessage());
 				throw new BusinessException("支付宝回调解签错误"+e.getMessage());
 			}
-		}else{
+		}else if(payType.equals("weixin")){
 			//微信的回调内容;
-			
-		}
 		
+			
+			
+			
+			
+			
+			
+			
+			
+			
+		}else{
+			jsonResponse.setRetDesc("无效的付款方式");
+			return jsonResponse;
+		}
 		try {
 			//先查询该订单是否已付款--->如果已付款说明已经更新过了
 			OrderInfo info = new OrderInfo();

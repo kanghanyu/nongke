@@ -38,7 +38,7 @@ public class UserCash implements Serializable {
 	@ApiModelProperty(value="申请时间")
     private Date applyTime;
 
-	@ApiModelProperty(value="0 未审核  1 审核未通过 2已提现")
+	@ApiModelProperty(value="0 申请提现  1提现完成")
     private Integer status;
 
     private Date updateTime;
